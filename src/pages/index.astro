@@ -1,6 +1,4 @@
 ---
-
-
 const GAMES = [
   {
     slug: 'whack-a-virus',
@@ -53,8 +51,6 @@ const GAMES = [
   },
 ];
 
-// Fetch all leaderboards in parallel at build/request time.
-// This runs server-side so the user gets fully-rendered HTML (great for Lighthouse).
 type ScoreEntry = { initials: string; score: number; timestamp: string };
 
 async function fetchLeaderboard(slug: string, baseUrl: string): Promise<ScoreEntry[]> {
@@ -68,14 +64,11 @@ async function fetchLeaderboard(slug: string, baseUrl: string): Promise<ScoreEnt
   }
 }
 
-const baseUrl = new URL(Astro.request.url).origin;
+const baseUrl = 'https://arcade.jakefixestech.com';
 const leaderboards: ScoreEntry[][] = await Promise.all(
   GAMES.map(g => fetchLeaderboard(g.slug, baseUrl))
 );
 
-// Compute champion across all games (lowest total rank-points across games where they've played).
-// Aggregation: 1st place = 1 point, 2nd = 2 points... lower is better.
-// Only count players who appear on at least 2 leaderboards (proves they actually played the arcade).
 const playerPoints: Record<string, { points: number; gamesPlayed: number }> = {};
 GAMES.forEach((game, gameIdx) => {
   const scores = leaderboards[gameIdx];
@@ -133,43 +126,30 @@ if (eligible.length > 0) {
 
   <body>
     <main class="page">
-      <!-- ========================================== -->
-      <!-- Rising sparkle particles                   -->
-      <!-- ========================================== -->
       <div class="sparkles" aria-hidden="true">
         {Array.from({ length: 24 }).map((_, i) => (
           <span class={`spark sp-${i + 1}`}></span>
         ))}
       </div>
 
-      <!-- ========================================== -->
-      <!-- HERO                                       -->
-      <!-- ========================================== -->
       <section class="hero">
         <div class="hero-inner">
           <div class="cabinet-wrap" aria-hidden="true">
-            <!-- Glow aura behind cabinet -->
             <div class="cabinet-aura"></div>
 
-            <!-- 80s Arcade Cabinet SVG -->
             <svg class="cabinet" viewBox="0 0 200 320" xmlns="http://www.w3.org/2000/svg">
-              <!-- Cabinet body shadow -->
               <path d="M 30 60 L 30 290 L 50 310 L 150 310 L 170 290 L 170 60 L 165 30 L 35 30 Z"
                     fill="#1e293b" stroke="#0f172a" stroke-width="2" stroke-linejoin="round" />
 
-              <!-- Cabinet body main -->
               <path d="M 35 60 L 35 285 L 55 305 L 145 305 L 165 285 L 165 60 L 160 35 L 40 35 Z"
                     fill="#334155" stroke="#0f172a" stroke-width="1.5" stroke-linejoin="round" />
 
-              <!-- Marquee top -->
               <rect x="40" y="40" width="120" height="32" rx="3" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
               <rect x="44" y="44" width="112" height="24" rx="2" fill="#fef3c7" />
               <text x="100" y="61" text-anchor="middle" font-family="Inter Tight, sans-serif" font-weight="900" font-size="11" fill="#92400e">ARCADE</text>
 
-              <!-- Screen bezel -->
               <rect x="45" y="82" width="110" height="100" rx="4" fill="#0a0e1a" stroke="#0f172a" stroke-width="2" />
 
-              <!-- Screen content (gradient) -->
               <defs>
                 <linearGradient id="screenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stop-color="#1e3a8a" />
@@ -182,7 +162,6 @@ if (eligible.length > 0) {
               </defs>
               <rect x="50" y="87" width="100" height="90" rx="2" fill="url(#screenGrad)" />
 
-              <!-- Screen scanlines for retro effect -->
               <g opacity="0.15">
                 <line x1="50" y1="95" x2="150" y2="95" stroke="#fff" stroke-width="0.5" />
                 <line x1="50" y1="105" x2="150" y2="105" stroke="#fff" stroke-width="0.5" />
@@ -194,25 +173,19 @@ if (eligible.length > 0) {
                 <line x1="50" y1="165" x2="150" y2="165" stroke="#fff" stroke-width="0.5" />
               </g>
 
-              <!-- "PRESS START" text on screen -->
               <text x="100" y="125" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="9" fill="#fbbf24" class="screen-text">PRESS START</text>
               <text x="100" y="142" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="400" font-size="7" fill="#93c5fd">7 GAMES</text>
               <text x="100" y="158" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="400" font-size="6" fill="#bfdbfe" opacity="0.7">©2026 JAKE FIXES TECH</text>
 
-              <!-- Control panel base -->
               <rect x="40" y="195" width="120" height="50" rx="3" fill="#475569" stroke="#0f172a" stroke-width="1.5" />
               <rect x="42" y="197" width="116" height="3" fill="#64748b" opacity="0.6" />
 
-              <!-- Joystick base -->
               <ellipse cx="68" cy="220" rx="11" ry="4" fill="#0f172a" />
               <circle cx="68" cy="218" r="6" fill="#1e293b" stroke="#0f172a" stroke-width="1" />
-              <!-- Joystick shaft -->
               <rect x="66" y="208" width="4" height="12" fill="#fbbf24" stroke="#92400e" stroke-width="0.8" />
-              <!-- Joystick ball -->
               <circle cx="68" cy="207" r="5" fill="#ef4444" stroke="#7f1d1d" stroke-width="1" />
               <circle cx="66" cy="205" r="1.5" fill="#fff" opacity="0.6" />
 
-              <!-- Buttons -->
               <circle cx="115" cy="220" r="6" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.2" />
               <circle cx="115" cy="219" r="5" fill="#dc2626" />
               <circle cx="113" cy="217" r="1.5" fill="#fef2f2" opacity="0.5" />
@@ -221,15 +194,12 @@ if (eligible.length > 0) {
               <circle cx="135" cy="219" r="5" fill="#2563eb" />
               <circle cx="133" cy="217" r="1.5" fill="#dbeafe" opacity="0.5" />
 
-              <!-- Coin slot -->
               <rect x="92" y="258" width="16" height="20" rx="1.5" fill="#1e293b" stroke="#0f172a" stroke-width="1" />
               <rect x="96" y="263" width="8" height="2.5" rx="0.5" fill="#0a0e1a" />
               <text x="100" y="276" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="3.5" fill="#94a3b8">25¢</text>
 
-              <!-- Cabinet base -->
               <rect x="40" y="285" width="120" height="20" fill="#1e293b" />
 
-              <!-- Side decorative trim -->
               <line x1="42" y1="80" x2="42" y2="280" stroke="#0f172a" stroke-width="0.8" />
               <line x1="158" y1="80" x2="158" y2="280" stroke="#0f172a" stroke-width="0.8" />
             </svg>
@@ -252,12 +222,8 @@ if (eligible.length > 0) {
         </div>
       </section>
 
-      <!-- ========================================== -->
-      <!-- CHAMPION SECTION                           -->
-      <!-- ========================================== -->
       <section class="champion-section">
         <div class={`champion-card ${champion ? 'champion-card--active' : 'champion-card--empty'}`}>
-          <!-- Animated decorative rays in background -->
           <div class="champ-rays" aria-hidden="true">
             <span class="ray ray-1"></span>
             <span class="ray ray-2"></span>
@@ -310,7 +276,6 @@ if (eligible.length > 0) {
                   <rect x="34" y="62" width="12" height="10" fill="#334155" stroke="#1e293b" stroke-width="1.5" />
                   <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#334155" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
 
-                  <!-- Question mark on the trophy face -->
                   <text x="40" y="48" text-anchor="middle" font-family="Inter Tight, sans-serif" font-weight="900" font-size="32" fill="#94a3b8">?</text>
                 </svg>
               </div>
@@ -335,9 +300,6 @@ if (eligible.length > 0) {
         </div>
       </section>
 
-      <!-- ========================================== -->
-      <!-- GAMES SECTION                              -->
-      <!-- ========================================== -->
       <section id="games" class="games-section">
         <div class="games-header">
           <p class="section-eyebrow">GAMES</p>
@@ -492,9 +454,6 @@ if (eligible.length > 0) {
         </div>
       </section>
 
-      <!-- ========================================== -->
-      <!-- HOW IT WORKS                               -->
-      <!-- ========================================== -->
       <section class="how-section">
         <div class="how-grid">
           <div class="how-step">
@@ -536,9 +495,6 @@ if (eligible.length > 0) {
         </div>
       </section>
 
-      <!-- ========================================== -->
-      <!-- FOOTER                                     -->
-      <!-- ========================================== -->
       <footer class="footer">
         <p class="footer-line">— Built by Jake at Jake Fixes Tech —</p>
         <div class="footer-links">
@@ -571,9 +527,6 @@ if (eligible.length > 0) {
 
       .page { position: relative; min-height: 100vh; }
 
-      /* ============================================================ */
-      /* SPARKLES                                                      */
-      /* ============================================================ */
       .sparkles {
         position: fixed;
         inset: 0;
@@ -625,9 +578,6 @@ if (eligible.length > 0) {
         100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
       }
 
-      /* ============================================================ */
-      /* HERO                                                          */
-      /* ============================================================ */
       .hero {
         position: relative;
         z-index: 1;
@@ -644,7 +594,6 @@ if (eligible.length > 0) {
         text-align: center;
       }
 
-      /* Two-column on tablet+ — cabinet left, content right */
       @media (min-width: 768px) {
         .hero-inner {
           grid-template-columns: auto 1fr;
@@ -804,9 +753,6 @@ if (eligible.length > 0) {
         50%      { box-shadow: 0 0 0 12px rgba(251,191,36,0), 0 14px 45px rgba(251,191,36,0.5); }
       }
 
-      /* ============================================================ */
-      /* CHAMPION                                                      */
-      /* ============================================================ */
       .champion-section {
         position: relative;
         z-index: 1;
@@ -857,7 +803,6 @@ if (eligible.length > 0) {
         }
       }
 
-      /* Decorative rotating rays in background */
       .champ-rays {
         position: absolute;
         inset: 0;
@@ -1062,9 +1007,6 @@ if (eligible.length > 0) {
         line-height: 1.5;
       }
 
-      /* ============================================================ */
-      /* GAMES                                                         */
-      /* ============================================================ */
       .games-section {
         position: relative;
         z-index: 1;
@@ -1205,7 +1147,6 @@ if (eligible.length > 0) {
         box-shadow: none;
       }
 
-      /* Leaderboard */
       .game-leaderboard {
         background: rgba(10, 14, 26, 0.6);
         border: 1px solid rgba(96, 165, 250, 0.2);
@@ -1283,7 +1224,6 @@ if (eligible.length > 0) {
         padding: 0.75rem 0;
       }
 
-      /* Tablet */
       @media (min-width: 720px) {
         .game-block {
           grid-template-columns: 1.4fr 1fr;
@@ -1293,16 +1233,12 @@ if (eligible.length > 0) {
         }
       }
 
-      /* Desktop */
       @media (min-width: 1024px) {
         .games-grid {
           gap: 1.75rem;
         }
       }
 
-      /* ============================================================ */
-      /* HOW IT WORKS                                                  */
-      /* ============================================================ */
       .how-section {
         position: relative;
         z-index: 1;
@@ -1363,9 +1299,6 @@ if (eligible.length > 0) {
         .how-grid { grid-template-columns: repeat(3, 1fr); }
       }
 
-      /* ============================================================ */
-      /* FOOTER                                                        */
-      /* ============================================================ */
       .footer {
         position: relative;
         z-index: 1;
@@ -1410,9 +1343,6 @@ if (eligible.length > 0) {
         color: #475569;
       }
 
-      /* ============================================================ */
-      /* MOBILE / NARROW                                               */
-      /* ============================================================ */
       @media (max-width: 600px) {
         .hero { padding: 3rem 1.25rem 2rem; }
         .cabinet-wrap { width: 160px; height: 230px; }
@@ -1423,18 +1353,12 @@ if (eligible.length > 0) {
         .game-play-btn { width: 100%; justify-content: center; }
       }
 
-      /* ============================================================ */
-      /* ULTRAWIDE / BIG MONITORS                                      */
-      /* ============================================================ */
       @media (min-width: 1600px) {
         .games-section { max-width: 88rem; }
         .game-block { padding: 2rem; }
         .game-name { font-size: 1.4rem; }
       }
 
-      /* ============================================================ */
-      /* REDUCED MOTION                                                */
-      /* ============================================================ */
       @media (prefers-reduced-motion: reduce) {
         .spark { animation: none; opacity: 0; }
         .cabinet-aura, .cabinet, .screen-text { animation: none; }
