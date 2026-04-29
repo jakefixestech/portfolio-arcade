@@ -53,10 +53,8 @@ const GAMES = [
 
 type ScoreEntry = { initials: string; score: number; timestamp: string };
 
-// Try Cloudflare KV binding (works on live).
-// Fall back to HTTP fetch from live API for local dev.
 let leaderboards: ScoreEntry[][] = [];
-// @ts-ignore - runtime is provided by @astrojs/cloudflare on live
+// @ts-ignore
 const kv = Astro.locals?.runtime?.env?.SCORES_KV;
 
 if (kv) {
@@ -1166,11 +1164,16 @@ if (eligible.length > 0) {
         box-shadow: none;
       }
 
+      /* MOBILE LEADERBOARD FIX: explicit display + height so it doesn't collapse */
       .game-leaderboard {
+        display: block;
         background: rgba(10, 14, 26, 0.6);
         border: 1px solid rgba(96, 165, 250, 0.2);
         border-radius: 0.625rem;
         padding: 1rem 1.25rem;
+        min-height: auto;
+        height: auto;
+        overflow: visible;
       }
 
       .leaderboard-eyebrow {
@@ -1370,6 +1373,15 @@ if (eligible.length > 0) {
         .game-block { padding: 1.25rem; }
         .game-card { gap: 1rem; }
         .game-play-btn { width: 100%; justify-content: center; }
+
+        /* Extra mobile leaderboard safety: force visible at all times */
+        .game-leaderboard {
+          display: block !important;
+          width: 100%;
+          min-height: auto;
+          height: auto;
+          padding: 1rem;
+        }
       }
 
       @media (min-width: 1600px) {
