@@ -11,8 +11,9 @@ export default defineConfig({
 
   adapter: cloudflare({
     routes: {
-      strategy: 'exclude',
-      include: ['/api/*'],
+      extend: {
+        exclude: [{ pattern: '/api/*' }],
+      },
     },
   }),
 });
