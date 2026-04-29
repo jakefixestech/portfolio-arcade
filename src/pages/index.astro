@@ -1,4 +1,97 @@
 ---
+const GAMES = [
+  {
+    slug: 'whack-a-virus',
+    name: 'Whack-a-Virus',
+    tagline: 'Smash viruses before they spread',
+    available: true,
+    iconKey: 'virus',
+  },
+  {
+    slug: 'system-response',
+    name: 'System Response',
+    tagline: 'Click the moment the screen turns green',
+    available: false,
+    iconKey: 'response',
+  },
+  {
+    slug: 'component-match',
+    name: 'Component Match',
+    tagline: 'Pair motherboard parts from memory',
+    available: false,
+    iconKey: 'match',
+  },
+  {
+    slug: 'error-override',
+    name: 'Error Override',
+    tagline: 'Type fake error messages at speed',
+    available: false,
+    iconKey: 'error',
+  },
+  {
+    slug: 'cursor-crawl',
+    name: 'Cursor Crawl',
+    tagline: 'Devour bugs as a growing cursor',
+    available: false,
+    iconKey: 'cursor',
+  },
+  {
+    slug: 'usb-defender',
+    name: 'USB Defender',
+    tagline: 'Bounce bugs back with a USB paddle',
+    available: false,
+    iconKey: 'usb',
+  },
+  {
+    slug: 'bug-smasher',
+    name: 'Bug Smasher',
+    tagline: 'Break through walls of bugs',
+    available: false,
+    iconKey: 'smasher',
+  },
+];
+
+type ScoreEntry = { initials: string; score: number; timestamp: string };
+
+async function fetchLeaderboard(slug: string, baseUrl: string): Promise<ScoreEntry[]> {
+  try {
+    const res = await fetch(`${baseUrl}/api/scores/${slug}`);
+    if (!res.ok) return [];
+    const data = await res.json() as { scores?: ScoreEntry[] };
+    return data.scores || [];
+  } catch {
+    return [];
+  }
+}
+
+const baseUrl = 'https://arcade.jakefixestech.com';
+const leaderboards: ScoreEntry[][] = await Promise.all(
+  GAMES.map(g => fetchLeaderboard(g.slug, baseUrl))
+);
+
+const playerPoints: Record<string, { points: number; gamesPlayed: number }> = {};
+GAMES.forEach((game, gameIdx) => {
+  const scores = leaderboards[gameIdx];
+  scores.forEach((entry: { initials: string; score: number; timestamp: string }, rank: number) => {
+    const points = rank + 1;
+    if (!playerPoints[entry.initials]) {
+      playerPoints[entry.initials] = { points: 0, gamesPlayed: 0 };
+    }
+    playerPoints[entry.initials].points += points;
+    playerPoints[entry.initials].gamesPlayed += 1;
+  });
+});
+
+let champion: { initials: string; points: number; gamesPlayed: number } | null = null;
+const eligible = Object.entries(playerPoints).filter(([_, p]) => p.gamesPlayed >= 2);
+if (eligible.length > 0) {
+  eligible.sort((a, b) => a[1].points - b[1].points);
+  champion = {
+    initials: eligible[0][0],
+    points: eligible[0][1].points,
+    gamesPlayed: eligible[0][1].gamesPlayed,
+  };
+}
 ---
 
 <!doctype html>
@@ -34,30 +127,9 @@
   <body>
     <main class="page">
       <div class="sparkles" aria-hidden="true">
-        <span class="spark sp-1"></span>
-        <span class="spark sp-2"></span>
-        <span class="spark sp-3"></span>
-        <span class="spark sp-4"></span>
-        <span class="spark sp-5"></span>
-        <span class="spark sp-6"></span>
-        <span class="spark sp-7"></span>
-        <span class="spark sp-8"></span>
-        <span class="spark sp-9"></span>
-        <span class="spark sp-10"></span>
-        <span class="spark sp-11"></span>
-        <span class="spark sp-12"></span>
-        <span class="spark sp-13"></span>
-        <span class="spark sp-14"></span>
-        <span class="spark sp-15"></span>
-        <span class="spark sp-16"></span>
-        <span class="spark sp-17"></span>
-        <span class="spark sp-18"></span>
-        <span class="spark sp-19"></span>
-        <span class="spark sp-20"></span>
-        <span class="spark sp-21"></span>
-        <span class="spark sp-22"></span>
-        <span class="spark sp-23"></span>
-        <span class="spark sp-24"></span>
+        {Array.from({ length: 24 }).map((_, i) => (
+          <span class={`spark sp-${i + 1}`}></span>
+        ))}
       </div>
 
       <section class="hero">
@@ -66,12 +138,18 @@
             <div class="cabinet-aura"></div>
 
             <svg class="cabinet" viewBox="0 0 200 320" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 30 60 L 30 290 L 50 310 L 150 310 L 170 290 L 170 60 L 165 30 L 35 30 Z" fill="#1e293b" stroke="#0f172a" stroke-width="2" stroke-linejoin="round" />
-              <path d="M 35 60 L 35 285 L 55 305 L 145 305 L 165 285 L 165 60 L 160 35 L 40 35 Z" fill="#334155" stroke="#0f172a" stroke-width="1.5" stroke-linejoin="round" />
+              <path d="M 30 60 L 30 290 L 50 310 L 150 310 L 170 290 L 170 60 L 165 30 L 35 30 Z"
+                    fill="#1e293b" stroke="#0f172a" stroke-width="2" stroke-linejoin="round" />
+
+              <path d="M 35 60 L 35 285 L 55 305 L 145 305 L 165 285 L 165 60 L 160 35 L 40 35 Z"
+                    fill="#334155" stroke="#0f172a" stroke-width="1.5" stroke-linejoin="round" />
+
               <rect x="40" y="40" width="120" height="32" rx="3" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
               <rect x="44" y="44" width="112" height="24" rx="2" fill="#fef3c7" />
               <text x="100" y="61" text-anchor="middle" font-family="Inter Tight, sans-serif" font-weight="900" font-size="11" fill="#92400e">ARCADE</text>
+
               <rect x="45" y="82" width="110" height="100" rx="4" fill="#0a0e1a" stroke="#0f172a" stroke-width="2" />
+
               <defs>
                 <linearGradient id="screenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stop-color="#1e3a8a" />
@@ -83,6 +161,7 @@
                 </linearGradient>
               </defs>
               <rect x="50" y="87" width="100" height="90" rx="2" fill="url(#screenGrad)" />
+
               <g opacity="0.15">
                 <line x1="50" y1="95" x2="150" y2="95" stroke="#fff" stroke-width="0.5" />
                 <line x1="50" y1="105" x2="150" y2="105" stroke="#fff" stroke-width="0.5" />
@@ -93,26 +172,34 @@
                 <line x1="50" y1="155" x2="150" y2="155" stroke="#fff" stroke-width="0.5" />
                 <line x1="50" y1="165" x2="150" y2="165" stroke="#fff" stroke-width="0.5" />
               </g>
+
               <text x="100" y="125" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="9" fill="#fbbf24" class="screen-text">PRESS START</text>
               <text x="100" y="142" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="400" font-size="7" fill="#93c5fd">7 GAMES</text>
               <text x="100" y="158" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="400" font-size="6" fill="#bfdbfe" opacity="0.7">©2026 JAKE FIXES TECH</text>
+
               <rect x="40" y="195" width="120" height="50" rx="3" fill="#475569" stroke="#0f172a" stroke-width="1.5" />
               <rect x="42" y="197" width="116" height="3" fill="#64748b" opacity="0.6" />
+
               <ellipse cx="68" cy="220" rx="11" ry="4" fill="#0f172a" />
               <circle cx="68" cy="218" r="6" fill="#1e293b" stroke="#0f172a" stroke-width="1" />
               <rect x="66" y="208" width="4" height="12" fill="#fbbf24" stroke="#92400e" stroke-width="0.8" />
               <circle cx="68" cy="207" r="5" fill="#ef4444" stroke="#7f1d1d" stroke-width="1" />
               <circle cx="66" cy="205" r="1.5" fill="#fff" opacity="0.6" />
+
               <circle cx="115" cy="220" r="6" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.2" />
               <circle cx="115" cy="219" r="5" fill="#dc2626" />
               <circle cx="113" cy="217" r="1.5" fill="#fef2f2" opacity="0.5" />
+
               <circle cx="135" cy="220" r="6" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.2" />
               <circle cx="135" cy="219" r="5" fill="#2563eb" />
               <circle cx="133" cy="217" r="1.5" fill="#dbeafe" opacity="0.5" />
+
               <rect x="92" y="258" width="16" height="20" rx="1.5" fill="#1e293b" stroke="#0f172a" stroke-width="1" />
               <rect x="96" y="263" width="8" height="2.5" rx="0.5" fill="#0a0e1a" />
               <text x="100" y="276" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="3.5" fill="#94a3b8">25¢</text>
+
               <rect x="40" y="285" width="120" height="20" fill="#1e293b" />
+
               <line x1="42" y1="80" x2="42" y2="280" stroke="#0f172a" stroke-width="0.8" />
               <line x1="158" y1="80" x2="158" y2="280" stroke="#0f172a" stroke-width="0.8" />
             </svg>
@@ -136,7 +223,7 @@
       </section>
 
       <section class="champion-section">
-        <div id="champion-card" class="champion-card champion-card--empty">
+        <div class={`champion-card ${champion ? 'champion-card--active' : 'champion-card--empty'}`}>
           <div class="champ-rays" aria-hidden="true">
             <span class="ray ray-1"></span>
             <span class="ray ray-2"></span>
@@ -146,67 +233,70 @@
             <span class="ray ray-6"></span>
           </div>
 
-          <div id="champion-empty">
-            <div class="champ-trophy champ-trophy--empty" aria-hidden="true">
-              <div class="champ-trophy-shimmer"></div>
-              <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 18 24 Q 6 24 6 38 Q 6 50 18 50" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
-                <path d="M 62 24 Q 74 24 74 38 Q 74 50 62 50" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
-                <path d="M 16 16 L 64 16 L 60 54 Q 58 60 50 62 L 30 62 Q 22 60 20 54 Z" fill="#475569" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
-                <path d="M 22 20 L 28 20 L 26 52 Q 25 56 23 58 L 22 58 Z" fill="#64748b" opacity="0.5" />
-                <rect x="14" y="13" width="52" height="6" rx="1" fill="#64748b" stroke="#1e293b" stroke-width="1.5" />
-                <rect x="34" y="62" width="12" height="10" fill="#334155" stroke="#1e293b" stroke-width="1.5" />
-                <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#334155" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
-                <text x="40" y="48" text-anchor="middle" font-family="Inter Tight, sans-serif" font-weight="900" font-size="32" fill="#94a3b8">?</text>
-              </svg>
-            </div>
-
-            <div class="champ-content">
-              <div class="champ-badge champ-badge--empty">
-                <span>THRONE IS OPEN</span>
+          {champion ? (
+            <>
+              <div class="champ-trophy" aria-hidden="true">
+                <div class="champ-trophy-glow"></div>
+                <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 18 24 Q 6 24 6 38 Q 6 50 18 50" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" />
+                  <path d="M 62 24 Q 74 24 74 38 Q 74 50 62 50" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" />
+                  <path d="M 16 16 L 64 16 L 60 54 Q 58 60 50 62 L 30 62 Q 22 60 20 54 Z" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" stroke-linejoin="round" />
+                  <path d="M 22 20 L 28 20 L 26 52 Q 25 56 23 58 L 22 58 Z" fill="#fde68a" opacity="0.6" />
+                  <rect x="14" y="13" width="52" height="6" rx="1" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
+                  <path d="M 40 28 L 43 36 L 51 37 L 45 42 L 47 50 L 40 46 L 33 50 L 35 42 L 29 37 L 37 36 Z" fill="#fff" />
+                  <rect x="34" y="62" width="12" height="10" fill="#d97706" stroke="#92400e" stroke-width="1.5" />
+                  <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#d97706" stroke="#92400e" stroke-width="1.5" stroke-linejoin="round" />
+                </svg>
               </div>
-              <h2 class="champ-empty-title">
-                <span class="champ-empty-line">Could be</span>
-                <span class="champ-empty-line champ-empty-highlight">YOU.</span>
-              </h2>
-              <p class="champ-stats champ-stats--empty">
-                Rank in at least <strong>2 games</strong> to claim the throne.
-              </p>
-              <p class="champ-note">
-                Every game you play matters. Lower total rank-points wins.
-              </p>
-            </div>
-          </div>
 
-          <div id="champion-active" style="display:none">
-            <div class="champ-trophy" aria-hidden="true">
-              <div class="champ-trophy-glow"></div>
-              <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 18 24 Q 6 24 6 38 Q 6 50 18 50" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" />
-                <path d="M 62 24 Q 74 24 74 38 Q 74 50 62 50" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" />
-                <path d="M 16 16 L 64 16 L 60 54 Q 58 60 50 62 L 30 62 Q 22 60 20 54 Z" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" stroke-linejoin="round" />
-                <path d="M 22 20 L 28 20 L 26 52 Q 25 56 23 58 L 22 58 Z" fill="#fde68a" opacity="0.6" />
-                <rect x="14" y="13" width="52" height="6" rx="1" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
-                <path d="M 40 28 L 43 36 L 51 37 L 45 42 L 47 50 L 40 46 L 33 50 L 35 42 L 29 37 L 37 36 Z" fill="#fff" />
-                <rect x="34" y="62" width="12" height="10" fill="#d97706" stroke="#92400e" stroke-width="1.5" />
-                <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#d97706" stroke="#92400e" stroke-width="1.5" stroke-linejoin="round" />
-              </svg>
-            </div>
-
-            <div class="champ-content">
-              <div class="champ-badge">
-                <span class="champ-badge-dot"></span>
-                <span>REIGNING CHAMPION</span>
+              <div class="champ-content">
+                <div class="champ-badge">
+                  <span class="champ-badge-dot"></span>
+                  <span>REIGNING CHAMPION</span>
+                </div>
+                <div class="champ-initials">{champion.initials}</div>
+                <p class="champ-stats">
+                  <strong>{champion.points}</strong> rank points across <strong>{champion.gamesPlayed}</strong> games
+                </p>
+                <p class="champ-note">
+                  The fewer points, the better. Top this player by ranking high in more games.
+                </p>
               </div>
-              <div class="champ-initials" id="champ-initials-text">---</div>
-              <p class="champ-stats">
-                <strong id="champ-points">0</strong> rank points across <strong id="champ-games">0</strong> games
-              </p>
-              <p class="champ-note">
-                The fewer points, the better. Top this player by ranking high in more games.
-              </p>
-            </div>
-          </div>
+            </>
+          ) : (
+            <>
+              <div class="champ-trophy champ-trophy--empty" aria-hidden="true">
+                <div class="champ-trophy-shimmer"></div>
+                <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 18 24 Q 6 24 6 38 Q 6 50 18 50" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
+                  <path d="M 62 24 Q 74 24 74 38 Q 74 50 62 50" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
+                  <path d="M 16 16 L 64 16 L 60 54 Q 58 60 50 62 L 30 62 Q 22 60 20 54 Z" fill="#475569" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
+                  <path d="M 22 20 L 28 20 L 26 52 Q 25 56 23 58 L 22 58 Z" fill="#64748b" opacity="0.5" />
+                  <rect x="14" y="13" width="52" height="6" rx="1" fill="#64748b" stroke="#1e293b" stroke-width="1.5" />
+                  <rect x="34" y="62" width="12" height="10" fill="#334155" stroke="#1e293b" stroke-width="1.5" />
+                  <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#334155" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
+
+                  <text x="40" y="48" text-anchor="middle" font-family="Inter Tight, sans-serif" font-weight="900" font-size="32" fill="#94a3b8">?</text>
+                </svg>
+              </div>
+
+              <div class="champ-content">
+                <div class="champ-badge champ-badge--empty">
+                  <span>THRONE IS OPEN</span>
+                </div>
+                <h2 class="champ-empty-title">
+                  <span class="champ-empty-line">Could be</span>
+                  <span class="champ-empty-line champ-empty-highlight">YOU.</span>
+                </h2>
+                <p class="champ-stats champ-stats--empty">
+                  Rank in at least <strong>2 games</strong> to claim the throne.
+                </p>
+                <p class="champ-note">
+                  Every game you play matters. Lower total rank-points wins.
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -217,246 +307,150 @@
         </div>
 
         <div class="games-grid">
+          {GAMES.map((game, idx) => {
+            const scores = leaderboards[idx];
+            const top3 = scores.slice(0, 3);
+            return (
+              <article class={`game-block ${game.available ? '' : 'game-block--locked'}`} data-game-slug={game.slug}>
+                <div class="game-card">
+                  <div class="game-icon" aria-hidden="true">
+                    {game.iconKey === 'virus' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="40" cy="44" rx="22" ry="26" fill="#ef4444" />
+                        <ellipse cx="40" cy="40" rx="20" ry="22" fill="#dc2626" />
+                        <line x1="40" y1="14" x2="40" y2="22" stroke="#dc2626" stroke-width="3.5" stroke-linecap="round" />
+                        <circle cx="40" cy="11" r="2.5" fill="#dc2626" />
+                        <line x1="6" y1="22" x2="20" y2="32" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+                        <circle cx="6" cy="22" r="2" fill="#dc2626" />
+                        <line x1="74" y1="22" x2="60" y2="32" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+                        <circle cx="74" cy="22" r="2" fill="#dc2626" />
+                        <line x1="2" y1="44" x2="18" y2="44" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+                        <circle cx="2" cy="44" r="2" fill="#dc2626" />
+                        <line x1="78" y1="44" x2="62" y2="44" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+                        <circle cx="78" cy="44" r="2" fill="#dc2626" />
+                        <ellipse cx="32" cy="38" rx="5" ry="6" fill="#fff" />
+                        <ellipse cx="48" cy="38" rx="5" ry="6" fill="#fff" />
+                        <circle cx="32" cy="40" r="2.5" fill="#000" />
+                        <circle cx="48" cy="40" r="2.5" fill="#000" />
+                        <path d="M 28 54 L 31 50 L 34 54 L 37 50 L 40 54 L 43 50 L 46 54 L 49 50 L 52 54" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'response' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="40" cy="40" r="32" fill="#10b981" stroke="#047857" stroke-width="2" />
+                        <circle cx="40" cy="40" r="22" fill="#059669" />
+                        <path d="M 40 22 L 40 40 L 52 48" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <circle cx="40" cy="40" r="2.5" fill="#fff" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'match' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="8" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
+                        <rect x="44" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
+                        <rect x="14" y="22" width="16" height="22" rx="1" fill="#1e40af" />
+                        <rect x="50" y="22" width="16" height="22" rx="1" fill="#1e40af" />
+                        <rect x="17" y="26" width="10" height="3" fill="#fbbf24" />
+                        <rect x="17" y="32" width="10" height="3" fill="#fbbf24" />
+                        <rect x="17" y="38" width="6" height="3" fill="#fbbf24" />
+                        <rect x="53" y="26" width="10" height="3" fill="#fbbf24" />
+                        <rect x="53" y="32" width="10" height="3" fill="#fbbf24" />
+                        <rect x="53" y="38" width="6" height="3" fill="#fbbf24" />
+                        <line x1="36" y1="58" x2="44" y2="58" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
+                        <line x1="36" y1="64" x2="44" y2="64" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'error' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="8" y="16" width="64" height="48" rx="3" fill="#0a0e1a" stroke="#1e3a8a" stroke-width="2" />
+                        <rect x="8" y="16" width="64" height="10" rx="3" fill="#1e3a8a" />
+                        <circle cx="14" cy="21" r="1.5" fill="#ef4444" />
+                        <circle cx="20" cy="21" r="1.5" fill="#fbbf24" />
+                        <circle cx="26" cy="21" r="1.5" fill="#10b981" />
+                        <text x="14" y="38" font-family="JetBrains Mono, monospace" font-size="6" font-weight="700" fill="#ef4444">ERROR_</text>
+                        <rect x="14" y="42" width="40" height="2" fill="#fbbf24" />
+                        <rect x="14" y="48" width="50" height="2" fill="#cbd5e1" />
+                        <rect x="14" y="54" width="30" height="2" fill="#cbd5e1" opacity="0.6" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'cursor' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 18 14 L 18 50 L 28 42 L 34 56 L 40 54 L 34 40 L 46 38 Z" fill="#fbbf24" stroke="#92400e" stroke-width="2" stroke-linejoin="round" />
+                        <circle cx="56" cy="50" r="6" fill="#10b981" stroke="#047857" stroke-width="1.5" />
+                        <circle cx="60" cy="62" r="5" fill="#10b981" stroke="#047857" stroke-width="1.5" />
+                        <circle cx="50" cy="64" r="4" fill="#10b981" stroke="#047857" stroke-width="1.5" />
+                        <circle cx="54" cy="48" r="1" fill="#fff" />
+                        <circle cx="58" cy="48" r="1" fill="#fff" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'usb' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="14" y="34" width="36" height="14" rx="2" fill="#94a3b8" stroke="#475569" stroke-width="2" />
+                        <rect x="50" y="36" width="14" height="10" rx="1" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5" />
+                        <rect x="18" y="38" width="6" height="6" fill="#fbbf24" />
+                        <rect x="26" y="38" width="6" height="6" fill="#fbbf24" />
+                        <rect x="34" y="38" width="6" height="6" fill="#fbbf24" />
+                        <rect x="42" y="38" width="6" height="6" fill="#fbbf24" />
+                        <circle cx="20" cy="60" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
+                        <circle cx="60" cy="22" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'smasher' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="6" y="14" width="14" height="6" rx="1" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
+                        <rect x="22" y="14" width="14" height="6" rx="1" fill="#a855f7" stroke="#581c87" stroke-width="1.5" />
+                        <rect x="38" y="14" width="14" height="6" rx="1" fill="#f59e0b" stroke="#92400e" stroke-width="1.5" />
+                        <rect x="54" y="14" width="14" height="6" rx="1" fill="#10b981" stroke="#047857" stroke-width="1.5" />
+                        <rect x="6" y="22" width="14" height="6" rx="1" fill="#a855f7" stroke="#581c87" stroke-width="1.5" />
+                        <rect x="22" y="22" width="14" height="6" rx="1" fill="#f59e0b" stroke="#92400e" stroke-width="1.5" />
+                        <rect x="54" y="22" width="14" height="6" rx="1" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
+                        <circle cx="40" cy="50" r="6" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
+                        <rect x="22" y="62" width="36" height="6" rx="2" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
+                      </svg>
+                    )}
+                  </div>
 
-          <article class="game-block" data-game-slug="whack-a-virus">
-            <div class="game-card">
-              <div class="game-icon" aria-hidden="true">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <ellipse cx="40" cy="44" rx="22" ry="26" fill="#ef4444" />
-                  <ellipse cx="40" cy="40" rx="20" ry="22" fill="#dc2626" />
-                  <line x1="40" y1="14" x2="40" y2="22" stroke="#dc2626" stroke-width="3.5" stroke-linecap="round" />
-                  <circle cx="40" cy="11" r="2.5" fill="#dc2626" />
-                  <line x1="6" y1="22" x2="20" y2="32" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
-                  <circle cx="6" cy="22" r="2" fill="#dc2626" />
-                  <line x1="74" y1="22" x2="60" y2="32" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
-                  <circle cx="74" cy="22" r="2" fill="#dc2626" />
-                  <line x1="2" y1="44" x2="18" y2="44" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
-                  <circle cx="2" cy="44" r="2" fill="#dc2626" />
-                  <line x1="78" y1="44" x2="62" y2="44" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
-                  <circle cx="78" cy="44" r="2" fill="#dc2626" />
-                  <ellipse cx="32" cy="38" rx="5" ry="6" fill="#fff" />
-                  <ellipse cx="48" cy="38" rx="5" ry="6" fill="#fff" />
-                  <circle cx="32" cy="40" r="2.5" fill="#000" />
-                  <circle cx="48" cy="40" r="2.5" fill="#000" />
-                  <path d="M 28 54 L 31 50 L 34 54 L 37 50 L 40 54 L 43 50 L 46 54 L 49 50 L 52 54" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </div>
-              <div class="game-meta">
-                <h3 class="game-name">Whack-a-Virus</h3>
-                <p class="game-tagline">Smash viruses before they spread</p>
-              </div>
-              <a href="/whack-a-virus" class="game-play-btn">
-                <span>PLAY</span>
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M 5 12 L 19 12 M 13 6 L 19 12 L 13 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </a>
-            </div>
-            <div class="game-leaderboard" data-game-leaderboard="whack-a-virus">
-              <p class="leaderboard-eyebrow">TOP 3</p>
-              <ol class="leaderboard-list" id="lb-list-whack-a-virus"></ol>
-              <p class="leaderboard-empty" id="lb-empty-whack-a-virus">No scores yet. Be the first.</p>
-            </div>
-          </article>
+                  <div class="game-meta">
+                    <h3 class="game-name">{game.name}</h3>
+                    <p class="game-tagline">{game.tagline}</p>
+                  </div>
 
-          <article class="game-block game-block--locked" data-game-slug="system-response">
-            <div class="game-card">
-              <div class="game-icon" aria-hidden="true">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="40" cy="40" r="32" fill="#10b981" stroke="#047857" stroke-width="2" />
-                  <circle cx="40" cy="40" r="22" fill="#059669" />
-                  <path d="M 40 22 L 40 40 L 52 48" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
-                  <circle cx="40" cy="40" r="2.5" fill="#fff" />
-                </svg>
-              </div>
-              <div class="game-meta">
-                <h3 class="game-name">System Response</h3>
-                <p class="game-tagline">Click the moment the screen turns green</p>
-              </div>
-              <div class="game-play-btn game-play-btn--locked">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" />
-                  <path d="M 8 11 V 7 a 4 4 0 0 1 8 0 V 11" fill="none" stroke="currentColor" stroke-width="2" />
-                </svg>
-                <span>COMING SOON</span>
-              </div>
-            </div>
-            <div class="game-leaderboard" data-game-leaderboard="system-response">
-              <p class="leaderboard-eyebrow">TOP 3</p>
-              <ol class="leaderboard-list" id="lb-list-system-response"></ol>
-              <p class="leaderboard-empty" id="lb-empty-system-response">No scores yet. Be the first.</p>
-            </div>
-          </article>
+                  {game.available ? (
+                    <a href={`/${game.slug}`} class="game-play-btn">
+                      <span>PLAY</span>
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M 5 12 L 19 12 M 13 6 L 19 12 L 13 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </a>
+                  ) : (
+                    <div class="game-play-btn game-play-btn--locked">
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" />
+                        <path d="M 8 11 V 7 a 4 4 0 0 1 8 0 V 11" fill="none" stroke="currentColor" stroke-width="2" />
+                      </svg>
+                      <span>COMING SOON</span>
+                    </div>
+                  )}
+                </div>
 
-          <article class="game-block game-block--locked" data-game-slug="component-match">
-            <div class="game-card">
-              <div class="game-icon" aria-hidden="true">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="8" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
-                  <rect x="44" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
-                  <rect x="14" y="22" width="16" height="22" rx="1" fill="#1e40af" />
-                  <rect x="50" y="22" width="16" height="22" rx="1" fill="#1e40af" />
-                  <rect x="17" y="26" width="10" height="3" fill="#fbbf24" />
-                  <rect x="17" y="32" width="10" height="3" fill="#fbbf24" />
-                  <rect x="17" y="38" width="6" height="3" fill="#fbbf24" />
-                  <rect x="53" y="26" width="10" height="3" fill="#fbbf24" />
-                  <rect x="53" y="32" width="10" height="3" fill="#fbbf24" />
-                  <rect x="53" y="38" width="6" height="3" fill="#fbbf24" />
-                  <line x1="36" y1="58" x2="44" y2="58" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
-                  <line x1="36" y1="64" x2="44" y2="64" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
-                </svg>
-              </div>
-              <div class="game-meta">
-                <h3 class="game-name">Component Match</h3>
-                <p class="game-tagline">Pair motherboard parts from memory</p>
-              </div>
-              <div class="game-play-btn game-play-btn--locked">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" />
-                  <path d="M 8 11 V 7 a 4 4 0 0 1 8 0 V 11" fill="none" stroke="currentColor" stroke-width="2" />
-                </svg>
-                <span>COMING SOON</span>
-              </div>
-            </div>
-            <div class="game-leaderboard" data-game-leaderboard="component-match">
-              <p class="leaderboard-eyebrow">TOP 3</p>
-              <ol class="leaderboard-list" id="lb-list-component-match"></ol>
-              <p class="leaderboard-empty" id="lb-empty-component-match">No scores yet. Be the first.</p>
-            </div>
-          </article>
-
-          <article class="game-block game-block--locked" data-game-slug="error-override">
-            <div class="game-card">
-              <div class="game-icon" aria-hidden="true">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="8" y="16" width="64" height="48" rx="3" fill="#0a0e1a" stroke="#1e3a8a" stroke-width="2" />
-                  <rect x="8" y="16" width="64" height="10" rx="3" fill="#1e3a8a" />
-                  <circle cx="14" cy="21" r="1.5" fill="#ef4444" />
-                  <circle cx="20" cy="21" r="1.5" fill="#fbbf24" />
-                  <circle cx="26" cy="21" r="1.5" fill="#10b981" />
-                  <text x="14" y="38" font-family="JetBrains Mono, monospace" font-size="6" font-weight="700" fill="#ef4444">ERROR_</text>
-                  <rect x="14" y="42" width="40" height="2" fill="#fbbf24" />
-                  <rect x="14" y="48" width="50" height="2" fill="#cbd5e1" />
-                  <rect x="14" y="54" width="30" height="2" fill="#cbd5e1" opacity="0.6" />
-                </svg>
-              </div>
-              <div class="game-meta">
-                <h3 class="game-name">Error Override</h3>
-                <p class="game-tagline">Type fake error messages at speed</p>
-              </div>
-              <div class="game-play-btn game-play-btn--locked">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" />
-                  <path d="M 8 11 V 7 a 4 4 0 0 1 8 0 V 11" fill="none" stroke="currentColor" stroke-width="2" />
-                </svg>
-                <span>COMING SOON</span>
-              </div>
-            </div>
-            <div class="game-leaderboard" data-game-leaderboard="error-override">
-              <p class="leaderboard-eyebrow">TOP 3</p>
-              <ol class="leaderboard-list" id="lb-list-error-override"></ol>
-              <p class="leaderboard-empty" id="lb-empty-error-override">No scores yet. Be the first.</p>
-            </div>
-          </article>
-
-          <article class="game-block game-block--locked" data-game-slug="cursor-crawl">
-            <div class="game-card">
-              <div class="game-icon" aria-hidden="true">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M 18 14 L 18 50 L 28 42 L 34 56 L 40 54 L 34 40 L 46 38 Z" fill="#fbbf24" stroke="#92400e" stroke-width="2" stroke-linejoin="round" />
-                  <circle cx="56" cy="50" r="6" fill="#10b981" stroke="#047857" stroke-width="1.5" />
-                  <circle cx="60" cy="62" r="5" fill="#10b981" stroke="#047857" stroke-width="1.5" />
-                  <circle cx="50" cy="64" r="4" fill="#10b981" stroke="#047857" stroke-width="1.5" />
-                  <circle cx="54" cy="48" r="1" fill="#fff" />
-                  <circle cx="58" cy="48" r="1" fill="#fff" />
-                </svg>
-              </div>
-              <div class="game-meta">
-                <h3 class="game-name">Cursor Crawl</h3>
-                <p class="game-tagline">Devour bugs as a growing cursor</p>
-              </div>
-              <div class="game-play-btn game-play-btn--locked">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" />
-                  <path d="M 8 11 V 7 a 4 4 0 0 1 8 0 V 11" fill="none" stroke="currentColor" stroke-width="2" />
-                </svg>
-                <span>COMING SOON</span>
-              </div>
-            </div>
-            <div class="game-leaderboard" data-game-leaderboard="cursor-crawl">
-              <p class="leaderboard-eyebrow">TOP 3</p>
-              <ol class="leaderboard-list" id="lb-list-cursor-crawl"></ol>
-              <p class="leaderboard-empty" id="lb-empty-cursor-crawl">No scores yet. Be the first.</p>
-            </div>
-          </article>
-
-          <article class="game-block game-block--locked" data-game-slug="usb-defender">
-            <div class="game-card">
-              <div class="game-icon" aria-hidden="true">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="14" y="34" width="36" height="14" rx="2" fill="#94a3b8" stroke="#475569" stroke-width="2" />
-                  <rect x="50" y="36" width="14" height="10" rx="1" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5" />
-                  <rect x="18" y="38" width="6" height="6" fill="#fbbf24" />
-                  <rect x="26" y="38" width="6" height="6" fill="#fbbf24" />
-                  <rect x="34" y="38" width="6" height="6" fill="#fbbf24" />
-                  <rect x="42" y="38" width="6" height="6" fill="#fbbf24" />
-                  <circle cx="20" cy="60" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
-                  <circle cx="60" cy="22" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
-                </svg>
-              </div>
-              <div class="game-meta">
-                <h3 class="game-name">USB Defender</h3>
-                <p class="game-tagline">Bounce bugs back with a USB paddle</p>
-              </div>
-              <div class="game-play-btn game-play-btn--locked">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" />
-                  <path d="M 8 11 V 7 a 4 4 0 0 1 8 0 V 11" fill="none" stroke="currentColor" stroke-width="2" />
-                </svg>
-                <span>COMING SOON</span>
-              </div>
-            </div>
-            <div class="game-leaderboard" data-game-leaderboard="usb-defender">
-              <p class="leaderboard-eyebrow">TOP 3</p>
-              <ol class="leaderboard-list" id="lb-list-usb-defender"></ol>
-              <p class="leaderboard-empty" id="lb-empty-usb-defender">No scores yet. Be the first.</p>
-            </div>
-          </article>
-
-          <article class="game-block game-block--locked" data-game-slug="bug-smasher">
-            <div class="game-card">
-              <div class="game-icon" aria-hidden="true">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="6" y="14" width="14" height="6" rx="1" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
-                  <rect x="22" y="14" width="14" height="6" rx="1" fill="#a855f7" stroke="#581c87" stroke-width="1.5" />
-                  <rect x="38" y="14" width="14" height="6" rx="1" fill="#f59e0b" stroke="#92400e" stroke-width="1.5" />
-                  <rect x="54" y="14" width="14" height="6" rx="1" fill="#10b981" stroke="#047857" stroke-width="1.5" />
-                  <rect x="6" y="22" width="14" height="6" rx="1" fill="#a855f7" stroke="#581c87" stroke-width="1.5" />
-                  <rect x="22" y="22" width="14" height="6" rx="1" fill="#f59e0b" stroke="#92400e" stroke-width="1.5" />
-                  <rect x="54" y="22" width="14" height="6" rx="1" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
-                  <circle cx="40" cy="50" r="6" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
-                  <rect x="22" y="62" width="36" height="6" rx="2" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
-                </svg>
-              </div>
-              <div class="game-meta">
-                <h3 class="game-name">Bug Smasher</h3>
-                <p class="game-tagline">Break through walls of bugs</p>
-              </div>
-              <div class="game-play-btn game-play-btn--locked">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" />
-                  <path d="M 8 11 V 7 a 4 4 0 0 1 8 0 V 11" fill="none" stroke="currentColor" stroke-width="2" />
-                </svg>
-                <span>COMING SOON</span>
-              </div>
-            </div>
-            <div class="game-leaderboard" data-game-leaderboard="bug-smasher">
-              <p class="leaderboard-eyebrow">TOP 3</p>
-              <ol class="leaderboard-list" id="lb-list-bug-smasher"></ol>
-              <p class="leaderboard-empty" id="lb-empty-bug-smasher">No scores yet. Be the first.</p>
-            </div>
-          </article>
-
+                <div class="game-leaderboard">
+                  <p class="leaderboard-eyebrow">TOP 3</p>
+                  {top3.length > 0 ? (
+                    <ol class="leaderboard-list">
+                      {top3.map((entry, i) => (
+                        <li class={`leaderboard-row leaderboard-row--${i + 1}`}>
+                          <span class="rank-num">{i + 1}</span>
+                          <span class="rank-initials">{entry.initials}</span>
+                          <span class="rank-score">{entry.score}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p class="leaderboard-empty">No scores yet. Be the first.</p>
+                  )}
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -513,113 +507,50 @@
 
     <script>
       // @ts-nocheck
-
-      // === Config ===
-      const GAME_SLUGS = ['whack-a-virus', 'system-response', 'component-match', 'error-override', 'cursor-crawl', 'usb-defender', 'bug-smasher'];
-
-      // === DOM refs ===
-      const championCard = document.getElementById('champion-card');
-      const championEmpty = document.getElementById('champion-empty');
-      const championActive = document.getElementById('champion-active');
-      const champInitialsText = document.getElementById('champ-initials-text');
-      const champPoints = document.getElementById('champ-points');
-      const champGames = document.getElementById('champ-games');
-
-      // === Helpers ===
       function escapeHtml(str) {
         return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       }
 
-      // === Fetch one leaderboard ===
-      async function fetchLeaderboard(slug) {
-        try {
-          const res = await fetch(`/api/scores/${slug}`);
-          const data = await res.json();
-          return data.scores || [];
-        } catch {
-          return [];
-        }
-      }
+      async function refreshLeaderboards() {
+        const blocks = document.querySelectorAll('.game-block[data-game-slug]');
+        await Promise.all(Array.from(blocks).map(async (block) => {
+          const slug = block.getAttribute('data-game-slug');
+          if (!slug) return;
+          try {
+            const res = await fetch(`/api/scores/${slug}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            const scores = (data.scores || []).slice(0, 3);
+            const lb = block.querySelector('.game-leaderboard');
+            if (!lb) return;
 
-      // === Render top 3 for a game block ===
-      function renderTop3(slug, scores) {
-        const list = document.getElementById(`lb-list-${slug}`);
-        const empty = document.getElementById(`lb-empty-${slug}`);
-        if (!list || !empty) return;
-
-        list.innerHTML = '';
-
-        if (scores.length === 0) {
-          empty.style.display = '';
-          return;
-        }
-
-        empty.style.display = 'none';
-
-        scores.slice(0, 3).forEach((entry, idx) => {
-          const li = document.createElement('li');
-          const rank = idx + 1;
-          li.className = `leaderboard-row leaderboard-row--${rank}`;
-          li.innerHTML = `
-            <span class="rank-num">${rank}</span>
-            <span class="rank-initials">${escapeHtml(entry.initials)}</span>
-            <span class="rank-score">${entry.score}</span>
-          `;
-          list.appendChild(li);
-        });
-      }
-
-      // === Compute champion from all scores ===
-      function computeChampion(allScores) {
-        const points = {};
-        allScores.forEach(scores => {
-          scores.forEach((entry, idx) => {
-            const rank = idx + 1;
-            if (!points[entry.initials]) {
-              points[entry.initials] = { points: 0, gamesPlayed: 0 };
+            if (scores.length === 0) {
+              lb.innerHTML = `
+                <p class="leaderboard-eyebrow">TOP 3</p>
+                <p class="leaderboard-empty">No scores yet. Be the first.</p>
+              `;
+            } else {
+              const rows = scores.map((entry, i) => `
+                <li class="leaderboard-row leaderboard-row--${i + 1}">
+                  <span class="rank-num">${i + 1}</span>
+                  <span class="rank-initials">${escapeHtml(entry.initials)}</span>
+                  <span class="rank-score">${entry.score}</span>
+                </li>
+              `).join('');
+              lb.innerHTML = `
+                <p class="leaderboard-eyebrow">TOP 3</p>
+                <ol class="leaderboard-list">${rows}</ol>
+              `;
             }
-            points[entry.initials].points += rank;
-            points[entry.initials].gamesPlayed += 1;
-          });
-        });
-
-        const eligible = Object.keys(points)
-          .filter(initials => points[initials].gamesPlayed >= 2)
-          .map(initials => ({
-            initials,
-            points: points[initials].points,
-            gamesPlayed: points[initials].gamesPlayed
-          }));
-
-        if (eligible.length === 0) return null;
-        eligible.sort((a, b) => a.points - b.points);
-        return eligible[0];
+          } catch {}
+        }));
       }
 
-      // === Show champion ===
-      function showChampion(champ) {
-        if (!champ) return;
-        if (champInitialsText) champInitialsText.textContent = champ.initials;
-        if (champPoints) champPoints.textContent = String(champ.points);
-        if (champGames) champGames.textContent = String(champ.gamesPlayed);
-        if (championEmpty) championEmpty.style.display = 'none';
-        if (championActive) championActive.style.display = '';
-        if (championCard) {
-          championCard.classList.remove('champion-card--empty');
-          championCard.classList.add('champion-card--active');
-        }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', refreshLeaderboards);
+      } else {
+        refreshLeaderboards();
       }
-
-      // === Init ===
-      async function loadAllLeaderboards() {
-        const allScores = await Promise.all(GAME_SLUGS.map(fetchLeaderboard));
-        GAME_SLUGS.forEach((slug, idx) => {
-          renderTop3(slug, allScores[idx]);
-        });
-        showChampion(computeChampion(allScores));
-      }
-
-      loadAllLeaderboards();
     </script>
 
     <style>
@@ -720,7 +651,9 @@
       }
 
       @media (min-width: 1100px) {
-        .hero-inner { gap: 4rem; }
+        .hero-inner {
+          gap: 4rem;
+        }
       }
 
       .hero-content {
@@ -730,7 +663,9 @@
       }
 
       @media (min-width: 768px) {
-        .hero-content { align-items: flex-start; }
+        .hero-content {
+          align-items: flex-start;
+        }
       }
 
       .hero-eyebrow {
@@ -754,11 +689,18 @@
       }
 
       @media (min-width: 768px) {
-        .cabinet-wrap { width: 240px; height: 340px; margin: 0; }
+        .cabinet-wrap {
+          width: 240px;
+          height: 340px;
+          margin: 0;
+        }
       }
 
       @media (min-width: 1100px) {
-        .cabinet-wrap { width: 280px; height: 400px; }
+        .cabinet-wrap {
+          width: 280px;
+          height: 400px;
+        }
       }
 
       .cabinet-aura {
@@ -779,7 +721,9 @@
         animation: cabinet-float 4s ease-in-out infinite;
       }
 
-      .screen-text { animation: blink 1.4s steps(2) infinite; }
+      .screen-text {
+        animation: blink 1.4s steps(2) infinite;
+      }
 
       @keyframes aura-pulse {
         0%, 100% { transform: scale(1); opacity: 0.7; }
@@ -873,21 +817,15 @@
         border: 1px solid rgba(251, 191, 36, 0.5);
         border-radius: 1.25rem;
         padding: 2.5rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
         overflow: hidden;
         box-shadow:
           0 0 0 1px rgba(251, 191, 36, 0.15),
           0 0 60px rgba(251, 191, 36, 0.2),
           0 25px 60px rgba(0, 0, 0, 0.4);
         animation: champ-card-glow 4s ease-in-out infinite;
-      }
-
-      #champion-empty,
-      #champion-active {
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-        position: relative;
-        z-index: 1;
       }
 
       .champion-card--active {
@@ -1079,7 +1017,9 @@
         line-height: 1.05;
       }
 
-      .champ-empty-line { display: block; }
+      .champ-empty-line {
+        display: block;
+      }
 
       .champ-empty-highlight {
         background: linear-gradient(135deg, #fbbf24, #fde68a, #fbbf24);
@@ -1104,7 +1044,9 @@
         font-weight: 700;
       }
 
-      .champ-stats--empty strong { color: #fff; }
+      .champ-stats--empty strong {
+        color: #fff;
+      }
 
       .champ-note {
         font-family: 'JetBrains Mono', monospace;
@@ -1168,8 +1110,13 @@
         box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
       }
 
-      .game-block--locked { opacity: 0.65; }
-      .game-block--locked:hover { transform: none; }
+      .game-block--locked {
+        opacity: 0.65;
+      }
+
+      .game-block--locked:hover {
+        transform: none;
+      }
 
       .game-card {
         display: flex;
@@ -1335,7 +1282,9 @@
       }
 
       @media (min-width: 1024px) {
-        .games-grid { gap: 1.75rem; }
+        .games-grid {
+          gap: 1.75rem;
+        }
       }
 
       .how-section {
@@ -1438,14 +1387,15 @@
         outline: none;
       }
 
-      .footer-sep { color: #475569; }
+      .footer-sep {
+        color: #475569;
+      }
 
       @media (max-width: 600px) {
         .hero { padding: 3rem 1.25rem 2rem; }
         .cabinet-wrap { width: 160px; height: 230px; }
-        .champion-card { padding: 1.75rem 1.25rem; text-align: center; }
-        #champion-empty,
-        #champion-active { flex-direction: column; text-align: center; gap: 1.25rem; }
+        .champion-card { padding: 1.75rem 1.25rem; flex-direction: column; text-align: center; }
+        .champ-empty { flex-direction: column; text-align: center; gap: 1.25rem; }
         .game-block { padding: 1.25rem; }
         .game-card { gap: 1rem; }
         .game-play-btn { width: 100%; justify-content: center; }
