@@ -11,7 +11,7 @@ const GAMES = [
     slug: 'system-response',
     name: 'System Response',
     tagline: 'Click the moment the screen turns green',
-    available: false,
+    available: true,
     iconKey: 'response',
   },
   {
@@ -144,15 +144,16 @@ if (eligible.length > 0) {
   <body>
     <main class="page">
 
-      <!-- Desktop sparkles (hidden on mobile via CSS) -->
-      <div class="sparkles" aria-hidden="true">
+      <!-- Desktop: animated rising sparkles -->
+      <div class="sparkles desktop-only" aria-hidden="true">
         {Array.from({ length: 24 }).map((_, i) => (
           <span class={`spark sp-${i + 1}`}></span>
         ))}
       </div>
 
-      <!-- Mobile static decorations (hidden on desktop via CSS) -->
-      <div class="mobile-decorations" aria-hidden="true">
+      <!-- Mobile: static SVG arcade decorations (no animation) -->
+      <div class="mobile-decorations mobile-only" aria-hidden="true">
+        <!-- Scattered pixel-style shapes -->
         <svg class="mdec mdec-1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <rect x="9" y="2" width="6" height="6" fill="#fbbf24"/>
           <rect x="2" y="9" width="6" height="6" fill="#fbbf24"/>
@@ -591,7 +592,17 @@ if (eligible.length > 0) {
 
       .page { position: relative; min-height: 100vh; }
 
-      /* DESKTOP: rising sparkles visible */
+      /* desktop / mobile visibility helpers */
+      .desktop-only { display: block; }
+      .mobile-only { display: none; }
+      @media (max-width: 768px) {
+        .desktop-only { display: none; }
+        .mobile-only { display: block; }
+      }
+
+      /* ============================================ */
+      /* DESKTOP: animated rising sparkles            */
+      /* ============================================ */
       .sparkles {
         position: fixed;
         inset: 0;
@@ -643,11 +654,36 @@ if (eligible.length > 0) {
         100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
       }
 
-      /* MOBILE: static decorations hidden by default */
+      /* ============================================ */
+      /* MOBILE: static SVG arcade decorations         */
+      /* ============================================ */
       .mobile-decorations {
-        display: none;
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
       }
 
+      .mdec {
+        position: absolute;
+        opacity: 0.12;
+      }
+
+      .mdec-1  { top: 8%;  left: 6%;   width: 18px; height: 18px; }
+      .mdec-2  { top: 14%; right: 8%;  width: 14px; height: 14px; opacity: 0.15; }
+      .mdec-3  { top: 28%; left: 4%;   width: 16px; height: 16px; opacity: 0.10; }
+      .mdec-4  { top: 38%; right: 6%;  width: 22px; height: 22px; opacity: 0.10; }
+      .mdec-5  { top: 50%; left: 7%;   width: 18px; height: 18px; opacity: 0.13; }
+      .mdec-6  { top: 60%; right: 5%;  width: 14px; height: 14px; opacity: 0.15; }
+      .mdec-7  { top: 72%; left: 5%;   width: 18px; height: 18px; opacity: 0.10; }
+      .mdec-8  { top: 80%; right: 7%;  width: 16px; height: 16px; opacity: 0.13; }
+      .mdec-9  { top: 90%; left: 8%;   width: 12px; height: 12px; opacity: 0.15; }
+      .mdec-10 { top: 96%; right: 9%;  width: 14px; height: 14px; opacity: 0.12; }
+
+      /* ============================================ */
+      /* HERO                                          */
+      /* ============================================ */
       .hero {
         position: relative;
         z-index: 1;
@@ -810,6 +846,9 @@ if (eligible.length > 0) {
         50%      { box-shadow: 0 0 0 12px rgba(251,191,36,0), 0 14px 45px rgba(251,191,36,0.5); }
       }
 
+      /* ============================================ */
+      /* CHAMPION                                      */
+      /* ============================================ */
       .champion-section {
         position: relative;
         z-index: 1;
@@ -1050,6 +1089,9 @@ if (eligible.length > 0) {
         line-height: 1.5;
       }
 
+      /* ============================================ */
+      /* GAMES                                         */
+      /* ============================================ */
       .games-section {
         position: relative;
         z-index: 1;
@@ -1260,6 +1302,9 @@ if (eligible.length > 0) {
         .games-grid { gap: 1.75rem; }
       }
 
+      /* ============================================ */
+      /* HOW                                           */
+      /* ============================================ */
       .how-section {
         position: relative;
         z-index: 1;
@@ -1320,6 +1365,9 @@ if (eligible.length > 0) {
         .how-grid { grid-template-columns: repeat(3, 1fr); }
       }
 
+      /* ============================================ */
+      /* FOOTER                                        */
+      /* ============================================ */
       .footer {
         position: relative;
         z-index: 1;
@@ -1363,38 +1411,10 @@ if (eligible.length > 0) {
       .footer-sep { color: #475569; }
 
       /* ============================================ */
-      /* MOBILE PERFORMANCE OVERRIDES (768px and down) */
+      /* MOBILE PERFORMANCE OVERRIDES (max-width: 768) */
       /* ============================================ */
       @media (max-width: 768px) {
-        /* Hide desktop sparkles, show mobile static decorations */
-        .sparkles { display: none; }
-
-        .mobile-decorations {
-          display: block;
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: 0;
-          overflow: hidden;
-        }
-
-        .mdec {
-          position: absolute;
-          opacity: 0.12;
-        }
-
-        .mdec-1  { top: 8%;  left: 6%;   width: 18px; height: 18px; }
-        .mdec-2  { top: 14%; right: 8%;  width: 14px; height: 14px; opacity: 0.15; }
-        .mdec-3  { top: 28%; left: 4%;   width: 16px; height: 16px; opacity: 0.10; }
-        .mdec-4  { top: 38%; right: 6%;  width: 22px; height: 22px; opacity: 0.10; }
-        .mdec-5  { top: 50%; left: 7%;   width: 18px; height: 18px; opacity: 0.13; }
-        .mdec-6  { top: 60%; right: 5%;  width: 14px; height: 14px; opacity: 0.15; }
-        .mdec-7  { top: 72%; left: 5%;   width: 18px; height: 18px; opacity: 0.10; }
-        .mdec-8  { top: 80%; right: 7%;  width: 16px; height: 16px; opacity: 0.13; }
-        .mdec-9  { top: 90%; left: 8%;   width: 12px; height: 12px; opacity: 0.15; }
-        .mdec-10 { top: 96%; right: 9%;  width: 14px; height: 14px; opacity: 0.12; }
-
-        /* Kill backdrop-filter — replace with solid backgrounds */
+        /* Kill backdrop-filter everywhere - replace with solid bg */
         .champion-card {
           backdrop-filter: none;
           -webkit-backdrop-filter: none;
@@ -1412,30 +1432,32 @@ if (eligible.length > 0) {
           background: rgba(15, 23, 42, 0.7);
         }
 
-        /* Kill cabinet effects */
-        .cabinet-aura { display: none; }
+        /* Disable expensive cabinet effects */
+        .cabinet-aura {
+          display: none;
+        }
         .cabinet {
           filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
           animation: none;
         }
         .screen-text { animation: none; }
 
-        /* Kill champion ray spinning + trophy effects */
+        /* Disable champion ray spinning */
         .champ-rays { display: none; }
         .champ-trophy { animation: none; }
         .champ-trophy-glow { display: none; }
         .champ-trophy-shimmer { display: none; }
         .champ-trophy--empty { animation: none; }
 
-        /* CTA pulse off (animation killer) */
+        /* CTA pulse off, hover transform off (touch device) */
         .hero-cta { animation: none; box-shadow: 0 6px 20px rgba(251, 191, 36, 0.3); }
 
-        /* Touch device hover effects off */
+        /* Game block hover transform off (touch) */
         .game-block:hover { transform: none; box-shadow: none; }
       }
 
       /* ============================================ */
-      /* MOBILE LAYOUT (max-width: 600px)              */
+      /* MOBILE LAYOUT (max-width: 600)                */
       /* ============================================ */
       @media (max-width: 600px) {
         .hero { padding: 3rem 1.25rem 2rem; }
