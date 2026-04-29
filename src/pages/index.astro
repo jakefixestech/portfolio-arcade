@@ -445,8 +445,7 @@ const GAMES = [
       </footer>
     </main>
 
-    <script>
-      // @ts-nocheck
+    <script is:inline>
       function escapeHtml(str) {
         return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       }
