@@ -1,17 +1,1448 @@
 ---
 
+
+const GAMES = [
+  {
+    slug: 'whack-a-virus',
+    name: 'Whack-a-Virus',
+    tagline: 'Smash viruses before they spread',
+    available: true,
+    iconKey: 'virus',
+  },
+  {
+    slug: 'system-response',
+    name: 'System Response',
+    tagline: 'Click the moment the screen turns green',
+    available: false,
+    iconKey: 'response',
+  },
+  {
+    slug: 'component-match',
+    name: 'Component Match',
+    tagline: 'Pair motherboard parts from memory',
+    available: false,
+    iconKey: 'match',
+  },
+  {
+    slug: 'error-override',
+    name: 'Error Override',
+    tagline: 'Type fake error messages at speed',
+    available: false,
+    iconKey: 'error',
+  },
+  {
+    slug: 'cursor-crawl',
+    name: 'Cursor Crawl',
+    tagline: 'Devour bugs as a growing cursor',
+    available: false,
+    iconKey: 'cursor',
+  },
+  {
+    slug: 'usb-defender',
+    name: 'USB Defender',
+    tagline: 'Bounce bugs back with a USB paddle',
+    available: false,
+    iconKey: 'usb',
+  },
+  {
+    slug: 'bug-smasher',
+    name: 'Bug Smasher',
+    tagline: 'Break through walls of bugs',
+    available: false,
+    iconKey: 'smasher',
+  },
+];
+
+// Fetch all leaderboards in parallel at build/request time.
+// This runs server-side so the user gets fully-rendered HTML (great for Lighthouse).
+type ScoreEntry = { initials: string; score: number; timestamp: string };
+
+async function fetchLeaderboard(slug: string, baseUrl: string): Promise<ScoreEntry[]> {
+  try {
+    const res = await fetch(`${baseUrl}/api/scores/${slug}`);
+    if (!res.ok) return [];
+    const data = await res.json() as { scores?: ScoreEntry[] };
+    return data.scores || [];
+  } catch {
+    return [];
+  }
+}
+
+const baseUrl = new URL(Astro.request.url).origin;
+const leaderboards: ScoreEntry[][] = await Promise.all(
+  GAMES.map(g => fetchLeaderboard(g.slug, baseUrl))
+);
+
+// Compute champion across all games (lowest total rank-points across games where they've played).
+// Aggregation: 1st place = 1 point, 2nd = 2 points... lower is better.
+// Only count players who appear on at least 2 leaderboards (proves they actually played the arcade).
+const playerPoints: Record<string, { points: number; gamesPlayed: number }> = {};
+GAMES.forEach((game, gameIdx) => {
+  const scores = leaderboards[gameIdx];
+  scores.forEach((entry: { initials: string; score: number; timestamp: string }, rank: number) => {
+    const points = rank + 1;
+    if (!playerPoints[entry.initials]) {
+      playerPoints[entry.initials] = { points: 0, gamesPlayed: 0 };
+    }
+    playerPoints[entry.initials].points += points;
+    playerPoints[entry.initials].gamesPlayed += 1;
+  });
+});
+
+let champion: { initials: string; points: number; gamesPlayed: number } | null = null;
+const eligible = Object.entries(playerPoints).filter(([_, p]) => p.gamesPlayed >= 2);
+if (eligible.length > 0) {
+  eligible.sort((a, b) => a[1].points - b[1].points);
+  champion = {
+    initials: eligible[0][0],
+    points: eligible[0][1].points,
+    gamesPlayed: eligible[0][1].gamesPlayed,
+  };
+}
 ---
 
+<!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Arcade</title>
-	</head>
-	<body>
-		<h1>Arcade</h1>
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Arcade — Jake Fixes Tech</title>
+    <meta name="description" content="Seven hand-built browser games by Jake Fixes Tech. Compete on the leaderboard with three letters and your best score." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=optional"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=optional"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      />
+    </noscript>
+  </head>
+
+  <body>
+    <main class="page">
+      <!-- ========================================== -->
+      <!-- Rising sparkle particles                   -->
+      <!-- ========================================== -->
+      <div class="sparkles" aria-hidden="true">
+        {Array.from({ length: 24 }).map((_, i) => (
+          <span class={`spark sp-${i + 1}`}></span>
+        ))}
+      </div>
+
+      <!-- ========================================== -->
+      <!-- HERO                                       -->
+      <!-- ========================================== -->
+      <section class="hero">
+        <div class="hero-inner">
+          <div class="cabinet-wrap" aria-hidden="true">
+            <!-- Glow aura behind cabinet -->
+            <div class="cabinet-aura"></div>
+
+            <!-- 80s Arcade Cabinet SVG -->
+            <svg class="cabinet" viewBox="0 0 200 320" xmlns="http://www.w3.org/2000/svg">
+              <!-- Cabinet body shadow -->
+              <path d="M 30 60 L 30 290 L 50 310 L 150 310 L 170 290 L 170 60 L 165 30 L 35 30 Z"
+                    fill="#1e293b" stroke="#0f172a" stroke-width="2" stroke-linejoin="round" />
+
+              <!-- Cabinet body main -->
+              <path d="M 35 60 L 35 285 L 55 305 L 145 305 L 165 285 L 165 60 L 160 35 L 40 35 Z"
+                    fill="#334155" stroke="#0f172a" stroke-width="1.5" stroke-linejoin="round" />
+
+              <!-- Marquee top -->
+              <rect x="40" y="40" width="120" height="32" rx="3" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
+              <rect x="44" y="44" width="112" height="24" rx="2" fill="#fef3c7" />
+              <text x="100" y="61" text-anchor="middle" font-family="Inter Tight, sans-serif" font-weight="900" font-size="11" fill="#92400e">ARCADE</text>
+
+              <!-- Screen bezel -->
+              <rect x="45" y="82" width="110" height="100" rx="4" fill="#0a0e1a" stroke="#0f172a" stroke-width="2" />
+
+              <!-- Screen content (gradient) -->
+              <defs>
+                <linearGradient id="screenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#1e3a8a" />
+                  <stop offset="100%" stop-color="#2563eb" />
+                </linearGradient>
+                <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fbbf24" />
+                  <stop offset="100%" stop-color="#f59e0b" />
+                </linearGradient>
+              </defs>
+              <rect x="50" y="87" width="100" height="90" rx="2" fill="url(#screenGrad)" />
+
+              <!-- Screen scanlines for retro effect -->
+              <g opacity="0.15">
+                <line x1="50" y1="95" x2="150" y2="95" stroke="#fff" stroke-width="0.5" />
+                <line x1="50" y1="105" x2="150" y2="105" stroke="#fff" stroke-width="0.5" />
+                <line x1="50" y1="115" x2="150" y2="115" stroke="#fff" stroke-width="0.5" />
+                <line x1="50" y1="125" x2="150" y2="125" stroke="#fff" stroke-width="0.5" />
+                <line x1="50" y1="135" x2="150" y2="135" stroke="#fff" stroke-width="0.5" />
+                <line x1="50" y1="145" x2="150" y2="145" stroke="#fff" stroke-width="0.5" />
+                <line x1="50" y1="155" x2="150" y2="155" stroke="#fff" stroke-width="0.5" />
+                <line x1="50" y1="165" x2="150" y2="165" stroke="#fff" stroke-width="0.5" />
+              </g>
+
+              <!-- "PRESS START" text on screen -->
+              <text x="100" y="125" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="9" fill="#fbbf24" class="screen-text">PRESS START</text>
+              <text x="100" y="142" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="400" font-size="7" fill="#93c5fd">7 GAMES</text>
+              <text x="100" y="158" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="400" font-size="6" fill="#bfdbfe" opacity="0.7">©2026 JAKE FIXES TECH</text>
+
+              <!-- Control panel base -->
+              <rect x="40" y="195" width="120" height="50" rx="3" fill="#475569" stroke="#0f172a" stroke-width="1.5" />
+              <rect x="42" y="197" width="116" height="3" fill="#64748b" opacity="0.6" />
+
+              <!-- Joystick base -->
+              <ellipse cx="68" cy="220" rx="11" ry="4" fill="#0f172a" />
+              <circle cx="68" cy="218" r="6" fill="#1e293b" stroke="#0f172a" stroke-width="1" />
+              <!-- Joystick shaft -->
+              <rect x="66" y="208" width="4" height="12" fill="#fbbf24" stroke="#92400e" stroke-width="0.8" />
+              <!-- Joystick ball -->
+              <circle cx="68" cy="207" r="5" fill="#ef4444" stroke="#7f1d1d" stroke-width="1" />
+              <circle cx="66" cy="205" r="1.5" fill="#fff" opacity="0.6" />
+
+              <!-- Buttons -->
+              <circle cx="115" cy="220" r="6" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.2" />
+              <circle cx="115" cy="219" r="5" fill="#dc2626" />
+              <circle cx="113" cy="217" r="1.5" fill="#fef2f2" opacity="0.5" />
+
+              <circle cx="135" cy="220" r="6" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.2" />
+              <circle cx="135" cy="219" r="5" fill="#2563eb" />
+              <circle cx="133" cy="217" r="1.5" fill="#dbeafe" opacity="0.5" />
+
+              <!-- Coin slot -->
+              <rect x="92" y="258" width="16" height="20" rx="1.5" fill="#1e293b" stroke="#0f172a" stroke-width="1" />
+              <rect x="96" y="263" width="8" height="2.5" rx="0.5" fill="#0a0e1a" />
+              <text x="100" y="276" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="3.5" fill="#94a3b8">25¢</text>
+
+              <!-- Cabinet base -->
+              <rect x="40" y="285" width="120" height="20" fill="#1e293b" />
+
+              <!-- Side decorative trim -->
+              <line x1="42" y1="80" x2="42" y2="280" stroke="#0f172a" stroke-width="0.8" />
+              <line x1="158" y1="80" x2="158" y2="280" stroke="#0f172a" stroke-width="0.8" />
+            </svg>
+          </div>
+
+          <div class="hero-content">
+            <p class="hero-eyebrow">JAKE FIXES TECH PRESENTS</p>
+            <h1 class="hero-title">THE ARCADE</h1>
+            <p class="hero-subtitle">
+              Seven hand-built games. One leaderboard. Three letters of glory.
+            </p>
+
+            <a href="#games" class="hero-cta">
+              <span>BROWSE GAMES</span>
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M 12 5 L 12 19 M 6 13 L 12 19 L 18 13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- CHAMPION SECTION                           -->
+      <!-- ========================================== -->
+      <section class="champion-section">
+        <div class={`champion-card ${champion ? 'champion-card--active' : 'champion-card--empty'}`}>
+          <!-- Animated decorative rays in background -->
+          <div class="champ-rays" aria-hidden="true">
+            <span class="ray ray-1"></span>
+            <span class="ray ray-2"></span>
+            <span class="ray ray-3"></span>
+            <span class="ray ray-4"></span>
+            <span class="ray ray-5"></span>
+            <span class="ray ray-6"></span>
+          </div>
+
+          {champion ? (
+            <>
+              <div class="champ-trophy" aria-hidden="true">
+                <div class="champ-trophy-glow"></div>
+                <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 18 24 Q 6 24 6 38 Q 6 50 18 50" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" />
+                  <path d="M 62 24 Q 74 24 74 38 Q 74 50 62 50" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" />
+                  <path d="M 16 16 L 64 16 L 60 54 Q 58 60 50 62 L 30 62 Q 22 60 20 54 Z" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" stroke-linejoin="round" />
+                  <path d="M 22 20 L 28 20 L 26 52 Q 25 56 23 58 L 22 58 Z" fill="#fde68a" opacity="0.6" />
+                  <rect x="14" y="13" width="52" height="6" rx="1" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
+                  <path d="M 40 28 L 43 36 L 51 37 L 45 42 L 47 50 L 40 46 L 33 50 L 35 42 L 29 37 L 37 36 Z" fill="#fff" />
+                  <rect x="34" y="62" width="12" height="10" fill="#d97706" stroke="#92400e" stroke-width="1.5" />
+                  <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#d97706" stroke="#92400e" stroke-width="1.5" stroke-linejoin="round" />
+                </svg>
+              </div>
+
+              <div class="champ-content">
+                <div class="champ-badge">
+                  <span class="champ-badge-dot"></span>
+                  <span>REIGNING CHAMPION</span>
+                </div>
+                <div class="champ-initials">{champion.initials}</div>
+                <p class="champ-stats">
+                  <strong>{champion.points}</strong> rank points across <strong>{champion.gamesPlayed}</strong> games
+                </p>
+                <p class="champ-note">
+                  The fewer points, the better. Top this player by ranking high in more games.
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div class="champ-trophy champ-trophy--empty" aria-hidden="true">
+                <div class="champ-trophy-shimmer"></div>
+                <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 18 24 Q 6 24 6 38 Q 6 50 18 50" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
+                  <path d="M 62 24 Q 74 24 74 38 Q 74 50 62 50" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
+                  <path d="M 16 16 L 64 16 L 60 54 Q 58 60 50 62 L 30 62 Q 22 60 20 54 Z" fill="#475569" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
+                  <path d="M 22 20 L 28 20 L 26 52 Q 25 56 23 58 L 22 58 Z" fill="#64748b" opacity="0.5" />
+                  <rect x="14" y="13" width="52" height="6" rx="1" fill="#64748b" stroke="#1e293b" stroke-width="1.5" />
+                  <rect x="34" y="62" width="12" height="10" fill="#334155" stroke="#1e293b" stroke-width="1.5" />
+                  <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#334155" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
+
+                  <!-- Question mark on the trophy face -->
+                  <text x="40" y="48" text-anchor="middle" font-family="Inter Tight, sans-serif" font-weight="900" font-size="32" fill="#94a3b8">?</text>
+                </svg>
+              </div>
+
+              <div class="champ-content">
+                <div class="champ-badge champ-badge--empty">
+                  <span>THRONE IS OPEN</span>
+                </div>
+                <h2 class="champ-empty-title">
+                  <span class="champ-empty-line">Could be</span>
+                  <span class="champ-empty-line champ-empty-highlight">YOU.</span>
+                </h2>
+                <p class="champ-stats champ-stats--empty">
+                  Rank in at least <strong>2 games</strong> to claim the throne.
+                </p>
+                <p class="champ-note">
+                  Every game you play matters. Lower total rank-points wins.
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- GAMES SECTION                              -->
+      <!-- ========================================== -->
+      <section id="games" class="games-section">
+        <div class="games-header">
+          <p class="section-eyebrow">GAMES</p>
+          <h2 class="section-title">Pick your game.</h2>
+        </div>
+
+        <div class="games-grid">
+          {GAMES.map((game, idx) => {
+            const scores = leaderboards[idx];
+            const top3 = scores.slice(0, 3);
+            return (
+              <article class={`game-block ${game.available ? '' : 'game-block--locked'}`}>
+                <div class="game-card">
+                  <div class="game-icon" aria-hidden="true">
+                    {game.iconKey === 'virus' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="40" cy="44" rx="22" ry="26" fill="#ef4444" />
+                        <ellipse cx="40" cy="40" rx="20" ry="22" fill="#dc2626" />
+                        <line x1="40" y1="14" x2="40" y2="22" stroke="#dc2626" stroke-width="3.5" stroke-linecap="round" />
+                        <circle cx="40" cy="11" r="2.5" fill="#dc2626" />
+                        <line x1="6" y1="22" x2="20" y2="32" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+                        <circle cx="6" cy="22" r="2" fill="#dc2626" />
+                        <line x1="74" y1="22" x2="60" y2="32" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+                        <circle cx="74" cy="22" r="2" fill="#dc2626" />
+                        <line x1="2" y1="44" x2="18" y2="44" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+                        <circle cx="2" cy="44" r="2" fill="#dc2626" />
+                        <line x1="78" y1="44" x2="62" y2="44" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+                        <circle cx="78" cy="44" r="2" fill="#dc2626" />
+                        <ellipse cx="32" cy="38" rx="5" ry="6" fill="#fff" />
+                        <ellipse cx="48" cy="38" rx="5" ry="6" fill="#fff" />
+                        <circle cx="32" cy="40" r="2.5" fill="#000" />
+                        <circle cx="48" cy="40" r="2.5" fill="#000" />
+                        <path d="M 28 54 L 31 50 L 34 54 L 37 50 L 40 54 L 43 50 L 46 54 L 49 50 L 52 54" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'response' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="40" cy="40" r="32" fill="#10b981" stroke="#047857" stroke-width="2" />
+                        <circle cx="40" cy="40" r="22" fill="#059669" />
+                        <path d="M 40 22 L 40 40 L 52 48" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <circle cx="40" cy="40" r="2.5" fill="#fff" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'match' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="8" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
+                        <rect x="44" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
+                        <rect x="14" y="22" width="16" height="22" rx="1" fill="#1e40af" />
+                        <rect x="50" y="22" width="16" height="22" rx="1" fill="#1e40af" />
+                        <rect x="17" y="26" width="10" height="3" fill="#fbbf24" />
+                        <rect x="17" y="32" width="10" height="3" fill="#fbbf24" />
+                        <rect x="17" y="38" width="6" height="3" fill="#fbbf24" />
+                        <rect x="53" y="26" width="10" height="3" fill="#fbbf24" />
+                        <rect x="53" y="32" width="10" height="3" fill="#fbbf24" />
+                        <rect x="53" y="38" width="6" height="3" fill="#fbbf24" />
+                        <line x1="36" y1="58" x2="44" y2="58" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
+                        <line x1="36" y1="64" x2="44" y2="64" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'error' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="8" y="16" width="64" height="48" rx="3" fill="#0a0e1a" stroke="#1e3a8a" stroke-width="2" />
+                        <rect x="8" y="16" width="64" height="10" rx="3" fill="#1e3a8a" />
+                        <circle cx="14" cy="21" r="1.5" fill="#ef4444" />
+                        <circle cx="20" cy="21" r="1.5" fill="#fbbf24" />
+                        <circle cx="26" cy="21" r="1.5" fill="#10b981" />
+                        <text x="14" y="38" font-family="JetBrains Mono, monospace" font-size="6" font-weight="700" fill="#ef4444">ERROR_</text>
+                        <rect x="14" y="42" width="40" height="2" fill="#fbbf24" />
+                        <rect x="14" y="48" width="50" height="2" fill="#cbd5e1" />
+                        <rect x="14" y="54" width="30" height="2" fill="#cbd5e1" opacity="0.6" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'cursor' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 18 14 L 18 50 L 28 42 L 34 56 L 40 54 L 34 40 L 46 38 Z" fill="#fbbf24" stroke="#92400e" stroke-width="2" stroke-linejoin="round" />
+                        <circle cx="56" cy="50" r="6" fill="#10b981" stroke="#047857" stroke-width="1.5" />
+                        <circle cx="60" cy="62" r="5" fill="#10b981" stroke="#047857" stroke-width="1.5" />
+                        <circle cx="50" cy="64" r="4" fill="#10b981" stroke="#047857" stroke-width="1.5" />
+                        <circle cx="54" cy="48" r="1" fill="#fff" />
+                        <circle cx="58" cy="48" r="1" fill="#fff" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'usb' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="14" y="34" width="36" height="14" rx="2" fill="#94a3b8" stroke="#475569" stroke-width="2" />
+                        <rect x="50" y="36" width="14" height="10" rx="1" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5" />
+                        <rect x="18" y="38" width="6" height="6" fill="#fbbf24" />
+                        <rect x="26" y="38" width="6" height="6" fill="#fbbf24" />
+                        <rect x="34" y="38" width="6" height="6" fill="#fbbf24" />
+                        <rect x="42" y="38" width="6" height="6" fill="#fbbf24" />
+                        <circle cx="20" cy="60" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
+                        <circle cx="60" cy="22" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
+                      </svg>
+                    )}
+                    {game.iconKey === 'smasher' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="6" y="14" width="14" height="6" rx="1" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
+                        <rect x="22" y="14" width="14" height="6" rx="1" fill="#a855f7" stroke="#581c87" stroke-width="1.5" />
+                        <rect x="38" y="14" width="14" height="6" rx="1" fill="#f59e0b" stroke="#92400e" stroke-width="1.5" />
+                        <rect x="54" y="14" width="14" height="6" rx="1" fill="#10b981" stroke="#047857" stroke-width="1.5" />
+                        <rect x="6" y="22" width="14" height="6" rx="1" fill="#a855f7" stroke="#581c87" stroke-width="1.5" />
+                        <rect x="22" y="22" width="14" height="6" rx="1" fill="#f59e0b" stroke="#92400e" stroke-width="1.5" />
+                        <rect x="54" y="22" width="14" height="6" rx="1" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
+                        <circle cx="40" cy="50" r="6" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
+                        <rect x="22" y="62" width="36" height="6" rx="2" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
+                      </svg>
+                    )}
+                  </div>
+
+                  <div class="game-meta">
+                    <h3 class="game-name">{game.name}</h3>
+                    <p class="game-tagline">{game.tagline}</p>
+                  </div>
+
+                  {game.available ? (
+                    <a href={`/${game.slug}`} class="game-play-btn">
+                      <span>PLAY</span>
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M 5 12 L 19 12 M 13 6 L 19 12 L 13 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </a>
+                  ) : (
+                    <div class="game-play-btn game-play-btn--locked">
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" />
+                        <path d="M 8 11 V 7 a 4 4 0 0 1 8 0 V 11" fill="none" stroke="currentColor" stroke-width="2" />
+                      </svg>
+                      <span>COMING SOON</span>
+                    </div>
+                  )}
+                </div>
+
+                <div class="game-leaderboard">
+                  <p class="leaderboard-eyebrow">TOP 3</p>
+                  {top3.length > 0 ? (
+                    <ol class="leaderboard-list">
+                      {top3.map((entry, i) => (
+                        <li class={`leaderboard-row leaderboard-row--${i + 1}`}>
+                          <span class="rank-num">{i + 1}</span>
+                          <span class="rank-initials">{entry.initials}</span>
+                          <span class="rank-score">{entry.score}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p class="leaderboard-empty">No scores yet. Be the first.</p>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- HOW IT WORKS                               -->
+      <!-- ========================================== -->
+      <section class="how-section">
+        <div class="how-grid">
+          <div class="how-step">
+            <div class="how-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="10" width="24" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2" />
+                <circle cx="11" cy="17" r="2" fill="currentColor" />
+                <circle cx="21" cy="17" r="2" fill="currentColor" />
+                <line x1="16" y1="6" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </div>
+            <p class="how-step-num">01</p>
+            <h3 class="how-step-title">Pick a game</h3>
+            <p class="how-step-text">Seven games, all built by hand. Find the one that suits you.</p>
+          </div>
+          <div class="how-step">
+            <div class="how-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 6 10 L 26 10 L 23 22 Q 22 26 18 26 L 14 26 Q 10 26 9 22 Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                <rect x="14" y="26" width="4" height="3" fill="currentColor" />
+                <path d="M 9 28 L 23 28 L 24 30 L 8 30 Z" fill="currentColor" />
+              </svg>
+            </div>
+            <p class="how-step-num">02</p>
+            <h3 class="how-step-title">Beat your best</h3>
+            <p class="how-step-text">Each game has its own leaderboard. Climb it.</p>
+          </div>
+          <div class="how-step">
+            <div class="how-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <text x="16" y="22" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" fill="currentColor">ABC</text>
+                <line x1="6" y1="26" x2="26" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </div>
+            <p class="how-step-num">03</p>
+            <h3 class="how-step-title">Claim three letters</h3>
+            <p class="how-step-text">Three-letter initials, retro style. Make them count.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- FOOTER                                     -->
+      <!-- ========================================== -->
+      <footer class="footer">
+        <p class="footer-line">— Built by Jake at Jake Fixes Tech —</p>
+        <div class="footer-links">
+          <a href="https://jakefixestech.com/services/gaming-console-repair" class="footer-link">← Back to gaming console repair</a>
+          <span class="footer-sep">•</span>
+          <a href="https://jakefixestech.com/services" class="footer-link">See Jake's services →</a>
+        </div>
+      </footer>
+    </main>
+
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html { scroll-behavior: smooth; }
+      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+      body {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: #ffffff;
+        font-family: 'Inter Tight', system-ui, -apple-system, sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .page { position: relative; min-height: 100vh; }
+
+      /* ============================================================ */
+      /* SPARKLES                                                      */
+      /* ============================================================ */
+      .sparkles {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      .spark {
+        position: absolute;
+        bottom: -20px;
+        width: 4px;
+        height: 4px;
+        background: #fbbf24;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #fbbf24, 0 0 14px rgba(251, 191, 36, 0.5);
+        opacity: 0;
+      }
+
+      .sp-1  { left:  3%; animation: sparkle-rise 7s linear  0s   infinite; }
+      .sp-2  { left: 10%; animation: sparkle-rise 8s linear  1s   infinite; }
+      .sp-3  { left: 16%; animation: sparkle-rise 6s linear  2.5s infinite; }
+      .sp-4  { left: 22%; animation: sparkle-rise 9s linear  0.5s infinite; }
+      .sp-5  { left: 28%; animation: sparkle-rise 7s linear  3s   infinite; }
+      .sp-6  { left: 34%; animation: sparkle-rise 8s linear  1.5s infinite; }
+      .sp-7  { left: 40%; animation: sparkle-rise 6s linear  4s   infinite; }
+      .sp-8  { left: 46%; animation: sparkle-rise 9s linear  2s   infinite; }
+      .sp-9  { left: 52%; animation: sparkle-rise 7s linear  0.8s infinite; }
+      .sp-10 { left: 58%; animation: sparkle-rise 8s linear  3.5s infinite; }
+      .sp-11 { left: 64%; animation: sparkle-rise 6s linear  1.2s infinite; }
+      .sp-12 { left: 70%; animation: sparkle-rise 9s linear  2.8s infinite; }
+      .sp-13 { left: 76%; animation: sparkle-rise 7s linear  4.5s infinite; }
+      .sp-14 { left: 82%; animation: sparkle-rise 8s linear  1.8s infinite; }
+      .sp-15 { left: 88%; animation: sparkle-rise 6s linear  3.2s infinite; }
+      .sp-16 { left: 94%; animation: sparkle-rise 9s linear  5s   infinite; }
+      .sp-17 { left:  6%; animation: sparkle-rise 10s linear 4.2s infinite; }
+      .sp-18 { left: 25%; animation: sparkle-rise 10s linear 5.5s infinite; }
+      .sp-19 { left: 49%; animation: sparkle-rise 10s linear 6s   infinite; }
+      .sp-20 { left: 73%; animation: sparkle-rise 10s linear 3.8s infinite; }
+      .sp-21 { left: 14%; animation: sparkle-rise 11s linear 6.5s infinite; }
+      .sp-22 { left: 38%; animation: sparkle-rise 11s linear 7s   infinite; }
+      .sp-23 { left: 62%; animation: sparkle-rise 11s linear 5.8s infinite; }
+      .sp-24 { left: 86%; animation: sparkle-rise 11s linear 4.8s infinite; }
+
+      @keyframes sparkle-rise {
+        0%   { transform: translateY(0) scale(0.5); opacity: 0; }
+        10%  { opacity: 1; transform: translateY(-10vh) scale(1); }
+        80%  { opacity: 1; }
+        100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
+      }
+
+      /* ============================================================ */
+      /* HERO                                                          */
+      /* ============================================================ */
+      .hero {
+        position: relative;
+        z-index: 1;
+        padding: 5rem 1.5rem 4rem;
+      }
+
+      .hero-inner {
+        max-width: 72rem;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        align-items: center;
+        text-align: center;
+      }
+
+      /* Two-column on tablet+ — cabinet left, content right */
+      @media (min-width: 768px) {
+        .hero-inner {
+          grid-template-columns: auto 1fr;
+          gap: 3rem;
+          text-align: left;
+        }
+      }
+
+      @media (min-width: 1100px) {
+        .hero-inner {
+          gap: 4rem;
+        }
+      }
+
+      .hero-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      @media (min-width: 768px) {
+        .hero-content {
+          align-items: flex-start;
+        }
+      }
+
+      .hero-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fbbf24;
+        letter-spacing: 0.25em;
+        margin-bottom: 1rem;
+      }
+
+      .cabinet-wrap {
+        position: relative;
+        width: 200px;
+        height: 280px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      @media (min-width: 768px) {
+        .cabinet-wrap {
+          width: 240px;
+          height: 340px;
+          margin: 0;
+        }
+      }
+
+      @media (min-width: 1100px) {
+        .cabinet-wrap {
+          width: 280px;
+          height: 400px;
+        }
+      }
+
+      .cabinet-aura {
+        position: absolute;
+        inset: -25%;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0) 65%);
+        animation: aura-pulse 3.5s ease-in-out infinite;
+        z-index: 0;
+      }
+
+      .cabinet {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 30px rgba(251, 191, 36, 0.3));
+        animation: cabinet-float 4s ease-in-out infinite;
+      }
+
+      .screen-text {
+        animation: blink 1.4s steps(2) infinite;
+      }
+
+      @keyframes aura-pulse {
+        0%, 100% { transform: scale(1); opacity: 0.7; }
+        50%      { transform: scale(1.15); opacity: 1; }
+      }
+
+      @keyframes cabinet-float {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-6px); }
+      }
+
+      @keyframes blink {
+        0%, 50%   { opacity: 1; }
+        51%, 100% { opacity: 0.3; }
+      }
+
+      .hero-title {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: clamp(3rem, 9vw, 6rem);
+        font-weight: 900;
+        line-height: 0.95;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, #fbbf24, #fde68a, #fbbf24);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gold-shimmer 3.5s ease-in-out infinite;
+        margin-bottom: 1.25rem;
+      }
+
+      @keyframes gold-shimmer {
+        0%, 100% { background-position: 0% 50%; }
+        50%      { background-position: 100% 50%; }
+      }
+
+      .hero-subtitle {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        color: #bfdbfe;
+        line-height: 1.6;
+        max-width: 38rem;
+        margin-bottom: 2rem;
+      }
+
+      .hero-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 1.1rem 2.25rem;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #1e3a8a;
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        border-radius: 0.625rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 12px 40px rgba(251, 191, 36, 0.4);
+        animation: cta-pulse 2.4s ease-in-out infinite;
+      }
+
+      .hero-cta:hover,
+      .hero-cta:focus-visible {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.25), 0 16px 50px rgba(251, 191, 36, 0.5);
+        outline: none;
+        animation-play-state: paused;
+      }
+
+      .hero-cta svg { width: 1.05rem; height: 1.05rem; flex-shrink: 0; }
+
+      @keyframes cta-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4), 0 12px 40px rgba(251,191,36,0.4); }
+        50%      { box-shadow: 0 0 0 12px rgba(251,191,36,0), 0 14px 45px rgba(251,191,36,0.5); }
+      }
+
+      /* ============================================================ */
+      /* CHAMPION                                                      */
+      /* ============================================================ */
+      .champion-section {
+        position: relative;
+        z-index: 1;
+        padding: 2rem 1.5rem;
+        max-width: 56rem;
+        margin: 0 auto;
+      }
+
+      .champion-card {
+        position: relative;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(30, 58, 138, 0.4));
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(251, 191, 36, 0.5);
+        border-radius: 1.25rem;
+        padding: 2.5rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        overflow: hidden;
+        box-shadow:
+          0 0 0 1px rgba(251, 191, 36, 0.15),
+          0 0 60px rgba(251, 191, 36, 0.2),
+          0 25px 60px rgba(0, 0, 0, 0.4);
+        animation: champ-card-glow 4s ease-in-out infinite;
+      }
+
+      .champion-card--active {
+        border-color: rgba(251, 191, 36, 0.75);
+        box-shadow:
+          0 0 0 1px rgba(251, 191, 36, 0.25),
+          0 0 80px rgba(251, 191, 36, 0.3),
+          0 25px 60px rgba(0, 0, 0, 0.4);
+      }
+
+      @keyframes champ-card-glow {
+        0%, 100% {
+          box-shadow:
+            0 0 0 1px rgba(251, 191, 36, 0.15),
+            0 0 60px rgba(251, 191, 36, 0.2),
+            0 25px 60px rgba(0, 0, 0, 0.4);
+        }
+        50% {
+          box-shadow:
+            0 0 0 1px rgba(251, 191, 36, 0.3),
+            0 0 100px rgba(251, 191, 36, 0.4),
+            0 25px 60px rgba(0, 0, 0, 0.4);
+        }
+      }
+
+      /* Decorative rotating rays in background */
+      .champ-rays {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        opacity: 0.3;
+      }
+
+      .ray {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 200%;
+        height: 60px;
+        background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.25), transparent);
+        transform-origin: 0 50%;
+        transform: translate(-50%, -50%) rotate(0deg);
+      }
+
+      .ray-1 { transform: translate(-50%, -50%) rotate(0deg);   animation: ray-spin 30s linear infinite; }
+      .ray-2 { transform: translate(-50%, -50%) rotate(60deg);  animation: ray-spin 30s linear infinite; }
+      .ray-3 { transform: translate(-50%, -50%) rotate(120deg); animation: ray-spin 30s linear infinite; }
+      .ray-4 { transform: translate(-50%, -50%) rotate(180deg); animation: ray-spin 30s linear infinite; }
+      .ray-5 { transform: translate(-50%, -50%) rotate(240deg); animation: ray-spin 30s linear infinite; }
+      .ray-6 { transform: translate(-50%, -50%) rotate(300deg); animation: ray-spin 30s linear infinite; }
+
+      @keyframes ray-spin {
+        from { transform: translate(-50%, -50%) rotate(var(--start, 0deg)); }
+        to   { transform: translate(-50%, -50%) rotate(calc(var(--start, 0deg) + 360deg)); }
+      }
+      .ray-1 { --start: 0deg; }
+      .ray-2 { --start: 60deg; }
+      .ray-3 { --start: 120deg; }
+      .ray-4 { --start: 180deg; }
+      .ray-5 { --start: 240deg; }
+      .ray-6 { --start: 300deg; }
+
+      .champ-trophy {
+        position: relative;
+        width: 120px;
+        height: 130px;
+        flex-shrink: 0;
+        z-index: 1;
+        animation: trophy-float 4s ease-in-out infinite;
+      }
+
+      .champ-trophy svg {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 4px 14px rgba(251, 191, 36, 0.4));
+      }
+
+      .champ-trophy-glow {
+        position: absolute;
+        inset: -30%;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(251, 191, 36, 0.5) 0%, rgba(251, 191, 36, 0) 65%);
+        animation: trophy-glow-pulse 3s ease-in-out infinite;
+      }
+
+      .champ-trophy-shimmer {
+        position: absolute;
+        inset: -20%;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(100, 116, 139, 0.2) 0%, rgba(100, 116, 139, 0) 65%);
+        animation: trophy-shimmer 2.5s ease-in-out infinite;
+      }
+
+      .champ-trophy--empty {
+        animation: empty-trophy-bob 3s ease-in-out infinite;
+      }
+
+      .champ-trophy--empty svg {
+        filter: drop-shadow(0 2px 8px rgba(251, 191, 36, 0.15));
+      }
+
+      @keyframes trophy-float {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-5px); }
+      }
+
+      @keyframes empty-trophy-bob {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        25%      { transform: translateY(-3px) rotate(-2deg); }
+        75%      { transform: translateY(-3px) rotate(2deg); }
+      }
+
+      @keyframes trophy-glow-pulse {
+        0%, 100% { transform: scale(1); opacity: 0.7; }
+        50%      { transform: scale(1.2); opacity: 1; }
+      }
+
+      @keyframes trophy-shimmer {
+        0%, 100% { opacity: 0.5; }
+        50%      { opacity: 0.9; }
+      }
+
+      .champ-content {
+        flex: 1;
+        position: relative;
+        z-index: 1;
+      }
+
+      .champ-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.85rem;
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.45);
+        border-radius: 999px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #4ade80;
+        letter-spacing: 0.18em;
+        margin-bottom: 1rem;
+      }
+
+      .champ-badge--empty {
+        background: rgba(251, 191, 36, 0.1);
+        border-color: rgba(251, 191, 36, 0.4);
+        color: #fbbf24;
+      }
+
+      .champ-badge-dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 8px #10b981;
+        animation: status-pulse 1.4s ease-in-out infinite;
+      }
+
+      @keyframes status-pulse {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: 0.5; }
+      }
+
+      .champ-initials {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: clamp(2.5rem, 7vw, 4rem);
+        font-weight: 700;
+        line-height: 1;
+        background: linear-gradient(135deg, #fbbf24, #fde68a, #fbbf24);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gold-shimmer 3.5s ease-in-out infinite;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.75rem;
+      }
+
+      .champ-empty-title {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: clamp(1.75rem, 5vw, 2.75rem);
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+        line-height: 1.05;
+      }
+
+      .champ-empty-line {
+        display: block;
+      }
+
+      .champ-empty-highlight {
+        background: linear-gradient(135deg, #fbbf24, #fde68a, #fbbf24);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gold-shimmer 3.5s ease-in-out infinite;
+        font-size: 1.2em;
+        line-height: 1;
+      }
+
+      .champ-stats {
+        font-size: 0.95rem;
+        color: #cbd5e1;
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+      }
+
+      .champ-stats strong {
+        color: #fbbf24;
+        font-weight: 700;
+      }
+
+      .champ-stats--empty strong {
+        color: #fff;
+      }
+
+      .champ-note {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        color: #94a3b8;
+        line-height: 1.5;
+      }
+
+      /* ============================================================ */
+      /* GAMES                                                         */
+      /* ============================================================ */
+      .games-section {
+        position: relative;
+        z-index: 1;
+        padding: 4rem 1.5rem;
+        max-width: 80rem;
+        margin: 0 auto;
+      }
+
+      .games-header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
+      .section-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fbbf24;
+        letter-spacing: 0.25em;
+        margin-bottom: 0.75rem;
+      }
+
+      .section-title {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: clamp(2rem, 5vw, 2.75rem);
+        font-weight: 900;
+        color: #fff;
+        letter-spacing: -0.02em;
+      }
+
+      .games-grid {
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: 1fr;
+      }
+
+      .game-block {
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(251, 191, 36, 0.25);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .game-block:hover {
+        transform: translateY(-3px);
+        border-color: rgba(251, 191, 36, 0.55);
+        box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+      }
+
+      .game-block--locked {
+        opacity: 0.65;
+      }
+
+      .game-block--locked:hover {
+        transform: none;
+      }
+
+      .game-card {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+      }
+
+      .game-icon {
+        width: 64px;
+        height: 64px;
+        flex-shrink: 0;
+        background: rgba(251, 191, 36, 0.08);
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+        border: 1px solid rgba(251, 191, 36, 0.25);
+      }
+
+      .game-icon svg { width: 100%; height: 100%; }
+
+      .game-meta {
+        flex: 1;
+        min-width: 12rem;
+      }
+
+      .game-name {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 0.25rem;
+        letter-spacing: -0.01em;
+      }
+
+      .game-tagline {
+        font-size: 0.875rem;
+        color: #cbd5e1;
+        line-height: 1.4;
+      }
+
+      .game-play-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.85rem 1.5rem;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #1e3a8a;
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 0.9rem;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        flex-shrink: 0;
+      }
+
+      .game-play-btn:hover,
+      .game-play-btn:focus-visible {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
+        outline: none;
+      }
+
+      .game-play-btn svg { width: 0.95rem; height: 0.95rem; }
+
+      .game-play-btn--locked {
+        background: rgba(148, 163, 184, 0.15);
+        color: #94a3b8;
+        cursor: not-allowed;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+      }
+
+      .game-play-btn--locked:hover {
+        transform: none;
+        box-shadow: none;
+      }
+
+      /* Leaderboard */
+      .game-leaderboard {
+        background: rgba(10, 14, 26, 0.6);
+        border: 1px solid rgba(96, 165, 250, 0.2);
+        border-radius: 0.625rem;
+        padding: 1rem 1.25rem;
+      }
+
+      .leaderboard-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #94a3b8;
+        letter-spacing: 0.2em;
+        margin-bottom: 0.6rem;
+      }
+
+      .leaderboard-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .leaderboard-row {
+        display: grid;
+        grid-template-columns: 2rem 1fr auto;
+        align-items: center;
+        gap: 0.75rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.9rem;
+        color: #cbd5e1;
+        padding: 0.35rem 0;
+      }
+
+      .leaderboard-row--1 .rank-num,
+      .leaderboard-row--1 .rank-initials,
+      .leaderboard-row--1 .rank-score {
+        color: #fbbf24;
+        font-weight: 700;
+      }
+
+      .leaderboard-row--2 .rank-num,
+      .leaderboard-row--2 .rank-initials,
+      .leaderboard-row--2 .rank-score {
+        color: #cbd5e1;
+        font-weight: 600;
+      }
+
+      .leaderboard-row--3 .rank-num,
+      .leaderboard-row--3 .rank-initials,
+      .leaderboard-row--3 .rank-score {
+        color: #d97706;
+        font-weight: 600;
+      }
+
+      .rank-num {
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .rank-initials {
+        letter-spacing: 0.05em;
+      }
+
+      .rank-score {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .leaderboard-empty {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        color: #64748b;
+        text-align: center;
+        padding: 0.75rem 0;
+      }
+
+      /* Tablet */
+      @media (min-width: 720px) {
+        .game-block {
+          grid-template-columns: 1.4fr 1fr;
+          gap: 2rem;
+          padding: 1.75rem;
+          align-items: center;
+        }
+      }
+
+      /* Desktop */
+      @media (min-width: 1024px) {
+        .games-grid {
+          gap: 1.75rem;
+        }
+      }
+
+      /* ============================================================ */
+      /* HOW IT WORKS                                                  */
+      /* ============================================================ */
+      .how-section {
+        position: relative;
+        z-index: 1;
+        padding: 4rem 1.5rem;
+        max-width: 64rem;
+        margin: 0 auto;
+      }
+
+      .how-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .how-step {
+        text-align: center;
+        padding: 2rem 1.5rem;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(96, 165, 250, 0.2);
+        border-radius: 1rem;
+      }
+
+      .how-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 1rem;
+        color: #fbbf24;
+      }
+
+      .how-icon svg { width: 100%; height: 100%; }
+
+      .how-step-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fbbf24;
+        letter-spacing: 0.2em;
+        margin-bottom: 0.5rem;
+      }
+
+      .how-step-title {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: 1.15rem;
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 0.75rem;
+      }
+
+      .how-step-text {
+        font-size: 0.9rem;
+        color: #cbd5e1;
+        line-height: 1.5;
+      }
+
+      @media (min-width: 720px) {
+        .how-grid { grid-template-columns: repeat(3, 1fr); }
+      }
+
+      /* ============================================================ */
+      /* FOOTER                                                        */
+      /* ============================================================ */
+      .footer {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding: 3rem 1.5rem 4rem;
+      }
+
+      .footer-line {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.55);
+        letter-spacing: 0.05em;
+        margin-bottom: 1rem;
+      }
+
+      .footer-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+      }
+
+      .footer-link {
+        color: #93c5fd;
+        text-decoration: none;
+        border-bottom: 1px dashed rgba(147, 197, 253, 0.5);
+        padding-bottom: 0.1rem;
+        transition: color 0.2s, border-color 0.2s;
+      }
+
+      .footer-link:hover,
+      .footer-link:focus-visible {
+        color: #fff;
+        border-bottom-color: rgba(255, 255, 255, 0.8);
+        outline: none;
+      }
+
+      .footer-sep {
+        color: #475569;
+      }
+
+      /* ============================================================ */
+      /* MOBILE / NARROW                                               */
+      /* ============================================================ */
+      @media (max-width: 600px) {
+        .hero { padding: 3rem 1.25rem 2rem; }
+        .cabinet-wrap { width: 160px; height: 230px; }
+        .champion-card { padding: 1.75rem 1.25rem; flex-direction: column; text-align: center; }
+        .champ-empty { flex-direction: column; text-align: center; gap: 1.25rem; }
+        .game-block { padding: 1.25rem; }
+        .game-card { gap: 1rem; }
+        .game-play-btn { width: 100%; justify-content: center; }
+      }
+
+      /* ============================================================ */
+      /* ULTRAWIDE / BIG MONITORS                                      */
+      /* ============================================================ */
+      @media (min-width: 1600px) {
+        .games-section { max-width: 88rem; }
+        .game-block { padding: 2rem; }
+        .game-name { font-size: 1.4rem; }
+      }
+
+      /* ============================================================ */
+      /* REDUCED MOTION                                                */
+      /* ============================================================ */
+      @media (prefers-reduced-motion: reduce) {
+        .spark { animation: none; opacity: 0; }
+        .cabinet-aura, .cabinet, .screen-text { animation: none; }
+        .hero-title { animation: none; background-position: 0% 50%; }
+        .hero-cta { animation: none; }
+        .champ-trophy { animation: none; }
+        .champ-badge-dot { animation: none; }
+      }
+    </style>
+  </body>
 </html>
