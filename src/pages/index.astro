@@ -86,27 +86,28 @@ if (kv) {
   );
 }
 
-const playerPoints: Record<string, { points: number; gamesPlayed: number }> = {};
+const playerData: Record<string, { points: number; games: Set<number> }> = {};
 GAMES.forEach((game, gameIdx) => {
   const scores = leaderboards[gameIdx];
   scores.forEach((entry: ScoreEntry, rank: number) => {
+    if (entry.score <= 0) return;
     const points = rank + 1;
-    if (!playerPoints[entry.initials]) {
-      playerPoints[entry.initials] = { points: 0, gamesPlayed: 0 };
+    if (!playerData[entry.initials]) {
+      playerData[entry.initials] = { points: 0, games: new Set() };
     }
-    playerPoints[entry.initials].points += points;
-    playerPoints[entry.initials].gamesPlayed += 1;
+    playerData[entry.initials].points += points;
+    playerData[entry.initials].games.add(gameIdx);
   });
 });
 
 let champion: { initials: string; points: number; gamesPlayed: number } | null = null;
-const eligible = Object.entries(playerPoints).filter(([_, p]) => p.gamesPlayed >= 2);
+const eligible = Object.entries(playerData).filter(([_, p]) => p.games.size >= 2);
 if (eligible.length > 0) {
   eligible.sort((a, b) => a[1].points - b[1].points);
   champion = {
     initials: eligible[0][0],
     points: eligible[0][1].points,
-    gamesPlayed: eligible[0][1].gamesPlayed,
+    gamesPlayed: eligible[0][1].games.size,
   };
 }
 ---
