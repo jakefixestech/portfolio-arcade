@@ -1,7 +1,4 @@
 ---
-// @ts-ignore - cloudflare:workers is provided by the Cloudflare runtime
-import { env } from 'cloudflare:workers';
-
 const GAMES = [
   {
     slug: 'whack-a-virus',
@@ -56,14 +53,13 @@ const GAMES = [
 
 type ScoreEntry = { initials: string; score: number; timestamp: string };
 
-// Try to read from Cloudflare KV binding directly (works on live).
-// On local dev where the binding may not be available, fall back to HTTP fetch.
+// Try Cloudflare KV binding (works on live).
+// Fall back to HTTP fetch from live API for local dev.
 let leaderboards: ScoreEntry[][] = [];
-// @ts-ignore
-const kv = env?.SCORES_KV;
+// @ts-ignore - runtime is provided by @astrojs/cloudflare on live
+const kv = Astro.locals?.runtime?.env?.SCORES_KV;
 
 if (kv) {
-  // LIVE: read directly from KV binding (no self-fetch needed)
   leaderboards = await Promise.all(
     GAMES.map(async (g) => {
       try {
@@ -77,7 +73,6 @@ if (kv) {
     })
   );
 } else {
-  // LOCAL DEV fallback: fetch from live API
   const baseUrl = 'https://arcade.jakefixestech.com';
   leaderboards = await Promise.all(
     GAMES.map(async (g) => {
@@ -528,9 +523,6 @@ if (eligible.length > 0) {
         </div>
       </footer>
     </main>
-
-    <script is:inline src="/leaderboards.js"></script>
-
 
     <style>
       *, *::before, *::after {
