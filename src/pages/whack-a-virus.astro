@@ -11,7 +11,6 @@
     <meta name="description" content="Smash as many viruses as you can in 30 seconds. Compete on the leaderboard at Jake's Arcade." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <!-- Open Graph (for social sharing) -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Whack-a-Virus — Jake's Arcade" />
     <meta property="og:description" content="Smash as many viruses as you can in 30 seconds. Compete on the leaderboard at Jake's Arcade." />
@@ -47,9 +46,6 @@
   <body>
     <main class="page">
 
-      <!-- ========================================== -->
-      <!-- Persistent EXIT button (top-right)         -->
-      <!-- ========================================== -->
       <button id="exit-btn" type="button" class="exit-btn" aria-label="Exit to arcade">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M 9 6 L 4 12 L 9 18 M 4 12 L 19 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -57,18 +53,12 @@
         <span class="exit-btn-label">EXIT</span>
       </button>
 
-      <!-- ========================================== -->
-      <!-- Rising sparkle particles                   -->
-      <!-- ========================================== -->
       <div class="sparkles" aria-hidden="true">
         {Array.from({ length: 18 }).map((_, i) => (
           <span class={`spark sp-${i + 1}`}></span>
         ))}
       </div>
 
-      <!-- ========================================== -->
-      <!-- Game container                              -->
-      <!-- ========================================== -->
       <section class="game-section">
         <div class="game-wrap">
           <div class="game-header" aria-hidden="true">
@@ -82,9 +72,7 @@
 
           <div class="game-body">
 
-            <!-- ============================================ -->
-            <!-- STATE: INTRO                                 -->
-            <!-- ============================================ -->
+            <!-- INTRO -->
             <div id="state-intro" class="state state--active">
               <div class="intro-icon" aria-hidden="true">
                 <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
@@ -111,7 +99,7 @@
                 Smash as many viruses as you can in <strong>30 seconds</strong>.
               </p>
               <p class="intro-hint">
-                Tap each virus before it disappears. Your score gets ranked on the leaderboard.
+                Tap each virus before it disappears. Watch out — they get faster the more you smash.
               </p>
 
               <button id="start-btn" class="primary-btn" type="button">
@@ -122,9 +110,7 @@
               </button>
             </div>
 
-            <!-- ============================================ -->
-            <!-- STATE: PLAYING                               -->
-            <!-- ============================================ -->
+            <!-- PLAYING -->
             <div id="state-playing" class="state">
               <div class="hud">
                 <div class="hud-item">
@@ -153,9 +139,7 @@
               </div>
             </div>
 
-            <!-- ============================================ -->
-            <!-- STATE: RESULT (initials input)              -->
-            <!-- ============================================ -->
+            <!-- RESULT -->
             <div id="state-result" class="state">
               <div class="result-icon" aria-hidden="true">
                 <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
@@ -190,24 +174,19 @@
               </div>
             </div>
 
-            <!-- ============================================ -->
-            <!-- STATE: LEADERBOARD                           -->
-            <!-- ============================================ -->
+            <!-- LEADERBOARD -->
             <div id="state-leaderboard" class="state">
-              <!-- Rank celebration -->
               <div id="rank-reveal" class="rank-reveal">
                 <p class="rank-eyebrow" id="rank-eyebrow">YOU RANKED</p>
                 <p class="rank-number" id="rank-number">#1</p>
                 <p class="rank-detail" id="rank-detail">on the leaderboard</p>
               </div>
 
-              <!-- Top 10 -->
               <div class="leaderboard-wrap">
                 <p class="leaderboard-title">TOP 10 — WHACK-A-VIRUS</p>
                 <ol id="leaderboard-list" class="leaderboard"></ol>
               </div>
 
-              <!-- Share buttons -->
               <div class="share-section">
                 <p class="share-eyebrow">SHARE YOUR SCORE</p>
                 <div class="share-buttons">
@@ -236,7 +215,6 @@
                 <p class="copy-toast" id="copy-toast" aria-live="polite">Link copied!</p>
               </div>
 
-              <!-- Action buttons -->
               <div class="action-buttons">
                 <button id="play-again-btn" type="button" class="primary-btn">
                   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -252,7 +230,6 @@
         </div>
       </section>
 
-      <!-- Virus templates -->
       <template id="virus-template-1">
         <svg class="virus" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <ellipse cx="40" cy="44" rx="22" ry="26" fill="#ef4444" />
@@ -303,9 +280,6 @@
         </svg>
       </template>
 
-      <!-- ============================================ -->
-      <!-- Exit confirmation dialog                     -->
-      <!-- ============================================ -->
       <div id="exit-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="exit-dialog-title" hidden>
         <div class="dialog-backdrop"></div>
         <div class="dialog-content">
@@ -324,10 +298,20 @@
 
       // === Config ===
       const GAME_DURATION = 30;
-      const VIRUS_LIFETIME = 950;
-      const SPAWN_INTERVAL = 600;
       const GAME_SLUG = 'whack-a-virus';
       const GAME_NAME = 'Whack-a-Virus';
+
+      // Difficulty curve based on current score:
+      // - 0-10:  spawn 750ms, lifetime 1100ms (kid-friendly start)
+      // - 11-25: spawn 600ms, lifetime 950ms (current speed)
+      // - 26-40: spawn 450ms, lifetime 800ms (faster)
+      // - 41+:   spawn 350ms, lifetime 650ms (on crack mode)
+      function getDifficulty(score) {
+        if (score <= 10) return { spawn: 750, lifetime: 1100 };
+        if (score <= 25) return { spawn: 600, lifetime: 950 };
+        if (score <= 40) return { spawn: 450, lifetime: 800 };
+        return { spawn: 350, lifetime: 650 };
+      }
 
       // === DOM refs ===
       const stateIntro = document.getElementById('state-intro');
@@ -375,11 +359,11 @@
       let gameRunning = false;
       let timerHandle = null;
       let spawnHandle = null;
+      let currentSpawnRate = 750; // tracks current difficulty tier's spawn rate
       let activeViruses = new Map();
       let lastSubmittedRank = null;
       let lastSubmittedInitials = null;
 
-      // === State management ===
       function showState(name) {
         [stateIntro, statePlaying, stateResult, stateLeaderboard].forEach(s => s.classList.remove('state--active'));
         if (name === 'intro')       stateIntro.classList.add('state--active');
@@ -388,7 +372,6 @@
         if (name === 'leaderboard') stateLeaderboard.classList.add('state--active');
       }
 
-      // === Game lifecycle ===
       function startGame() {
         score = 0;
         timeLeft = GAME_DURATION;
@@ -405,7 +388,11 @@
         showState('playing');
 
         timerHandle = setInterval(tickTimer, 1000);
-        spawnHandle = setInterval(spawnVirus, SPAWN_INTERVAL);
+
+        // Start with easiest tier spawn rate
+        const initialDiff = getDifficulty(0);
+        currentSpawnRate = initialDiff.spawn;
+        spawnHandle = setInterval(spawnVirus, currentSpawnRate);
         spawnVirus();
       }
 
@@ -415,6 +402,17 @@
         timerFill.style.width = (timeLeft / GAME_DURATION * 100) + '%';
         if (timeLeft <= 5) timerDisplay.classList.add('timer-urgent');
         if (timeLeft <= 0) endGame();
+      }
+
+      // Re-evaluate difficulty after each smash. If we crossed a tier boundary,
+      // restart the spawn interval at the new rate.
+      function maybeRampDifficulty() {
+        const diff = getDifficulty(score);
+        if (diff.spawn !== currentSpawnRate) {
+          currentSpawnRate = diff.spawn;
+          clearInterval(spawnHandle);
+          spawnHandle = setInterval(spawnVirus, currentSpawnRate);
+        }
       }
 
       function spawnVirus() {
@@ -434,11 +432,13 @@
         if (!virusEl) return;
         virusEl.classList.add('virus--popping');
 
+        // Lifetime depends on current score's difficulty tier
+        const lifetime = getDifficulty(score).lifetime;
         const hideTimeout = setTimeout(() => {
           if (gameRunning && activeViruses.has(cellIndex)) {
             removeVirus(cellIndex, false);
           }
-        }, VIRUS_LIFETIME);
+        }, lifetime);
 
         activeViruses.set(cellIndex, { element: virusEl, hideTimeout, smashed: false });
       }
@@ -484,6 +484,9 @@
           scoreDisplay.classList.add('score-bump');
 
           removeVirus(cellIndex, true);
+
+          // Check if we crossed a difficulty tier boundary
+          maybeRampDifficulty();
         });
       });
 
@@ -502,10 +505,8 @@
 
         timerDisplay.classList.remove('timer-urgent');
 
-        // Show result — same celebratory screen no matter the score
         resultScore.textContent = String(score);
 
-        // Reset initials inputs
         initBoxes.forEach(b => { b.value = ''; b.classList.remove('initial-box--filled'); });
         initialsError.textContent = '';
         submitBtn.disabled = true;
@@ -515,7 +516,6 @@
         setTimeout(() => initBoxes[0].focus(), 250);
       }
 
-      // === Initials input handling ===
       initBoxes.forEach((box, idx) => {
         box.addEventListener('input', (e) => {
           let val = box.value.toUpperCase();
@@ -562,7 +562,6 @@
         submitBtn.disabled = !/^[A-Z]{3}$/.test(initials);
       }
 
-      // === Submission ===
       async function submitScore() {
         const initials = getInitials();
         if (!/^[A-Z]{3}$/.test(initials)) return;
@@ -599,7 +598,6 @@
 
       submitBtn.addEventListener('click', submitScore);
 
-      // === Skip submission ===
       skipBtn.addEventListener('click', async () => {
         try {
           const res = await fetch(`/api/scores/${GAME_SLUG}`);
@@ -612,7 +610,6 @@
         }
       });
 
-      // === Leaderboard render + rank celebration ===
       function renderLeaderboard(scores) {
         if (lastSubmittedRank) {
           const ord = ordinalSuffix(lastSubmittedRank);
@@ -667,7 +664,6 @@
         return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       }
 
-      // === Share buttons ===
       function configureShare() {
         const url = window.location.href;
         const text = `I scored ${score} on ${GAME_NAME} at Jake's Arcade. Beat me?`;
@@ -681,7 +677,7 @@
           shareNative.onclick = async () => {
             try {
               await navigator.share({ title: GAME_NAME + " — Jake's Arcade", text, url });
-            } catch (e) { /* user cancelled */ }
+            } catch (e) { }
           };
         }
 
@@ -703,12 +699,10 @@
         };
       }
 
-      // === Play again ===
       playAgainBtn.addEventListener('click', () => {
         startGame();
       });
 
-      // === Exit button + confirm dialog ===
       function showExitDialog() {
         exitDialog.hidden = false;
         setTimeout(() => exitCancel.focus(), 50);
@@ -740,17 +734,11 @@
         }
       });
 
-      // === Start ===
       startBtn.addEventListener('click', startGame);
     </script>
 
     <style>
-      *, *::before, *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       html { scroll-behavior: smooth; }
       @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
@@ -766,7 +754,6 @@
 
       .page { position: relative; min-height: 100vh; }
 
-      /* EXIT BUTTON */
       .exit-btn {
         position: fixed;
         top: 1rem;
@@ -790,8 +777,7 @@
         transition: all 0.2s ease;
       }
 
-      .exit-btn:hover,
-      .exit-btn:focus-visible {
+      .exit-btn:hover, .exit-btn:focus-visible {
         background: rgba(15, 23, 42, 0.9);
         border-color: rgba(251, 191, 36, 0.6);
         color: #fbbf24;
@@ -800,7 +786,6 @@
 
       .exit-btn svg { width: 1rem; height: 1rem; }
 
-      /* SPARKLES */
       .sparkles {
         position: fixed;
         inset: 0;
@@ -846,7 +831,6 @@
         100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
       }
 
-      /* GAME CONTAINER */
       .game-section {
         position: relative;
         z-index: 1;
@@ -908,7 +892,6 @@
         justify-content: center;
       }
 
-      /* States */
       .state {
         display: none;
         width: 100%;
@@ -927,7 +910,6 @@
         to   { opacity: 1; transform: translateY(0); }
       }
 
-      /* INTRO STATE */
       .intro-icon {
         width: 96px;
         height: 96px;
@@ -960,10 +942,7 @@
         line-height: 1.6;
       }
 
-      .intro-text strong {
-        color: #93c5fd;
-        font-weight: 700;
-      }
+      .intro-text strong { color: #93c5fd; font-weight: 700; }
 
       .intro-hint {
         font-family: 'JetBrains Mono', monospace;
@@ -973,7 +952,6 @@
         max-width: 26rem;
       }
 
-      /* PRIMARY BUTTON */
       .primary-btn {
         display: inline-flex;
         align-items: center;
@@ -1036,8 +1014,7 @@
         transition: all 0.2s ease;
       }
 
-      .ghost-btn:hover,
-      .ghost-btn:focus-visible {
+      .ghost-btn:hover, .ghost-btn:focus-visible {
         color: #fff;
         border-color: rgba(255, 255, 255, 0.5);
         outline: none;
@@ -1062,14 +1039,12 @@
         transition: all 0.2s ease;
       }
 
-      .danger-btn:hover,
-      .danger-btn:focus-visible {
+      .danger-btn:hover, .danger-btn:focus-visible {
         background: rgba(239, 68, 68, 0.3);
         color: #fff;
         outline: none;
       }
 
-      /* HUD - now 2 columns instead of 3 since GOAL is removed */
       .hud {
         display: grid;
         grid-template-columns: 1fr 1.5fr;
@@ -1144,7 +1119,6 @@
         100% { transform: scale(1); color: #f8fafc; }
       }
 
-      /* GRID */
       .grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -1223,7 +1197,6 @@
         to   { transform: scale(0.5); opacity: 0; }
       }
 
-      /* RESULT STATE */
       .result-icon {
         width: 96px;
         height: 96px;
@@ -1260,12 +1233,8 @@
         line-height: 1.6;
       }
 
-      .result-text strong {
-        color: #fbbf24;
-        font-weight: 700;
-      }
+      .result-text strong { color: #fbbf24; font-weight: 700; }
 
-      /* INITIALS INPUT */
       .initials-section { width: 100%; max-width: 24rem; }
 
       .initials-label {
@@ -1320,12 +1289,8 @@
         margin-bottom: 1rem;
       }
 
-      #skip-btn {
-        margin-top: 1rem;
-        width: 100%;
-      }
+      #skip-btn { margin-top: 1rem; width: 100%; }
 
-      /* RANK CELEBRATION */
       .rank-reveal {
         text-align: center;
         margin-bottom: 2rem;
@@ -1376,11 +1341,7 @@
         color: #d1d5db;
       }
 
-      /* LEADERBOARD */
-      .leaderboard-wrap {
-        width: 100%;
-        margin-bottom: 2rem;
-      }
+      .leaderboard-wrap { width: 100%; margin-bottom: 2rem; }
 
       .leaderboard-title {
         font-family: 'JetBrains Mono', monospace;
@@ -1450,7 +1411,6 @@
         font-size: 0.85rem;
       }
 
-      /* SHARE */
       .share-section {
         text-align: center;
         margin-bottom: 2rem;
@@ -1488,8 +1448,7 @@
         text-decoration: none;
       }
 
-      .share-btn:hover,
-      .share-btn:focus-visible {
+      .share-btn:hover, .share-btn:focus-visible {
         background: rgba(251, 191, 36, 0.15);
         border-color: rgba(251, 191, 36, 0.6);
         color: #fbbf24;
@@ -1514,7 +1473,6 @@
 
       .copy-toast--show { opacity: 1; }
 
-      /* ACTION BUTTONS */
       .action-buttons {
         display: flex;
         gap: 0.75rem;
@@ -1523,7 +1481,6 @@
         width: 100%;
       }
 
-      /* DIALOG */
       .dialog {
         position: fixed;
         inset: 0;
@@ -1578,7 +1535,6 @@
         flex-wrap: wrap;
       }
 
-      /* MOBILE */
       @media (max-width: 600px) {
         .game-section { padding: 4rem 0.75rem 2rem; }
         .game-wrap { border-radius: 0.625rem; }
@@ -1605,13 +1561,11 @@
         .exit-btn { padding: 0.5rem; }
       }
 
-      /* ULTRAWIDE */
       @media (min-width: 1600px) {
         .game-wrap { max-width: 48rem; }
         .game-body { padding: 3rem 2.5rem; }
       }
 
-      /* REDUCED MOTION */
       @media (prefers-reduced-motion: reduce) {
         .spark { animation: none; opacity: 0; }
         .intro-icon { animation: none; }
