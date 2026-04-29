@@ -9,5 +9,10 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
 
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    routes: {
+      strategy: 'exclude',
+      include: ['/api/*'],
+    },
+  }),
 });
