@@ -1,4 +1,7 @@
 ---
+// @ts-ignore - cloudflare:workers is provided by the Cloudflare runtime
+import { env } from 'cloudflare:workers';
+
 const GAMES = [
   {
     slug: 'whack-a-virus',
@@ -53,18 +56,11 @@ const GAMES = [
 
 type ScoreEntry = { initials: string; score: number; timestamp: string };
 
-// Try to get KV binding from Cloudflare runtime (works on live deployment).
-// On local dev, the import will fail, so we fall back to HTTP fetching the live API.
+// Try to read from Cloudflare KV binding directly (works on live).
+// On local dev where the binding may not be available, fall back to HTTP fetch.
 let leaderboards: ScoreEntry[][] = [];
-let kv: any = null;
-
-try {
-  // @ts-ignore - cloudflare:workers is only available in Cloudflare runtime
-  const cf = await import('cloudflare:workers');
-  kv = cf.env?.SCORES_KV;
-} catch {
-  kv = null;
-}
+// @ts-ignore
+const kv = env?.SCORES_KV;
 
 if (kv) {
   // LIVE: read directly from KV binding (no self-fetch needed)
@@ -81,7 +77,7 @@ if (kv) {
     })
   );
 } else {
-  // LOCAL DEV: KV binding not available, fetch from live API
+  // LOCAL DEV fallback: fetch from live API
   const baseUrl = 'https://arcade.jakefixestech.com';
   leaderboards = await Promise.all(
     GAMES.map(async (g) => {
