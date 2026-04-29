@@ -252,9 +252,10 @@
                 </svg>
               </a>
             </div>
-            <div class="game-leaderboard">
+            <div class="game-leaderboard" data-game-leaderboard="whack-a-virus">
               <p class="leaderboard-eyebrow">TOP 3</p>
-              <p class="leaderboard-empty">No scores yet. Be the first.</p>
+              <ol class="leaderboard-list" id="lb-list-whack-a-virus"></ol>
+              <p class="leaderboard-empty" id="lb-empty-whack-a-virus">No scores yet. Be the first.</p>
             </div>
           </article>
 
@@ -280,9 +281,10 @@
                 <span>COMING SOON</span>
               </div>
             </div>
-            <div class="game-leaderboard">
+            <div class="game-leaderboard" data-game-leaderboard="system-response">
               <p class="leaderboard-eyebrow">TOP 3</p>
-              <p class="leaderboard-empty">No scores yet. Be the first.</p>
+              <ol class="leaderboard-list" id="lb-list-system-response"></ol>
+              <p class="leaderboard-empty" id="lb-empty-system-response">No scores yet. Be the first.</p>
             </div>
           </article>
 
@@ -316,9 +318,10 @@
                 <span>COMING SOON</span>
               </div>
             </div>
-            <div class="game-leaderboard">
+            <div class="game-leaderboard" data-game-leaderboard="component-match">
               <p class="leaderboard-eyebrow">TOP 3</p>
-              <p class="leaderboard-empty">No scores yet. Be the first.</p>
+              <ol class="leaderboard-list" id="lb-list-component-match"></ol>
+              <p class="leaderboard-empty" id="lb-empty-component-match">No scores yet. Be the first.</p>
             </div>
           </article>
 
@@ -349,9 +352,10 @@
                 <span>COMING SOON</span>
               </div>
             </div>
-            <div class="game-leaderboard">
+            <div class="game-leaderboard" data-game-leaderboard="error-override">
               <p class="leaderboard-eyebrow">TOP 3</p>
-              <p class="leaderboard-empty">No scores yet. Be the first.</p>
+              <ol class="leaderboard-list" id="lb-list-error-override"></ol>
+              <p class="leaderboard-empty" id="lb-empty-error-override">No scores yet. Be the first.</p>
             </div>
           </article>
 
@@ -379,9 +383,10 @@
                 <span>COMING SOON</span>
               </div>
             </div>
-            <div class="game-leaderboard">
+            <div class="game-leaderboard" data-game-leaderboard="cursor-crawl">
               <p class="leaderboard-eyebrow">TOP 3</p>
-              <p class="leaderboard-empty">No scores yet. Be the first.</p>
+              <ol class="leaderboard-list" id="lb-list-cursor-crawl"></ol>
+              <p class="leaderboard-empty" id="lb-empty-cursor-crawl">No scores yet. Be the first.</p>
             </div>
           </article>
 
@@ -411,9 +416,10 @@
                 <span>COMING SOON</span>
               </div>
             </div>
-            <div class="game-leaderboard">
+            <div class="game-leaderboard" data-game-leaderboard="usb-defender">
               <p class="leaderboard-eyebrow">TOP 3</p>
-              <p class="leaderboard-empty">No scores yet. Be the first.</p>
+              <ol class="leaderboard-list" id="lb-list-usb-defender"></ol>
+              <p class="leaderboard-empty" id="lb-empty-usb-defender">No scores yet. Be the first.</p>
             </div>
           </article>
 
@@ -444,9 +450,10 @@
                 <span>COMING SOON</span>
               </div>
             </div>
-            <div class="game-leaderboard">
+            <div class="game-leaderboard" data-game-leaderboard="bug-smasher">
               <p class="leaderboard-eyebrow">TOP 3</p>
-              <p class="leaderboard-empty">No scores yet. Be the first.</p>
+              <ol class="leaderboard-list" id="lb-list-bug-smasher"></ol>
+              <p class="leaderboard-empty" id="lb-empty-bug-smasher">No scores yet. Be the first.</p>
             </div>
           </article>
 
@@ -506,123 +513,113 @@
 
     <script>
       // @ts-nocheck
+
+      // === Config ===
+      const GAME_SLUGS = ['whack-a-virus', 'system-response', 'component-match', 'error-override', 'cursor-crawl', 'usb-defender', 'bug-smasher'];
+
+      // === DOM refs ===
+      const championCard = document.getElementById('champion-card');
+      const championEmpty = document.getElementById('champion-empty');
+      const championActive = document.getElementById('champion-active');
+      const champInitialsText = document.getElementById('champ-initials-text');
+      const champPoints = document.getElementById('champ-points');
+      const champGames = document.getElementById('champ-games');
+
+      // === Helpers ===
       function escapeHtml(str) {
-        return String(str).replace(/[&<>"']/g, function (c) {
-          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
+        return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       }
 
-      async function fetchScores(slug) {
+      // === Fetch one leaderboard ===
+      async function fetchLeaderboard(slug) {
         try {
-          const res = await fetch('/api/scores/' + slug);
-          if (!res.ok) return [];
+          const res = await fetch(`/api/scores/${slug}`);
           const data = await res.json();
           return data.scores || [];
-        } catch (e) {
+        } catch {
           return [];
         }
       }
 
-      function renderLeaderboard(slug, scores) {
-        const block = document.querySelector('.game-block[data-game-slug="' + slug + '"]');
-        if (!block) return;
-        const lb = block.querySelector('.game-leaderboard');
-        if (!lb) return;
+      // === Render top 3 for a game block ===
+      function renderTop3(slug, scores) {
+        const list = document.getElementById(`lb-list-${slug}`);
+        const empty = document.getElementById(`lb-empty-${slug}`);
+        if (!list || !empty) return;
 
-        const top3 = scores.slice(0, 3);
-        if (top3.length === 0) {
-          lb.innerHTML = '<p class="leaderboard-eyebrow">TOP 3</p><p class="leaderboard-empty">No scores yet. Be the first.</p>';
+        list.innerHTML = '';
+
+        if (scores.length === 0) {
+          empty.style.display = '';
           return;
         }
 
-        let rowsHtml = '';
-        for (let i = 0; i < top3.length; i++) {
-          const entry = top3[i];
-          rowsHtml +=
-            '<li class="leaderboard-row leaderboard-row--' + (i + 1) + '">' +
-              '<span class="rank-num">' + (i + 1) + '</span>' +
-              '<span class="rank-initials">' + escapeHtml(entry.initials) + '</span>' +
-              '<span class="rank-score">' + entry.score + '</span>' +
-            '</li>';
-        }
+        empty.style.display = 'none';
 
-        lb.innerHTML = '<p class="leaderboard-eyebrow">TOP 3</p><ol class="leaderboard-list">' + rowsHtml + '</ol>';
+        scores.slice(0, 3).forEach((entry, idx) => {
+          const li = document.createElement('li');
+          const rank = idx + 1;
+          li.className = `leaderboard-row leaderboard-row--${rank}`;
+          li.innerHTML = `
+            <span class="rank-num">${rank}</span>
+            <span class="rank-initials">${escapeHtml(entry.initials)}</span>
+            <span class="rank-score">${entry.score}</span>
+          `;
+          list.appendChild(li);
+        });
       }
 
+      // === Compute champion from all scores ===
       function computeChampion(allScores) {
         const points = {};
-        for (let i = 0; i < allScores.length; i++) {
-          const scores = allScores[i];
-          for (let rank = 0; rank < scores.length; rank++) {
-            const entry = scores[rank];
-            const p = rank + 1;
+        allScores.forEach(scores => {
+          scores.forEach((entry, idx) => {
+            const rank = idx + 1;
             if (!points[entry.initials]) {
               points[entry.initials] = { points: 0, gamesPlayed: 0 };
             }
-            points[entry.initials].points += p;
+            points[entry.initials].points += rank;
             points[entry.initials].gamesPlayed += 1;
-          }
-        }
+          });
+        });
 
-        const eligible = [];
-        for (const initials in points) {
-          if (points[initials].gamesPlayed >= 2) {
-            eligible.push({
-              initials: initials,
-              points: points[initials].points,
-              gamesPlayed: points[initials].gamesPlayed
-            });
-          }
-        }
+        const eligible = Object.keys(points)
+          .filter(initials => points[initials].gamesPlayed >= 2)
+          .map(initials => ({
+            initials,
+            points: points[initials].points,
+            gamesPlayed: points[initials].gamesPlayed
+          }));
 
         if (eligible.length === 0) return null;
-        eligible.sort(function (a, b) { return a.points - b.points; });
+        eligible.sort((a, b) => a.points - b.points);
         return eligible[0];
       }
 
+      // === Show champion ===
       function showChampion(champ) {
         if (!champ) return;
-        const card = document.getElementById('champion-card');
-        const empty = document.getElementById('champion-empty');
-        const active = document.getElementById('champion-active');
-        const initialsEl = document.getElementById('champ-initials-text');
-        const ptsEl = document.getElementById('champ-points');
-        const gamesEl = document.getElementById('champ-games');
-
-        if (initialsEl) initialsEl.textContent = champ.initials;
-        if (ptsEl) ptsEl.textContent = String(champ.points);
-        if (gamesEl) gamesEl.textContent = String(champ.gamesPlayed);
-
-        if (empty) empty.style.display = 'none';
-        if (active) active.style.display = '';
-        if (card) {
-          card.classList.remove('champion-card--empty');
-          card.classList.add('champion-card--active');
+        if (champInitialsText) champInitialsText.textContent = champ.initials;
+        if (champPoints) champPoints.textContent = String(champ.points);
+        if (champGames) champGames.textContent = String(champ.gamesPlayed);
+        if (championEmpty) championEmpty.style.display = 'none';
+        if (championActive) championActive.style.display = '';
+        if (championCard) {
+          championCard.classList.remove('champion-card--empty');
+          championCard.classList.add('champion-card--active');
         }
       }
 
-      async function initLeaderboards() {
-        const blocks = document.querySelectorAll('.game-block[data-game-slug]');
-        const slugs = [];
-        for (let i = 0; i < blocks.length; i++) {
-          const s = blocks[i].getAttribute('data-game-slug');
-          if (s) slugs.push(s);
-        }
-
-        const all = await Promise.all(slugs.map(fetchScores));
-
-        for (let i = 0; i < slugs.length; i++) {
-          renderLeaderboard(slugs[i], all[i]);
-        }
-
-        showChampion(computeChampion(all));
+      // === Init ===
+      async function loadAllLeaderboards() {
+        const allScores = await Promise.all(GAME_SLUGS.map(fetchLeaderboard));
+        GAME_SLUGS.forEach((slug, idx) => {
+          renderTop3(slug, allScores[idx]);
+        });
+        showChampion(computeChampion(allScores));
       }
 
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initLeaderboards);
-      } else {
-        initLeaderboards();
-      }
+      loadAllLeaderboards();
     </script>
 
     <style>
