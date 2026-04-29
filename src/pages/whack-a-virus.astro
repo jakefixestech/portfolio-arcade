@@ -8,19 +8,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Whack-a-Virus — Jake's Arcade</title>
-    <meta name="description" content="Smash viruses before they spread. How fast can you clean the system? Compete on the leaderboard at Jake's Arcade." />
+    <meta name="description" content="Smash as many viruses as you can in 30 seconds. Compete on the leaderboard at Jake's Arcade." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!-- Open Graph (for social sharing) -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Whack-a-Virus — Jake's Arcade" />
-    <meta property="og:description" content="Smash viruses before they spread. Compete on the leaderboard at Jake's Arcade." />
+    <meta property="og:description" content="Smash as many viruses as you can in 30 seconds. Compete on the leaderboard at Jake's Arcade." />
     <meta property="og:url" content="https://arcade.jakefixestech.com/whack-a-virus" />
     <meta property="og:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
     <meta property="og:site_name" content="Jake's Arcade" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Whack-a-Virus — Jake's Arcade" />
-    <meta name="twitter:description" content="Smash viruses before they spread. Compete on the leaderboard." />
+    <meta name="twitter:description" content="Smash as many viruses as you can in 30 seconds. Compete on the leaderboard." />
     <meta name="twitter:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -108,7 +108,7 @@
 
               <h1 class="intro-title">Whack-a-Virus</h1>
               <p class="intro-text">
-                Smash <strong>20 viruses</strong> in <strong>30 seconds</strong>.
+                Smash as many viruses as you can in <strong>30 seconds</strong>.
               </p>
               <p class="intro-hint">
                 Tap each virus before it disappears. Your score gets ranked on the leaderboard.
@@ -138,10 +138,6 @@
                     <div class="timer-fill" id="timer-fill"></div>
                   </div>
                 </div>
-                <div class="hud-item">
-                  <span class="hud-label">GOAL</span>
-                  <span class="hud-value">20</span>
-                </div>
               </div>
 
               <div class="grid" role="application" aria-label="Whack-a-virus grid">
@@ -161,22 +157,16 @@
             <!-- STATE: RESULT (initials input)              -->
             <!-- ============================================ -->
             <div id="state-result" class="state">
-              <div id="result-icon-win" class="result-icon" aria-hidden="true">
+              <div class="result-icon" aria-hidden="true">
                 <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="40" cy="40" r="36" fill="#10b981" />
                   <path d="M 22 40 L 36 54 L 58 28" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </div>
-              <div id="result-icon-lose" class="result-icon" aria-hidden="true" style="display:none">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="40" cy="40" r="36" fill="#f59e0b" />
-                  <path d="M 28 28 L 52 52 M 52 28 L 28 52" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" />
-                </svg>
-              </div>
 
-              <h2 class="result-title" id="result-title">System cleaned!</h2>
-              <p class="result-text" id="result-text">
-                You smashed <strong id="result-score">20</strong> viruses.
+              <h2 class="result-title">Time's up!</h2>
+              <p class="result-text">
+                You smashed <strong id="result-score">0</strong> viruses.
               </p>
 
               <div class="initials-section">
@@ -334,7 +324,6 @@
 
       // === Config ===
       const GAME_DURATION = 30;
-      const SCORE_TO_WIN = 20;
       const VIRUS_LIFETIME = 950;
       const SPAWN_INTERVAL = 600;
       const GAME_SLUG = 'whack-a-virus';
@@ -356,9 +345,6 @@
         document.getElementById('virus-template-2'),
         document.getElementById('virus-template-3'),
       ];
-      const resultIconWin = document.getElementById('result-icon-win');
-      const resultIconLose = document.getElementById('result-icon-lose');
-      const resultTitle = document.getElementById('result-title');
       const resultScore = document.getElementById('result-score');
       const initBoxes = [
         document.getElementById('init-1'),
@@ -498,8 +484,6 @@
           scoreDisplay.classList.add('score-bump');
 
           removeVirus(cellIndex, true);
-
-          if (score >= SCORE_TO_WIN) endGame();
         });
       });
 
@@ -518,11 +502,7 @@
 
         timerDisplay.classList.remove('timer-urgent');
 
-        // Show result with appropriate icon/text
-        const won = score >= SCORE_TO_WIN;
-        resultIconWin.style.display = won ? '' : 'none';
-        resultIconLose.style.display = won ? 'none' : '';
-        resultTitle.textContent = won ? 'System cleaned!' : 'Viruses won this round.';
+        // Show result — same celebratory screen no matter the score
         resultScore.textContent = String(score);
 
         // Reset initials inputs
@@ -539,13 +519,11 @@
       initBoxes.forEach((box, idx) => {
         box.addEventListener('input', (e) => {
           let val = box.value.toUpperCase();
-          // Only allow A-Z
           val = val.replace(/[^A-Z]/g, '');
           box.value = val;
 
           if (val.length === 1) {
             box.classList.add('initial-box--filled');
-            // Auto-advance
             if (idx < initBoxes.length - 1) {
               initBoxes[idx + 1].focus();
             } else {
@@ -623,7 +601,6 @@
 
       // === Skip submission ===
       skipBtn.addEventListener('click', async () => {
-        // Just go to leaderboard view without submitting
         try {
           const res = await fetch(`/api/scores/${GAME_SLUG}`);
           const data = await res.json();
@@ -637,7 +614,6 @@
 
       // === Leaderboard render + rank celebration ===
       function renderLeaderboard(scores) {
-        // Rank reveal section
         if (lastSubmittedRank) {
           const ord = ordinalSuffix(lastSubmittedRank);
           rankEyebrow.textContent = 'YOU RANKED';
@@ -645,17 +621,14 @@
           rankDetail.textContent = lastSubmittedRank === 1 ? '🏆 First place!' : `${ord} place on the leaderboard`;
           document.getElementById('rank-reveal').style.display = '';
         } else if (lastSubmittedInitials) {
-          // Submitted but didn't make top 10
           rankEyebrow.textContent = 'SCORE SUBMITTED';
           rankNumber.textContent = String(score);
           rankDetail.textContent = "Didn't crack the top 10 — keep practicing!";
           document.getElementById('rank-reveal').style.display = '';
         } else {
-          // Skipped
           document.getElementById('rank-reveal').style.display = 'none';
         }
 
-        // Top 10 list
         leaderboardList.innerHTML = '';
 
         if (scores.length === 0) {
@@ -679,7 +652,6 @@
           });
         }
 
-        // Configure share buttons with current score
         configureShare();
 
         showState('leaderboard');
@@ -704,7 +676,6 @@
         shareFb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`;
         shareX.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
 
-        // Show native share if supported
         if (navigator.share) {
           shareNative.style.display = '';
           shareNative.onclick = async () => {
@@ -714,14 +685,12 @@
           };
         }
 
-        // Copy link
         shareCopy.onclick = async () => {
           try {
             await navigator.clipboard.writeText(fullShare);
             copyToast.classList.add('copy-toast--show');
             setTimeout(() => copyToast.classList.remove('copy-toast--show'), 2000);
           } catch {
-            // Fallback
             const ta = document.createElement('textarea');
             ta.value = fullShare;
             document.body.appendChild(ta);
@@ -750,11 +719,9 @@
       }
 
       exitBtn.addEventListener('click', () => {
-        // If mid-game (playing state active), show confirm
         if (gameRunning) {
           showExitDialog();
         } else {
-          // Otherwise just exit
           window.location.href = '/';
         }
       });
@@ -767,7 +734,6 @@
         window.location.href = '/';
       });
 
-      // ESC closes dialog
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !exitDialog.hidden) {
           hideExitDialog();
@@ -800,9 +766,7 @@
 
       .page { position: relative; min-height: 100vh; }
 
-      /* ============================================================ */
-      /* EXIT BUTTON (always visible)                                  */
-      /* ============================================================ */
+      /* EXIT BUTTON */
       .exit-btn {
         position: fixed;
         top: 1rem;
@@ -834,14 +798,9 @@
         outline: none;
       }
 
-      .exit-btn svg {
-        width: 1rem;
-        height: 1rem;
-      }
+      .exit-btn svg { width: 1rem; height: 1rem; }
 
-      /* ============================================================ */
-      /* SPARKLES                                                      */
-      /* ============================================================ */
+      /* SPARKLES */
       .sparkles {
         position: fixed;
         inset: 0;
@@ -887,9 +846,7 @@
         100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
       }
 
-      /* ============================================================ */
-      /* GAME CONTAINER                                                */
-      /* ============================================================ */
+      /* GAME CONTAINER */
       .game-section {
         position: relative;
         z-index: 1;
@@ -970,9 +927,7 @@
         to   { opacity: 1; transform: translateY(0); }
       }
 
-      /* ============================================================ */
-      /* INTRO STATE                                                   */
-      /* ============================================================ */
+      /* INTRO STATE */
       .intro-icon {
         width: 96px;
         height: 96px;
@@ -1018,9 +973,7 @@
         max-width: 26rem;
       }
 
-      /* ============================================================ */
-      /* PRIMARY BUTTON                                                */
-      /* ============================================================ */
+      /* PRIMARY BUTTON */
       .primary-btn {
         display: inline-flex;
         align-items: center;
@@ -1116,12 +1069,10 @@
         outline: none;
       }
 
-      /* ============================================================ */
-      /* HUD                                                           */
-      /* ============================================================ */
+      /* HUD - now 2 columns instead of 3 since GOAL is removed */
       .hud {
         display: grid;
-        grid-template-columns: 1fr 1.5fr 1fr;
+        grid-template-columns: 1fr 1.5fr;
         gap: 1rem;
         margin-bottom: 1.5rem;
         padding: 0.75rem 1rem;
@@ -1193,9 +1144,7 @@
         100% { transform: scale(1); color: #f8fafc; }
       }
 
-      /* ============================================================ */
-      /* GRID                                                          */
-      /* ============================================================ */
+      /* GRID */
       .grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -1274,9 +1223,7 @@
         to   { transform: scale(0.5); opacity: 0; }
       }
 
-      /* ============================================================ */
-      /* RESULT STATE                                                  */
-      /* ============================================================ */
+      /* RESULT STATE */
       .result-icon {
         width: 96px;
         height: 96px;
@@ -1318,9 +1265,7 @@
         font-weight: 700;
       }
 
-      /* ============================================================ */
-      /* INITIALS INPUT                                                */
-      /* ============================================================ */
+      /* INITIALS INPUT */
       .initials-section { width: 100%; max-width: 24rem; }
 
       .initials-label {
@@ -1380,9 +1325,7 @@
         width: 100%;
       }
 
-      /* ============================================================ */
-      /* RANK CELEBRATION                                              */
-      /* ============================================================ */
+      /* RANK CELEBRATION */
       .rank-reveal {
         text-align: center;
         margin-bottom: 2rem;
@@ -1433,9 +1376,7 @@
         color: #d1d5db;
       }
 
-      /* ============================================================ */
-      /* LEADERBOARD                                                   */
-      /* ============================================================ */
+      /* LEADERBOARD */
       .leaderboard-wrap {
         width: 100%;
         margin-bottom: 2rem;
@@ -1509,9 +1450,7 @@
         font-size: 0.85rem;
       }
 
-      /* ============================================================ */
-      /* SHARE                                                         */
-      /* ============================================================ */
+      /* SHARE */
       .share-section {
         text-align: center;
         margin-bottom: 2rem;
@@ -1575,9 +1514,7 @@
 
       .copy-toast--show { opacity: 1; }
 
-      /* ============================================================ */
-      /* ACTION BUTTONS                                                */
-      /* ============================================================ */
+      /* ACTION BUTTONS */
       .action-buttons {
         display: flex;
         gap: 0.75rem;
@@ -1586,9 +1523,7 @@
         width: 100%;
       }
 
-      /* ============================================================ */
-      /* DIALOG (exit confirm)                                         */
-      /* ============================================================ */
+      /* DIALOG */
       .dialog {
         position: fixed;
         inset: 0;
@@ -1643,9 +1578,7 @@
         flex-wrap: wrap;
       }
 
-      /* ============================================================ */
-      /* MOBILE                                                        */
-      /* ============================================================ */
+      /* MOBILE */
       @media (max-width: 600px) {
         .game-section { padding: 4rem 0.75rem 2rem; }
         .game-wrap { border-radius: 0.625rem; }
@@ -1672,17 +1605,13 @@
         .exit-btn { padding: 0.5rem; }
       }
 
-      /* ============================================================ */
-      /* ULTRAWIDE                                                     */
-      /* ============================================================ */
+      /* ULTRAWIDE */
       @media (min-width: 1600px) {
         .game-wrap { max-width: 48rem; }
         .game-body { padding: 3rem 2.5rem; }
       }
 
-      /* ============================================================ */
-      /* REDUCED MOTION                                                */
-      /* ============================================================ */
+      /* REDUCED MOTION */
       @media (prefers-reduced-motion: reduce) {
         .spark { animation: none; opacity: 0; }
         .intro-icon { animation: none; }
