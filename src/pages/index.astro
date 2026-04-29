@@ -1,4 +1,7 @@
 ---
+// @ts-ignore - cloudflare:workers is provided by the Cloudflare runtime
+import { env } from 'cloudflare:workers';
+
 const GAMES = [
   {
     slug: 'whack-a-virus',
@@ -53,26 +56,47 @@ const GAMES = [
 
 type ScoreEntry = { initials: string; score: number; timestamp: string };
 
-async function fetchLeaderboard(slug: string, baseUrl: string): Promise<ScoreEntry[]> {
-  try {
-    const res = await fetch(`${baseUrl}/api/scores/${slug}`);
-    if (!res.ok) return [];
-    const data = await res.json() as { scores?: ScoreEntry[] };
-    return data.scores || [];
-  } catch {
-    return [];
-  }
-}
+// Try to read from Cloudflare KV binding directly (works on live).
+// On local dev where the binding may not be available, fall back to HTTP fetch.
+let leaderboards: ScoreEntry[][] = [];
+// @ts-ignore
+const kv = env?.SCORES_KV;
 
-const baseUrl = 'https://arcade.jakefixestech.com';
-const leaderboards: ScoreEntry[][] = await Promise.all(
-  GAMES.map(g => fetchLeaderboard(g.slug, baseUrl))
-);
+if (kv) {
+  // LIVE: read directly from KV binding (no self-fetch needed)
+  leaderboards = await Promise.all(
+    GAMES.map(async (g) => {
+      try {
+        const raw = await kv.get(`scores:${g.slug}`);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw) as ScoreEntry[];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    })
+  );
+} else {
+  // LOCAL DEV fallback: fetch from live API
+  const baseUrl = 'https://arcade.jakefixestech.com';
+  leaderboards = await Promise.all(
+    GAMES.map(async (g) => {
+      try {
+        const res = await fetch(`${baseUrl}/api/scores/${g.slug}`);
+        if (!res.ok) return [];
+        const data = await res.json() as { scores?: ScoreEntry[] };
+        return data.scores || [];
+      } catch {
+        return [];
+      }
+    })
+  );
+}
 
 const playerPoints: Record<string, { points: number; gamesPlayed: number }> = {};
 GAMES.forEach((game, gameIdx) => {
   const scores = leaderboards[gameIdx];
-  scores.forEach((entry: { initials: string; score: number; timestamp: string }, rank: number) => {
+  scores.forEach((entry: ScoreEntry, rank: number) => {
     const points = rank + 1;
     if (!playerPoints[entry.initials]) {
       playerPoints[entry.initials] = { points: 0, gamesPlayed: 0 };
@@ -505,53 +529,8 @@ if (eligible.length > 0) {
       </footer>
     </main>
 
-    <script>
-      // @ts-nocheck
-      function escapeHtml(str) {
-        return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-      }
+    <script is:inline src="/leaderboards.js"></script>
 
-      async function refreshLeaderboards() {
-        const blocks = document.querySelectorAll('.game-block[data-game-slug]');
-        await Promise.all(Array.from(blocks).map(async (block) => {
-          const slug = block.getAttribute('data-game-slug');
-          if (!slug) return;
-          try {
-            const res = await fetch(`/api/scores/${slug}`);
-            if (!res.ok) return;
-            const data = await res.json();
-            const scores = (data.scores || []).slice(0, 3);
-            const lb = block.querySelector('.game-leaderboard');
-            if (!lb) return;
-
-            if (scores.length === 0) {
-              lb.innerHTML = `
-                <p class="leaderboard-eyebrow">TOP 3</p>
-                <p class="leaderboard-empty">No scores yet. Be the first.</p>
-              `;
-            } else {
-              const rows = scores.map((entry, i) => `
-                <li class="leaderboard-row leaderboard-row--${i + 1}">
-                  <span class="rank-num">${i + 1}</span>
-                  <span class="rank-initials">${escapeHtml(entry.initials)}</span>
-                  <span class="rank-score">${entry.score}</span>
-                </li>
-              `).join('');
-              lb.innerHTML = `
-                <p class="leaderboard-eyebrow">TOP 3</p>
-                <ol class="leaderboard-list">${rows}</ol>
-              `;
-            }
-          } catch {}
-        }));
-      }
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', refreshLeaderboards);
-      } else {
-        refreshLeaderboards();
-      }
-    </script>
 
     <style>
       *, *::before, *::after {
