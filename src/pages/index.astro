@@ -143,10 +143,58 @@ if (eligible.length > 0) {
 
   <body>
     <main class="page">
+
+      <!-- Desktop sparkles (hidden on mobile via CSS) -->
       <div class="sparkles" aria-hidden="true">
         {Array.from({ length: 24 }).map((_, i) => (
           <span class={`spark sp-${i + 1}`}></span>
         ))}
+      </div>
+
+      <!-- Mobile static decorations (hidden on desktop via CSS) -->
+      <div class="mobile-decorations" aria-hidden="true">
+        <svg class="mdec mdec-1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="9" y="2" width="6" height="6" fill="#fbbf24"/>
+          <rect x="2" y="9" width="6" height="6" fill="#fbbf24"/>
+          <rect x="16" y="9" width="6" height="6" fill="#fbbf24"/>
+          <rect x="9" y="16" width="6" height="6" fill="#fbbf24"/>
+        </svg>
+        <svg class="mdec mdec-2" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 10 2 L 12 8 L 18 10 L 12 12 L 10 18 L 8 12 L 2 10 L 8 8 Z" fill="#fbbf24"/>
+        </svg>
+        <svg class="mdec mdec-3" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="2" width="4" height="20" fill="#fbbf24"/>
+          <rect x="2" y="10" width="20" height="4" fill="#fbbf24"/>
+        </svg>
+        <svg class="mdec mdec-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="3" fill="#fbbf24"/>
+          <circle cx="12" cy="12" r="8" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+        </svg>
+        <svg class="mdec mdec-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="6" height="6" fill="#fbbf24"/>
+          <rect x="16" y="2" width="6" height="6" fill="#fbbf24"/>
+          <rect x="2" y="16" width="6" height="6" fill="#fbbf24"/>
+          <rect x="16" y="16" width="6" height="6" fill="#fbbf24"/>
+        </svg>
+        <svg class="mdec mdec-6" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 10 2 L 12 8 L 18 10 L 12 12 L 10 18 L 8 12 L 2 10 L 8 8 Z" fill="#fbbf24"/>
+        </svg>
+        <svg class="mdec mdec-7" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="9" y="2" width="6" height="6" fill="#fbbf24"/>
+          <rect x="2" y="9" width="6" height="6" fill="#fbbf24"/>
+          <rect x="16" y="9" width="6" height="6" fill="#fbbf24"/>
+          <rect x="9" y="16" width="6" height="6" fill="#fbbf24"/>
+        </svg>
+        <svg class="mdec mdec-8" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="2" width="4" height="20" fill="#fbbf24"/>
+          <rect x="2" y="10" width="20" height="4" fill="#fbbf24"/>
+        </svg>
+        <svg class="mdec mdec-9" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="3" fill="#fbbf24"/>
+        </svg>
+        <svg class="mdec mdec-10" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 10 2 L 12 8 L 18 10 L 12 12 L 10 18 L 8 12 L 2 10 L 8 8 Z" fill="#fbbf24"/>
+        </svg>
       </div>
 
       <section class="hero">
@@ -292,7 +340,6 @@ if (eligible.length > 0) {
                   <rect x="14" y="13" width="52" height="6" rx="1" fill="#64748b" stroke="#1e293b" stroke-width="1.5" />
                   <rect x="34" y="62" width="12" height="10" fill="#334155" stroke="#1e293b" stroke-width="1.5" />
                   <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#334155" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
-
                   <text x="40" y="48" text-anchor="middle" font-family="Inter Tight, sans-serif" font-weight="900" font-size="32" fill="#94a3b8">?</text>
                 </svg>
               </div>
@@ -544,6 +591,7 @@ if (eligible.length > 0) {
 
       .page { position: relative; min-height: 100vh; }
 
+      /* DESKTOP: rising sparkles visible */
       .sparkles {
         position: fixed;
         inset: 0;
@@ -595,6 +643,11 @@ if (eligible.length > 0) {
         100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
       }
 
+      /* MOBILE: static decorations hidden by default */
+      .mobile-decorations {
+        display: none;
+      }
+
       .hero {
         position: relative;
         z-index: 1;
@@ -620,9 +673,7 @@ if (eligible.length > 0) {
       }
 
       @media (min-width: 1100px) {
-        .hero-inner {
-          gap: 4rem;
-        }
+        .hero-inner { gap: 4rem; }
       }
 
       .hero-content {
@@ -632,9 +683,7 @@ if (eligible.length > 0) {
       }
 
       @media (min-width: 768px) {
-        .hero-content {
-          align-items: flex-start;
-        }
+        .hero-content { align-items: flex-start; }
       }
 
       .hero-eyebrow {
@@ -658,18 +707,11 @@ if (eligible.length > 0) {
       }
 
       @media (min-width: 768px) {
-        .cabinet-wrap {
-          width: 240px;
-          height: 340px;
-          margin: 0;
-        }
+        .cabinet-wrap { width: 240px; height: 340px; margin: 0; }
       }
 
       @media (min-width: 1100px) {
-        .cabinet-wrap {
-          width: 280px;
-          height: 400px;
-        }
+        .cabinet-wrap { width: 280px; height: 400px; }
       }
 
       .cabinet-aura {
@@ -690,9 +732,7 @@ if (eligible.length > 0) {
         animation: cabinet-float 4s ease-in-out infinite;
       }
 
-      .screen-text {
-        animation: blink 1.4s steps(2) infinite;
-      }
+      .screen-text { animation: blink 1.4s steps(2) infinite; }
 
       @keyframes aura-pulse {
         0%, 100% { transform: scale(1); opacity: 0.7; }
@@ -890,9 +930,7 @@ if (eligible.length > 0) {
         animation: trophy-shimmer 2.5s ease-in-out infinite;
       }
 
-      .champ-trophy--empty {
-        animation: empty-trophy-bob 3s ease-in-out infinite;
-      }
+      .champ-trophy--empty { animation: empty-trophy-bob 3s ease-in-out infinite; }
 
       .champ-trophy--empty svg {
         filter: drop-shadow(0 2px 8px rgba(251, 191, 36, 0.15));
@@ -919,11 +957,7 @@ if (eligible.length > 0) {
         50%      { opacity: 0.9; }
       }
 
-      .champ-content {
-        flex: 1;
-        position: relative;
-        z-index: 1;
-      }
+      .champ-content { flex: 1; position: relative; z-index: 1; }
 
       .champ-badge {
         display: inline-flex;
@@ -986,9 +1020,7 @@ if (eligible.length > 0) {
         line-height: 1.05;
       }
 
-      .champ-empty-line {
-        display: block;
-      }
+      .champ-empty-line { display: block; }
 
       .champ-empty-highlight {
         background: linear-gradient(135deg, #fbbf24, #fde68a, #fbbf24);
@@ -1008,14 +1040,8 @@ if (eligible.length > 0) {
         line-height: 1.5;
       }
 
-      .champ-stats strong {
-        color: #fbbf24;
-        font-weight: 700;
-      }
-
-      .champ-stats--empty strong {
-        color: #fff;
-      }
+      .champ-stats strong { color: #fbbf24; font-weight: 700; }
+      .champ-stats--empty strong { color: #fff; }
 
       .champ-note {
         font-family: 'JetBrains Mono', monospace;
@@ -1032,10 +1058,7 @@ if (eligible.length > 0) {
         margin: 0 auto;
       }
 
-      .games-header {
-        text-align: center;
-        margin-bottom: 3rem;
-      }
+      .games-header { text-align: center; margin-bottom: 3rem; }
 
       .section-eyebrow {
         font-family: 'JetBrains Mono', monospace;
@@ -1079,13 +1102,8 @@ if (eligible.length > 0) {
         box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
       }
 
-      .game-block--locked {
-        opacity: 0.65;
-      }
-
-      .game-block--locked:hover {
-        transform: none;
-      }
+      .game-block--locked { opacity: 0.65; }
+      .game-block--locked:hover { transform: none; }
 
       .game-card {
         display: flex;
@@ -1106,10 +1124,7 @@ if (eligible.length > 0) {
 
       .game-icon svg { width: 100%; height: 100%; }
 
-      .game-meta {
-        flex: 1;
-        min-width: 12rem;
-      }
+      .game-meta { flex: 1; min-width: 12rem; }
 
       .game-name {
         font-family: 'Inter Tight', system-ui, sans-serif;
@@ -1159,12 +1174,8 @@ if (eligible.length > 0) {
         border: 1px solid rgba(148, 163, 184, 0.3);
       }
 
-      .game-play-btn--locked:hover {
-        transform: none;
-        box-shadow: none;
-      }
+      .game-play-btn--locked:hover { transform: none; box-shadow: none; }
 
-      /* MOBILE LEADERBOARD FIX: explicit display + height so it doesn't collapse */
       .game-leaderboard {
         display: block;
         background: rgba(10, 14, 26, 0.6);
@@ -1224,19 +1235,9 @@ if (eligible.length > 0) {
         font-weight: 600;
       }
 
-      .rank-num {
-        font-weight: 700;
-        text-align: center;
-      }
-
-      .rank-initials {
-        letter-spacing: 0.05em;
-      }
-
-      .rank-score {
-        text-align: right;
-        font-variant-numeric: tabular-nums;
-      }
+      .rank-num { font-weight: 700; text-align: center; }
+      .rank-initials { letter-spacing: 0.05em; }
+      .rank-score { text-align: right; font-variant-numeric: tabular-nums; }
 
       .leaderboard-empty {
         font-family: 'JetBrains Mono', monospace;
@@ -1256,9 +1257,7 @@ if (eligible.length > 0) {
       }
 
       @media (min-width: 1024px) {
-        .games-grid {
-          gap: 1.75rem;
-        }
+        .games-grid { gap: 1.75rem; }
       }
 
       .how-section {
@@ -1361,20 +1360,91 @@ if (eligible.length > 0) {
         outline: none;
       }
 
-      .footer-sep {
-        color: #475569;
+      .footer-sep { color: #475569; }
+
+      /* ============================================ */
+      /* MOBILE PERFORMANCE OVERRIDES (768px and down) */
+      /* ============================================ */
+      @media (max-width: 768px) {
+        /* Hide desktop sparkles, show mobile static decorations */
+        .sparkles { display: none; }
+
+        .mobile-decorations {
+          display: block;
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          overflow: hidden;
+        }
+
+        .mdec {
+          position: absolute;
+          opacity: 0.12;
+        }
+
+        .mdec-1  { top: 8%;  left: 6%;   width: 18px; height: 18px; }
+        .mdec-2  { top: 14%; right: 8%;  width: 14px; height: 14px; opacity: 0.15; }
+        .mdec-3  { top: 28%; left: 4%;   width: 16px; height: 16px; opacity: 0.10; }
+        .mdec-4  { top: 38%; right: 6%;  width: 22px; height: 22px; opacity: 0.10; }
+        .mdec-5  { top: 50%; left: 7%;   width: 18px; height: 18px; opacity: 0.13; }
+        .mdec-6  { top: 60%; right: 5%;  width: 14px; height: 14px; opacity: 0.15; }
+        .mdec-7  { top: 72%; left: 5%;   width: 18px; height: 18px; opacity: 0.10; }
+        .mdec-8  { top: 80%; right: 7%;  width: 16px; height: 16px; opacity: 0.13; }
+        .mdec-9  { top: 90%; left: 8%;   width: 12px; height: 12px; opacity: 0.15; }
+        .mdec-10 { top: 96%; right: 9%;  width: 14px; height: 14px; opacity: 0.12; }
+
+        /* Kill backdrop-filter — replace with solid backgrounds */
+        .champion-card {
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+          background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 58, 138, 0.85));
+          animation: none;
+        }
+        .game-block {
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+          background: rgba(15, 23, 42, 0.85);
+        }
+        .how-step {
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+          background: rgba(15, 23, 42, 0.7);
+        }
+
+        /* Kill cabinet effects */
+        .cabinet-aura { display: none; }
+        .cabinet {
+          filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+          animation: none;
+        }
+        .screen-text { animation: none; }
+
+        /* Kill champion ray spinning + trophy effects */
+        .champ-rays { display: none; }
+        .champ-trophy { animation: none; }
+        .champ-trophy-glow { display: none; }
+        .champ-trophy-shimmer { display: none; }
+        .champ-trophy--empty { animation: none; }
+
+        /* CTA pulse off (animation killer) */
+        .hero-cta { animation: none; box-shadow: 0 6px 20px rgba(251, 191, 36, 0.3); }
+
+        /* Touch device hover effects off */
+        .game-block:hover { transform: none; box-shadow: none; }
       }
 
+      /* ============================================ */
+      /* MOBILE LAYOUT (max-width: 600px)              */
+      /* ============================================ */
       @media (max-width: 600px) {
         .hero { padding: 3rem 1.25rem 2rem; }
         .cabinet-wrap { width: 160px; height: 230px; }
         .champion-card { padding: 1.75rem 1.25rem; flex-direction: column; text-align: center; }
-        .champ-empty { flex-direction: column; text-align: center; gap: 1.25rem; }
         .game-block { padding: 1.25rem; }
         .game-card { gap: 1rem; }
         .game-play-btn { width: 100%; justify-content: center; }
 
-        /* Extra mobile leaderboard safety: force visible at all times */
         .game-leaderboard {
           display: block !important;
           width: 100%;
@@ -1397,6 +1467,7 @@ if (eligible.length > 0) {
         .hero-cta { animation: none; }
         .champ-trophy { animation: none; }
         .champ-badge-dot { animation: none; }
+        .champ-initials, .champ-empty-highlight { animation: none; background-position: 0% 50%; }
       }
     </style>
   </body>
