@@ -265,7 +265,7 @@
       const BULLET_SPEED = 8;
       const BULLET_COOLDOWN = 320; // ms between shots
       const SPAM_COLS = 8;
-      const SPAM_ROWS = 5;
+      const SPAM_ROWS_MAX = 5;
       const SPAM_W = 32;
       const SPAM_H = 22;
       const SPAM_GAP_X = 8;
@@ -274,18 +274,20 @@
       const SPAM_LEFT = (W - (SPAM_COLS * SPAM_W + (SPAM_COLS - 1) * SPAM_GAP_X)) / 2;
       const SPAM_STEP_DOWN = 16;     // pixels dropped at edge
       const SPAM_BASE_DX = 0.4;      // base horizontal speed (per frame)
-      const SPAM_BOMB_W = 6;
-      const SPAM_BOMB_H = 12;
-      const SPAM_BOMB_SPEED = 3.2;
-      const SPAM_BOMB_CHANCE = 0.0035; // per alive spam per frame
+      // Divers — spam that breaks formation and slowly falls at the player
+      const DIVER_SPEED_BASE = 1.6;   // baseline downward speed
+      const DIVER_WOBBLE_AMPL = 1.4;  // horizontal wobble pixels
+      const DIVER_WOBBLE_FREQ = 0.06; // frequency of wobble
+      const DIVER_SPAWN_FRAMES_BASE = 240; // wave 1: spawn a diver every ~4s @ 60fps
       const WAVE_BONUS = 50;
       const START_LIVES = 3;
       const GAME_SLUG = 'spam-blaster';
       const GAME_NAME = 'Spam Blaster';
 
-      // Spam types per row (top to bottom)
-      // top row = 30pt urgent, middle = 20pt regular, bottom = 10pt basic
-      const ROW_TYPES = ['urgent', 'urgent', 'regular', 'regular', 'basic'];
+      // Spam types per row (top to bottom of MAX layout)
+      // Top = 30pt urgent, middle = 20pt regular, bottom = 10pt basic
+      // Each wave reveals more rows from the bottom up
+      const ROW_TYPES_FULL = ['urgent', 'urgent', 'regular', 'regular', 'basic'];
       const ROW_POINTS = { urgent: 30, regular: 20, basic: 10 };
 
       // === DOM refs ===
@@ -332,10 +334,11 @@
       let playerX = W / 2 - PLAYER_W / 2;
       let bullets = [];               // [{x, y}]
       let spam = [];                  // [{x, y, w, h, type, alive, row, col}]
-      let bombs = [];                 // [{x, y}]
+      let divers = [];                // [{x, y, baseX, type, alive, frame}]
       let spamDX = SPAM_BASE_DX;
       let spamDirection = 1;          // 1 right, -1 left
       let pendingDrop = false;
+      let framesUntilDiver = DIVER_SPAWN_FRAMES_BASE;
       let score = 0;
       let kills = 0;
       let wave = 1;
@@ -364,25 +367,37 @@
         livesDisplay.textContent = '♥'.repeat(Math.max(0, lives));
       }
 
+      function rowsForWave(w) {
+        // Wave 1: 2 rows. +1 row per wave, max 5.
+        return Math.min(SPAM_ROWS_MAX, 2 + (w - 1));
+      }
+
       function buildSpamWave() {
         spam = [];
-        for (let row = 0; row < SPAM_ROWS; row++) {
+        const rows = rowsForWave(wave);
+        // Reveal rows from BOTTOM of full layout up: wave 1 = last 2 rows (basic + regular)
+        const startRow = SPAM_ROWS_MAX - rows;
+        for (let r = 0; r < rows; r++) {
+          const fullRow = startRow + r;
           for (let col = 0; col < SPAM_COLS; col++) {
             spam.push({
               x: SPAM_LEFT + col * (SPAM_W + SPAM_GAP_X),
-              y: SPAM_TOP + row * (SPAM_H + SPAM_GAP_Y),
+              y: SPAM_TOP + r * (SPAM_H + SPAM_GAP_Y),
               w: SPAM_W,
               h: SPAM_H,
-              type: ROW_TYPES[row],
+              type: ROW_TYPES_FULL[fullRow],
               alive: true,
-              row,
+              row: r,
               col,
             });
           }
         }
+        // Each wave: faster drift
         spamDX = SPAM_BASE_DX + (wave - 1) * 0.18;
         spamDirection = 1;
         pendingDrop = false;
+        // Each wave: more frequent divers (lower frame count between spawns)
+        framesUntilDiver = Math.max(60, DIVER_SPAWN_FRAMES_BASE - (wave - 1) * 30);
       }
 
       function startGame() {
@@ -392,7 +407,7 @@
         wave = 1;
         playerX = W / 2 - PLAYER_W / 2;
         bullets = [];
-        bombs = [];
+        divers = [];
         gameRunning = true;
         gameStarted = false;
 
@@ -415,7 +430,7 @@
         score += WAVE_BONUS;
         scoreDisplay.textContent = String(score);
         bullets = [];
-        bombs = [];
+        divers = [];
         buildSpamWave();
       }
 
@@ -466,9 +481,9 @@
             if (s.x + s.w > maxX) maxX = s.x + s.w;
           }
 
-          // Speedup as fewer spam remain (classic SI accel)
-          const totalSpam = SPAM_COLS * SPAM_ROWS;
-          const accel = 1 + ((totalSpam - liveCount) / totalSpam) * 1.8;
+          // Speedup as fewer spam remain (classic SI accel) — based on this wave's row count
+          const totalSpamThisWave = SPAM_COLS * rowsForWave(wave);
+          const accel = 1 + ((totalSpamThisWave - liveCount) / Math.max(1, totalSpamThisWave)) * 1.8;
           const dx = spamDX * spamDirection * accel;
 
           // Check edge before moving
@@ -490,43 +505,56 @@
             }
           }
 
-          // Check if any spam reached the bottom
+          // Check if any formation spam reached the bottom
           for (const s of spam) {
             if (!s.alive) continue;
             if (s.y + s.h >= PLAYER_Y) {
-              // Spam reached the bottom - lose a life
               loseLife('Spam reached your inbox!');
               return;
             }
           }
 
-          // Spam drops bombs randomly (only from bottom-most spam in their column)
-          const bottomMost = {};
-          for (const s of spam) {
-            if (!s.alive) continue;
-            if (!(s.col in bottomMost) || s.row > bottomMost[s.col].row) {
-              bottomMost[s.col] = s;
-            }
+          // Spawn divers — pick a random alive spam and break it from formation
+          framesUntilDiver--;
+          if (framesUntilDiver <= 0 && liveCount > 0) {
+            const alive = spam.filter(s => s.alive);
+            const picked = alive[Math.floor(Math.random() * alive.length)];
+            // Don't spawn diver from one we already pulled — mark it as alive=false (counts as gone from formation)
+            picked.alive = false;
+            divers.push({
+              x: picked.x,
+              y: picked.y,
+              baseX: picked.x,
+              w: picked.w,
+              h: picked.h,
+              type: picked.type,
+              alive: true,
+              frame: 0,
+            });
+            // Reset spawn timer with a bit of randomness, scaled by wave
+            const baseFrames = Math.max(60, DIVER_SPAWN_FRAMES_BASE - (wave - 1) * 30);
+            framesUntilDiver = baseFrames + Math.floor(Math.random() * 90);
           }
-          for (const col in bottomMost) {
-            const s = bottomMost[col];
-            const chance = SPAM_BOMB_CHANCE * (1 + (wave - 1) * 0.3);
-            if (Math.random() < chance) {
-              bombs.push({ x: s.x + s.w / 2 - SPAM_BOMB_W / 2, y: s.y + s.h });
-            }
+
+          // Move divers
+          const diverSpeed = DIVER_SPEED_BASE + (wave - 1) * 0.25;
+          for (const d of divers) {
+            if (!d.alive) continue;
+            d.frame++;
+            d.y += diverSpeed;
+            d.x = d.baseX + Math.sin(d.frame * DIVER_WOBBLE_FREQ) * (DIVER_WOBBLE_AMPL * 12);
+            // Keep within bounds
+            d.x = Math.max(0, Math.min(W - d.w, d.x));
           }
 
           // Move bullets
           for (const b of bullets) b.y -= BULLET_SPEED;
           bullets = bullets.filter(b => b.y + BULLET_H > 0);
 
-          // Move bombs
-          for (const b of bombs) b.y += SPAM_BOMB_SPEED;
-          bombs = bombs.filter(b => b.y < H);
-
-          // Bullet vs spam
+          // Bullet vs formation spam
           for (let i = bullets.length - 1; i >= 0; i--) {
             const b = bullets[i];
+            let hit = false;
             for (const s of spam) {
               if (!s.alive) continue;
               if (
@@ -540,29 +568,58 @@
                 kills++;
                 score += ROW_POINTS[s.type];
                 scoreDisplay.textContent = String(score);
+                hit = true;
+                break;
+              }
+            }
+            if (hit) continue;
+
+            // Bullet vs divers
+            for (const d of divers) {
+              if (!d.alive) continue;
+              if (
+                b.x + BULLET_W >= d.x &&
+                b.x <= d.x + d.w &&
+                b.y <= d.y + d.h &&
+                b.y + BULLET_H >= d.y
+              ) {
+                d.alive = false;
+                bullets.splice(i, 1);
+                kills++;
+                // Divers worth 1.5x base points (rounded) for the extra threat
+                score += Math.round(ROW_POINTS[d.type] * 1.5);
+                scoreDisplay.textContent = String(score);
                 break;
               }
             }
           }
 
-          // Bomb vs player
+          // Diver vs player + diver reaching bottom
           const playerBox = { x: playerX + 4, y: PLAYER_Y, w: PLAYER_W - 8, h: PLAYER_H };
-          for (let i = bombs.length - 1; i >= 0; i--) {
-            const b = bombs[i];
+          for (const d of divers) {
+            if (!d.alive) continue;
             if (
-              b.x + SPAM_BOMB_W >= playerBox.x &&
-              b.x <= playerBox.x + playerBox.w &&
-              b.y + SPAM_BOMB_H >= playerBox.y &&
-              b.y <= playerBox.y + playerBox.h
+              d.x + d.w >= playerBox.x &&
+              d.x <= playerBox.x + playerBox.w &&
+              d.y + d.h >= playerBox.y &&
+              d.y <= playerBox.y + playerBox.h
             ) {
-              bombs.splice(i, 1);
-              loseLife('A spam bomb got through!');
+              d.alive = false;
+              loseLife('A spam diver hit you!');
+              return;
+            }
+            if (d.y >= H) {
+              d.alive = false;
+              loseLife('A diver got past you!');
               return;
             }
           }
 
-          // Wave clear?
-          if (liveCount === 0) {
+          // Clean up dead divers
+          divers = divers.filter(d => d.alive);
+
+          // Wave clear? Both formation cleared AND no divers in flight
+          if (liveCount === 0 && divers.length === 0) {
             startNextWave();
           }
         }
@@ -578,8 +635,8 @@
           endGame();
           return;
         }
-        // Brief pause, clear bombs, show overlay
-        bombs = [];
+        // Brief pause, clear divers, show overlay
+        divers = [];
         bullets = [];
         gameStarted = false;
         boardOverlay.classList.remove('board-overlay--hidden');
@@ -609,10 +666,10 @@
           if (s.alive) drawSpam(s);
         }
 
-        // Bombs
-        ctx.fillStyle = '#ef4444';
-        for (const b of bombs) {
-          drawBomb(b.x, b.y);
+        // Divers (same sprite + red glow halo so they stand out)
+        for (const d of divers) {
+          if (!d.alive) continue;
+          drawDiver(d);
         }
 
         // Bullets
@@ -674,22 +731,18 @@
         ctx.textBaseline = 'alphabetic';
       }
 
-      function drawBomb(x, y) {
-        // Downward red arrow (spam bomb)
-        ctx.fillStyle = '#ef4444';
-        ctx.strokeStyle = '#7f1d1d';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(x + SPAM_BOMB_W / 2, y + SPAM_BOMB_H);
-        ctx.lineTo(x, y + SPAM_BOMB_H * 0.55);
-        ctx.lineTo(x + SPAM_BOMB_W * 0.3, y + SPAM_BOMB_H * 0.55);
-        ctx.lineTo(x + SPAM_BOMB_W * 0.3, y);
-        ctx.lineTo(x + SPAM_BOMB_W * 0.7, y);
-        ctx.lineTo(x + SPAM_BOMB_W * 0.7, y + SPAM_BOMB_H * 0.55);
-        ctx.lineTo(x + SPAM_BOMB_W, y + SPAM_BOMB_H * 0.55);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+      function drawDiver(d) {
+        // Red glow halo to make them visually distinct from formation
+        const cx = d.x + d.w / 2;
+        const cy = d.y + d.h / 2;
+        const haloR = Math.max(d.w, d.h) * 0.85;
+        const grad = ctx.createRadialGradient(cx, cy, haloR * 0.3, cx, cy, haloR);
+        grad.addColorStop(0, 'rgba(239, 68, 68, 0.45)');
+        grad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(cx - haloR, cy - haloR, haloR * 2, haloR * 2);
+        // Use the same envelope sprite for visual consistency
+        drawSpam(d);
       }
 
       function drawPlayer(x, y) {
