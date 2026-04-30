@@ -1,0 +1,1660 @@
+---
+
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>USB Defender — Jake's Arcade</title>
+    <meta name="description" content="Bounce bugs back with a USB paddle. 3 lives, infinite bugs at Jake's Arcade." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="USB Defender — Jake's Arcade" />
+    <meta property="og:description" content="Bounce bugs back with a USB paddle. 3 lives, infinite bugs at Jake's Arcade." />
+    <meta property="og:url" content="https://arcade.jakefixestech.com/usb-defender" />
+    <meta property="og:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
+    <meta property="og:site_name" content="Jake's Arcade" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="USB Defender — Jake's Arcade" />
+    <meta name="twitter:description" content="Bounce bugs back with a USB paddle." />
+    <meta name="twitter:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=optional"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=optional"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      />
+    </noscript>
+  </head>
+
+  <body>
+    <main class="page">
+
+      <button id="exit-btn" type="button" class="exit-btn" aria-label="Exit to arcade">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M 9 6 L 4 12 L 9 18 M 4 12 L 19 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span class="exit-btn-label">EXIT</span>
+      </button>
+
+      <div class="sparkles" aria-hidden="true">
+        {Array.from({ length: 18 }).map((_, i) => (
+          <span class={`spark sp-${i + 1}`}></span>
+        ))}
+      </div>
+
+      <section class="game-section">
+        <div class="game-wrap">
+          <div class="game-header" aria-hidden="true">
+            <div class="game-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <div class="game-title">jake@arcade: ~/usb-defender</div>
+          </div>
+
+          <div class="game-body">
+
+            <!-- INTRO -->
+            <div id="state-intro" class="state state--active">
+              <div class="intro-icon" aria-hidden="true">
+                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="14" y="34" width="36" height="14" rx="2" fill="#94a3b8" stroke="#475569" stroke-width="2" />
+                  <rect x="50" y="36" width="14" height="10" rx="1" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5" />
+                  <rect x="18" y="38" width="6" height="6" fill="#fbbf24" />
+                  <rect x="26" y="38" width="6" height="6" fill="#fbbf24" />
+                  <rect x="34" y="38" width="6" height="6" fill="#fbbf24" />
+                  <rect x="42" y="38" width="6" height="6" fill="#fbbf24" />
+                  <circle cx="20" cy="60" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
+                  <circle cx="60" cy="22" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
+                </svg>
+              </div>
+
+              <h1 class="intro-title">USB Defender</h1>
+              <p class="intro-text">
+                Bounce <strong class="green-strong">bugs</strong> back with a USB paddle.
+              </p>
+              <p class="intro-hint">
+                <strong>3 lives.</strong> Move the paddle with mouse, arrows, or finger. Don't let the bug past you.
+              </p>
+
+              <button id="start-btn" class="primary-btn" type="button">
+                <span>PLAY</span>
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M 7 5 L 7 19 L 19 12 Z" fill="currentColor" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- PLAYING -->
+            <div id="state-playing" class="state">
+              <div class="hud">
+                <div class="hud-item">
+                  <span class="hud-label">DEFLECTED</span>
+                  <span class="hud-value" id="score-display">0</span>
+                </div>
+                <div class="hud-item">
+                  <span class="hud-label">LIVES</span>
+                  <span class="hud-value" id="lives-display">♥♥♥</span>
+                </div>
+                <div class="hud-item">
+                  <span class="hud-label">SPEED</span>
+                  <span class="hud-value" id="speed-display">1x</span>
+                </div>
+              </div>
+
+              <div class="board-wrap">
+                <canvas
+                  id="game-canvas"
+                  class="game-canvas"
+                  width="400"
+                  height="500"
+                  aria-label="USB Defender game board"
+                ></canvas>
+                <div id="board-overlay" class="board-overlay" aria-hidden="true">
+                  <p class="overlay-text" id="overlay-text">Tap to launch the bug</p>
+                </div>
+              </div>
+
+              <p class="game-hint">Mouse / arrows / drag to move paddle</p>
+            </div>
+
+            <!-- RESULT -->
+            <div id="state-result" class="state">
+              <div class="result-icon" aria-hidden="true">
+                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="40" cy="40" r="36" fill="#ef4444" />
+                  <path d="M 28 28 L 52 52 M 52 28 L 28 52" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" />
+                </svg>
+              </div>
+
+              <h2 class="result-title">Port breached!</h2>
+              <p class="result-text">
+                Bugs deflected (final score): <strong id="result-score">0</strong>
+              </p>
+
+              <div class="initials-section">
+                <p class="initials-label">ENTER YOUR INITIALS</p>
+                <div class="initials-inputs" role="group" aria-label="Three letter initials">
+                  <input type="text" class="initial-box" id="init-1" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="First letter" />
+                  <input type="text" class="initial-box" id="init-2" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Second letter" />
+                  <input type="text" class="initial-box" id="init-3" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Third letter" />
+                </div>
+
+                <p class="initials-error" id="initials-error" aria-live="polite"></p>
+
+                <button id="submit-btn" class="primary-btn" type="button" disabled>
+                  <span id="submit-btn-text">SUBMIT SCORE</span>
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M 5 12 L 19 12 M 13 6 L 19 12 L 13 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+
+                <button id="skip-btn" class="ghost-btn" type="button">Skip — don't save my score</button>
+              </div>
+            </div>
+
+            <!-- LEADERBOARD -->
+            <div id="state-leaderboard" class="state">
+              <div id="rank-reveal" class="rank-reveal">
+                <p class="rank-eyebrow" id="rank-eyebrow">YOU RANKED</p>
+                <p class="rank-number" id="rank-number">#1</p>
+                <p class="rank-detail" id="rank-detail">on the leaderboard</p>
+              </div>
+
+              <div class="leaderboard-wrap">
+                <p class="leaderboard-title">TOP 10 — USB DEFENDER</p>
+                <ol id="leaderboard-list" class="leaderboard"></ol>
+              </div>
+
+              <div class="share-section">
+                <p class="share-eyebrow">SHARE YOUR SCORE</p>
+                <div class="share-buttons">
+                  <a id="share-fb" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to Facebook">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M 12 2 C 6.477 2 2 6.477 2 12 C 2 17 5.66 21.13 10.44 21.88 L 10.44 14.89 L 7.9 14.89 L 7.9 12 L 10.44 12 L 10.44 9.8 C 10.44 7.29 11.93 5.91 14.22 5.91 C 15.31 5.91 16.45 6.1 16.45 6.1 L 16.45 8.56 L 15.19 8.56 C 13.95 8.56 13.56 9.33 13.56 10.12 L 13.56 12 L 16.34 12 L 15.89 14.89 L 13.56 14.89 L 13.56 21.88 C 18.34 21.13 22 17 22 12 C 22 6.477 17.523 2 12 2 Z" fill="currentColor" />
+                    </svg>
+                  </a>
+                  <a id="share-x" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to X">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M 18.244 2.25 L 21.552 2.25 L 14.325 10.51 L 22.827 21.75 L 16.17 21.75 L 10.956 14.933 L 4.99 21.75 L 1.68 21.75 L 9.41 12.915 L 1.254 2.25 L 8.08 2.25 L 12.793 8.481 L 18.244 2.25 Z M 17.083 19.77 L 18.916 19.77 L 7.084 4.126 L 5.117 4.126 L 17.083 19.77 Z" fill="currentColor" />
+                    </svg>
+                  </a>
+                  <button id="share-native" type="button" class="share-btn" aria-label="Share via system share menu" style="display:none">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M 12 3 L 12 16 M 7 8 L 12 3 L 17 8 M 4 14 L 4 20 a 1 1 0 0 0 1 1 L 19 21 a 1 1 0 0 0 1 -1 L 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                  <button id="share-copy" type="button" class="share-btn" aria-label="Copy link to clipboard">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <rect x="8" y="8" width="13" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2" />
+                      <path d="M 5 15 L 4 15 a 1 1 0 0 1 -1 -1 L 3 4 a 1 1 0 0 1 1 -1 L 14 3 a 1 1 0 0 1 1 1 L 15 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                  </button>
+                </div>
+                <p class="copy-toast" id="copy-toast" aria-live="polite">Link copied!</p>
+              </div>
+
+              <div class="action-buttons">
+                <button id="play-again-btn" type="button" class="primary-btn">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M 4 12 a 8 8 0 1 1 2.5 5.7 M 4 12 V 6 M 4 12 H 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span>PLAY AGAIN</span>
+                </button>
+                <a href="/" class="ghost-btn ghost-btn--link">← Back to Arcade</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <div id="exit-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="exit-dialog-title" hidden>
+        <div class="dialog-backdrop"></div>
+        <div class="dialog-content">
+          <h2 id="exit-dialog-title" class="dialog-title">Exit mid-game?</h2>
+          <p class="dialog-text">Your score won't be saved if you leave now.</p>
+          <div class="dialog-buttons">
+            <button id="exit-cancel" type="button" class="ghost-btn">Keep playing</button>
+            <button id="exit-confirm" type="button" class="danger-btn">Exit anyway</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // @ts-nocheck
+
+      // === Config ===
+      const W = 400;                 // canvas width
+      const H = 500;                 // canvas height
+      const WALL_TOP_H = 36;         // top wall thickness (the "USB port" they're attacking)
+      const PADDLE_W_BASE = 80;
+      const PADDLE_H = 14;
+      const PADDLE_Y = H - 40;
+      const BALL_R = 10;
+      const BALL_BASE_SPEED = 4.0;
+      const BALL_SPEED_PER_HIT = 0.12;
+      const BALL_MAX_SPEED = 9.5;
+      const PADDLE_KEY_SPEED = 7;
+      const START_LIVES = 3;
+      const GAME_SLUG = 'usb-defender';
+      const GAME_NAME = 'USB Defender';
+
+      // === DOM refs ===
+      const stateIntro = document.getElementById('state-intro');
+      const statePlaying = document.getElementById('state-playing');
+      const stateResult = document.getElementById('state-result');
+      const stateLeaderboard = document.getElementById('state-leaderboard');
+      const startBtn = document.getElementById('start-btn');
+      const exitBtn = document.getElementById('exit-btn');
+      const scoreDisplay = document.getElementById('score-display');
+      const livesDisplay = document.getElementById('lives-display');
+      const speedDisplay = document.getElementById('speed-display');
+      const canvas = document.getElementById('game-canvas');
+      const ctx = canvas.getContext('2d');
+      const boardOverlay = document.getElementById('board-overlay');
+      const overlayText = document.getElementById('overlay-text');
+      const resultScore = document.getElementById('result-score');
+      const initBoxes = [
+        document.getElementById('init-1'),
+        document.getElementById('init-2'),
+        document.getElementById('init-3'),
+      ];
+      const initialsError = document.getElementById('initials-error');
+      const submitBtn = document.getElementById('submit-btn');
+      const submitBtnText = document.getElementById('submit-btn-text');
+      const skipBtn = document.getElementById('skip-btn');
+      const rankNumber = document.getElementById('rank-number');
+      const rankEyebrow = document.getElementById('rank-eyebrow');
+      const rankDetail = document.getElementById('rank-detail');
+      const leaderboardList = document.getElementById('leaderboard-list');
+      const playAgainBtn = document.getElementById('play-again-btn');
+      const exitDialog = document.getElementById('exit-dialog');
+      const exitCancel = document.getElementById('exit-cancel');
+      const exitConfirm = document.getElementById('exit-confirm');
+      const shareFb = document.getElementById('share-fb');
+      const shareX = document.getElementById('share-x');
+      const shareNative = document.getElementById('share-native');
+      const shareCopy = document.getElementById('share-copy');
+      const copyToast = document.getElementById('copy-toast');
+
+      // === Game state ===
+      let paddleX = W / 2 - PADDLE_W_BASE / 2;
+      let paddleW = PADDLE_W_BASE;
+      let ball = { x: W / 2, y: H / 2, vx: 0, vy: 0 };
+      let score = 0;
+      let lives = START_LIVES;
+      let ballSpeed = BALL_BASE_SPEED;
+      let gameRunning = false;
+      let ballLaunched = false;
+      let rafHandle = null;
+      let keysHeld = { left: false, right: false };
+      let finalScore = 0;
+      let lastSubmittedRank = null;
+      let lastSubmittedInitials = null;
+
+      function showState(name) {
+        [stateIntro, statePlaying, stateResult, stateLeaderboard].forEach(s => s.classList.remove('state--active'));
+        if (name === 'intro')       stateIntro.classList.add('state--active');
+        if (name === 'playing')     statePlaying.classList.add('state--active');
+        if (name === 'result')      stateResult.classList.add('state--active');
+        if (name === 'leaderboard') stateLeaderboard.classList.add('state--active');
+      }
+
+      function updateLivesDisplay() {
+        livesDisplay.textContent = '♥'.repeat(Math.max(0, lives));
+      }
+
+      function startGame() {
+        score = 0;
+        lives = START_LIVES;
+        ballSpeed = BALL_BASE_SPEED;
+        paddleW = PADDLE_W_BASE;
+        paddleX = W / 2 - paddleW / 2;
+        gameRunning = true;
+        ballLaunched = false;
+
+        scoreDisplay.textContent = '0';
+        speedDisplay.textContent = '1.0x';
+        updateLivesDisplay();
+
+        resetBallToPaddle();
+        showState('playing');
+        boardOverlay.classList.remove('board-overlay--hidden');
+        overlayText.textContent = 'Tap or press space to launch the bug';
+        draw();
+        startLoop();
+      }
+
+      function resetBallToPaddle() {
+        ball.x = paddleX + paddleW / 2;
+        ball.y = PADDLE_Y - BALL_R - 1;
+        ball.vx = 0;
+        ball.vy = 0;
+      }
+
+      function launchBall() {
+        if (ballLaunched || !gameRunning) return;
+        ballLaunched = true;
+        boardOverlay.classList.add('board-overlay--hidden');
+        // Random angle upward, between -60 and -120 degrees from horizontal
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * (Math.PI / 3);
+        ball.vx = Math.cos(angle) * ballSpeed;
+        ball.vy = Math.sin(angle) * ballSpeed;
+      }
+
+      function startLoop() {
+        cancelAnimationFrame(rafHandle);
+        rafHandle = requestAnimationFrame(tick);
+      }
+
+      function tick() {
+        if (!gameRunning) return;
+
+        // Move paddle from held keys
+        if (keysHeld.left) paddleX -= PADDLE_KEY_SPEED;
+        if (keysHeld.right) paddleX += PADDLE_KEY_SPEED;
+        paddleX = Math.max(0, Math.min(W - paddleW, paddleX));
+
+        if (ballLaunched) {
+          // Move ball
+          ball.x += ball.vx;
+          ball.y += ball.vy;
+
+          // Side wall bounces
+          if (ball.x - BALL_R < 0) {
+            ball.x = BALL_R;
+            ball.vx = Math.abs(ball.vx);
+          } else if (ball.x + BALL_R > W) {
+            ball.x = W - BALL_R;
+            ball.vx = -Math.abs(ball.vx);
+          }
+
+          // Top wall (USB port) bounce
+          if (ball.y - BALL_R < WALL_TOP_H) {
+            ball.y = WALL_TOP_H + BALL_R;
+            ball.vy = Math.abs(ball.vy);
+          }
+
+          // Paddle collision (only when moving down and crossing paddle top)
+          if (
+            ball.vy > 0 &&
+            ball.y + BALL_R >= PADDLE_Y &&
+            ball.y + BALL_R <= PADDLE_Y + PADDLE_H + 4 &&
+            ball.x >= paddleX &&
+            ball.x <= paddleX + paddleW
+          ) {
+            // Bounce + add english based on hit position
+            const hitFrac = ((ball.x - paddleX) / paddleW) - 0.5; // -0.5 .. 0.5
+            const angleOffset = hitFrac * (Math.PI / 3); // up to ~60deg sideways
+            const angle = -Math.PI / 2 + angleOffset;
+            ballSpeed = Math.min(BALL_MAX_SPEED, ballSpeed + BALL_SPEED_PER_HIT);
+            ball.vx = Math.cos(angle) * ballSpeed;
+            ball.vy = Math.sin(angle) * ballSpeed;
+            ball.y = PADDLE_Y - BALL_R - 1;
+
+            score++;
+            scoreDisplay.textContent = String(score);
+            speedDisplay.textContent = (ballSpeed / BALL_BASE_SPEED).toFixed(1) + 'x';
+          }
+
+          // Ball missed paddle (went past bottom)
+          if (ball.y - BALL_R > H) {
+            lives--;
+            updateLivesDisplay();
+
+            if (lives <= 0) {
+              endGame();
+              return;
+            }
+            // Reset to paddle, wait for relaunch
+            ballLaunched = false;
+            resetBallToPaddle();
+            boardOverlay.classList.remove('board-overlay--hidden');
+            overlayText.textContent = lives === 1 ? 'Last life! Tap to launch' : `${lives} lives left — tap to launch`;
+          }
+        } else {
+          // Ball follows paddle while waiting to launch
+          ball.x = paddleX + paddleW / 2;
+          ball.y = PADDLE_Y - BALL_R - 1;
+        }
+
+        draw();
+        rafHandle = requestAnimationFrame(tick);
+      }
+
+      function draw() {
+        // Background
+        ctx.fillStyle = '#0a0e1a';
+        ctx.fillRect(0, 0, W, H);
+
+        // Subtle vertical lines (circuit feel)
+        ctx.strokeStyle = 'rgba(96, 165, 250, 0.05)';
+        ctx.lineWidth = 1;
+        for (let x = 40; x < W; x += 40) {
+          ctx.beginPath();
+          ctx.moveTo(x, WALL_TOP_H);
+          ctx.lineTo(x, H);
+          ctx.stroke();
+        }
+
+        // Top wall — USB port row
+        drawTopWall();
+
+        // Paddle — USB stick
+        drawPaddle(paddleX, PADDLE_Y, paddleW);
+
+        // Ball — bug
+        drawBug(ball.x, ball.y);
+      }
+
+      function drawTopWall() {
+        // Wall background
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(0, 0, W, WALL_TOP_H);
+
+        // USB port slots evenly spaced
+        const slotCount = 8;
+        const slotW = 28;
+        const slotH = 16;
+        const gap = (W - slotCount * slotW) / (slotCount + 1);
+        for (let i = 0; i < slotCount; i++) {
+          const x = gap + i * (slotW + gap);
+          const y = (WALL_TOP_H - slotH) / 2;
+          ctx.fillStyle = '#0a0e1a';
+          ctx.fillRect(x, y, slotW, slotH);
+          // Inner USB tongue
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(x + 4, y + 4, slotW - 8, slotH / 3);
+        }
+
+        // Bottom edge highlight
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, WALL_TOP_H);
+        ctx.lineTo(W, WALL_TOP_H);
+        ctx.stroke();
+      }
+
+      function drawPaddle(x, y, w) {
+        // Main body — silver USB stick body
+        ctx.fillStyle = '#94a3b8';
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(x, y, w, PADDLE_H);
+        ctx.strokeRect(x, y, w, PADDLE_H);
+
+        // USB connector tip (slightly raised in front)
+        const tipW = w * 0.22;
+        const tipX = x + (w - tipW) / 2;
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(tipX, y - 4, tipW, 4);
+        ctx.strokeRect(tipX, y - 4, tipW, 4);
+
+        // Gold contacts on the tip
+        ctx.fillStyle = '#fbbf24';
+        const contactCount = 4;
+        const contactW = (tipW - 6) / contactCount;
+        for (let i = 0; i < contactCount; i++) {
+          ctx.fillRect(tipX + 3 + i * contactW + 1, y - 3, contactW - 2, 2);
+        }
+
+        // Highlight stripe
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+        ctx.fillRect(x + 2, y + 2, w - 4, 2);
+      }
+
+      function drawBug(cx, cy) {
+        const r = BALL_R;
+        // Body
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, r, r * 1.15, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Antennae
+        ctx.strokeStyle = '#7f1d1d';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx - r * 0.45, cy - r * 0.6);
+        ctx.lineTo(cx - r * 0.85, cy - r * 1.3);
+        ctx.moveTo(cx + r * 0.45, cy - r * 0.6);
+        ctx.lineTo(cx + r * 0.85, cy - r * 1.3);
+        ctx.stroke();
+
+        // Eyes
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(cx - r * 0.32, cy - r * 0.15, r * 0.2, 0, Math.PI * 2);
+        ctx.arc(cx + r * 0.32, cy - r * 0.15, r * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pupils
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(cx - r * 0.32, cy - r * 0.15, r * 0.08, 0, Math.PI * 2);
+        ctx.arc(cx + r * 0.32, cy - r * 0.15, r * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // === Input ===
+      function getCanvasPos(clientX) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = W / rect.width;
+        return (clientX - rect.left) * scaleX;
+      }
+
+      function setPaddleByClientX(clientX) {
+        const x = getCanvasPos(clientX);
+        paddleX = Math.max(0, Math.min(W - paddleW, x - paddleW / 2));
+      }
+
+      // Mouse
+      canvas.addEventListener('mousemove', (e) => {
+        if (!gameRunning) return;
+        setPaddleByClientX(e.clientX);
+      });
+      canvas.addEventListener('click', () => {
+        launchBall();
+      });
+
+      // Touch / drag
+      let touchActive = false;
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        touchActive = true;
+        setPaddleByClientX(e.touches[0].clientX);
+        e.preventDefault();
+      }, { passive: false });
+      canvas.addEventListener('touchmove', (e) => {
+        if (!touchActive || e.touches.length !== 1) return;
+        setPaddleByClientX(e.touches[0].clientX);
+        e.preventDefault();
+      }, { passive: false });
+      canvas.addEventListener('touchend', (e) => {
+        if (!touchActive) return;
+        touchActive = false;
+        // Tap to launch
+        launchBall();
+        e.preventDefault();
+      }, { passive: false });
+
+      // Keyboard
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !exitDialog.hidden) {
+          hideExitDialog();
+          return;
+        }
+        if (!statePlaying.classList.contains('state--active')) return;
+
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          keysHeld.left = true; e.preventDefault();
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          keysHeld.right = true; e.preventDefault();
+        } else if (e.code === 'Space') {
+          e.preventDefault();
+          launchBall();
+        }
+      });
+      document.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keysHeld.left = false;
+        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keysHeld.right = false;
+      });
+
+      function endGame() {
+        if (!gameRunning) return;
+        gameRunning = false;
+        ballLaunched = false;
+        cancelAnimationFrame(rafHandle);
+        keysHeld.left = false;
+        keysHeld.right = false;
+
+        finalScore = score;
+        resultScore.textContent = String(finalScore);
+
+        initBoxes.forEach(b => { b.value = ''; b.classList.remove('initial-box--filled'); });
+        submitBtn.disabled = true;
+        submitBtnText.textContent = 'SUBMIT SCORE';
+        initialsError.textContent = '';
+
+        showState('result');
+        setTimeout(() => initBoxes[0].focus(), 100);
+      }
+
+      // === Initials input handling ===
+      initBoxes.forEach((box, idx) => {
+        box.addEventListener('input', (e) => {
+          let val = box.value.toUpperCase();
+          val = val.replace(/[^A-Z]/g, '');
+          box.value = val;
+
+          if (val.length === 1) {
+            box.classList.add('initial-box--filled');
+            if (idx < initBoxes.length - 1) {
+              initBoxes[idx + 1].focus();
+            } else {
+              box.blur();
+            }
+          } else {
+            box.classList.remove('initial-box--filled');
+          }
+
+          updateSubmitState();
+        });
+
+        box.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && box.value === '' && idx > 0) {
+            initBoxes[idx - 1].focus();
+            initBoxes[idx - 1].value = '';
+            initBoxes[idx - 1].classList.remove('initial-box--filled');
+            updateSubmitState();
+          }
+          if (e.key === 'Enter' && !submitBtn.disabled) {
+            submitScore();
+          }
+        });
+
+        box.addEventListener('focus', () => {
+          box.select();
+        });
+      });
+
+      function getInitials() {
+        return initBoxes.map(b => b.value).join('').toUpperCase();
+      }
+
+      function updateSubmitState() {
+        const initials = getInitials();
+        submitBtn.disabled = !/^[A-Z]{3}$/.test(initials);
+      }
+
+      async function submitScore() {
+        const initials = getInitials();
+        if (!/^[A-Z]{3}$/.test(initials)) return;
+
+        submitBtn.disabled = true;
+        submitBtnText.textContent = 'SUBMITTING...';
+        initialsError.textContent = '';
+
+        try {
+          const res = await fetch(`/api/scores/${GAME_SLUG}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ initials, score: finalScore }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            initialsError.textContent = data.error || 'Could not save score. Try different initials.';
+            submitBtn.disabled = false;
+            submitBtnText.textContent = 'SUBMIT SCORE';
+            return;
+          }
+
+          lastSubmittedInitials = initials;
+          lastSubmittedRank = data.madeLeaderboard ? data.rank : null;
+          renderLeaderboard(data.scores || []);
+        } catch (err) {
+          initialsError.textContent = 'Network error. Try again in a sec.';
+          submitBtn.disabled = false;
+          submitBtnText.textContent = 'SUBMIT SCORE';
+        }
+      }
+
+      submitBtn.addEventListener('click', submitScore);
+
+      skipBtn.addEventListener('click', async () => {
+        try {
+          const res = await fetch(`/api/scores/${GAME_SLUG}`);
+          const data = await res.json();
+          lastSubmittedRank = null;
+          lastSubmittedInitials = null;
+          renderLeaderboard(data.scores || []);
+        } catch {
+          renderLeaderboard([]);
+        }
+      });
+
+      function renderLeaderboard(scores) {
+        if (lastSubmittedRank) {
+          const ord = ordinalSuffix(lastSubmittedRank);
+          rankEyebrow.textContent = 'YOU RANKED';
+          rankNumber.textContent = `#${lastSubmittedRank}`;
+          rankDetail.textContent = lastSubmittedRank === 1 ? '🏆 First place!' : `${ord} place on the leaderboard`;
+          document.getElementById('rank-reveal').style.display = '';
+        } else if (lastSubmittedInitials) {
+          rankEyebrow.textContent = 'SCORE SUBMITTED';
+          rankNumber.textContent = String(finalScore);
+          rankDetail.textContent = "Didn't crack the top 10 — keep practicing!";
+          document.getElementById('rank-reveal').style.display = '';
+        } else {
+          document.getElementById('rank-reveal').style.display = 'none';
+        }
+
+        leaderboardList.innerHTML = '';
+
+        if (scores.length === 0) {
+          const empty = document.createElement('li');
+          empty.className = 'leaderboard-empty';
+          empty.textContent = 'No scores yet. Be the first.';
+          leaderboardList.appendChild(empty);
+        } else {
+          scores.slice(0, 10).forEach((entry, idx) => {
+            const li = document.createElement('li');
+            const rank = idx + 1;
+            const isMe = lastSubmittedRank === rank && lastSubmittedInitials === entry.initials;
+            li.className = `leaderboard-row leaderboard-row--${rank} ${isMe ? 'leaderboard-row--me' : ''}`;
+            li.innerHTML = `
+              <span class="rank-num">${rank}</span>
+              <span class="rank-initials">${escapeHtml(entry.initials)}</span>
+              <span class="rank-score">${entry.score}</span>
+              ${isMe ? '<span class="rank-you">← YOU</span>' : ''}
+            `;
+            leaderboardList.appendChild(li);
+          });
+        }
+
+        configureShare();
+
+        showState('leaderboard');
+      }
+
+      function ordinalSuffix(n) {
+        const s = ['th', 'st', 'nd', 'rd'];
+        const v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+      }
+
+      function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
+      function configureShare() {
+        const url = window.location.href;
+        const text = `I deflected ${finalScore} bugs on ${GAME_NAME} at Jake's Arcade. Beat me?`;
+        const fullShare = `${text} ${url}`;
+
+        shareFb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`;
+        shareX.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+
+        if (navigator.share) {
+          shareNative.style.display = '';
+          shareNative.onclick = async () => {
+            try {
+              await navigator.share({ title: GAME_NAME + " — Jake's Arcade", text, url });
+            } catch (e) { }
+          };
+        }
+
+        shareCopy.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(fullShare);
+            copyToast.classList.add('copy-toast--show');
+            setTimeout(() => copyToast.classList.remove('copy-toast--show'), 2000);
+          } catch {
+            const ta = document.createElement('textarea');
+            ta.value = fullShare;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            copyToast.classList.add('copy-toast--show');
+            setTimeout(() => copyToast.classList.remove('copy-toast--show'), 2000);
+          }
+        };
+      }
+
+      playAgainBtn.addEventListener('click', () => {
+        startGame();
+      });
+
+      function showExitDialog() {
+        exitDialog.hidden = false;
+        setTimeout(() => exitCancel.focus(), 50);
+      }
+
+      function hideExitDialog() {
+        exitDialog.hidden = true;
+      }
+
+      exitBtn.addEventListener('click', () => {
+        if (gameRunning) {
+          showExitDialog();
+        } else {
+          window.location.href = '/';
+        }
+      });
+
+      exitCancel.addEventListener('click', hideExitDialog);
+      exitConfirm.addEventListener('click', () => {
+        gameRunning = false;
+        cancelAnimationFrame(rafHandle);
+        keysHeld.left = false;
+        keysHeld.right = false;
+        window.location.href = '/';
+      });
+
+      startBtn.addEventListener('click', startGame);
+    </script>
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+      body {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: #ffffff;
+        font-family: 'Inter Tight', system-ui, -apple-system, sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .page { position: relative; min-height: 100vh; }
+
+      .exit-btn {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 100;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.6rem 1rem;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(96, 165, 250, 0.4);
+        border-radius: 0.5rem;
+        color: #e2e8f0;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .exit-btn:hover, .exit-btn:focus-visible {
+        background: rgba(15, 23, 42, 0.9);
+        border-color: rgba(251, 191, 36, 0.6);
+        color: #fbbf24;
+        outline: none;
+      }
+
+      .exit-btn svg { width: 1rem; height: 1rem; }
+
+      .sparkles {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      .spark {
+        position: absolute;
+        bottom: -20px;
+        width: 4px;
+        height: 4px;
+        background: #fbbf24;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #fbbf24, 0 0 14px rgba(251, 191, 36, 0.5);
+        opacity: 0;
+      }
+
+      .sp-1  { left:  6%; animation: sparkle-rise 8s linear  0s   infinite; }
+      .sp-2  { left: 14%; animation: sparkle-rise 9s linear  1.5s infinite; }
+      .sp-3  { left: 22%; animation: sparkle-rise 7s linear  3s   infinite; }
+      .sp-4  { left: 30%; animation: sparkle-rise 10s linear 0.8s infinite; }
+      .sp-5  { left: 38%; animation: sparkle-rise 8s linear  4s   infinite; }
+      .sp-6  { left: 46%; animation: sparkle-rise 9s linear  2.2s infinite; }
+      .sp-7  { left: 54%; animation: sparkle-rise 7s linear  5s   infinite; }
+      .sp-8  { left: 62%; animation: sparkle-rise 10s linear 1.2s infinite; }
+      .sp-9  { left: 70%; animation: sparkle-rise 8s linear  3.5s infinite; }
+      .sp-10 { left: 78%; animation: sparkle-rise 9s linear  0.5s infinite; }
+      .sp-11 { left: 86%; animation: sparkle-rise 7s linear  4.5s infinite; }
+      .sp-12 { left: 94%; animation: sparkle-rise 10s linear 2.8s infinite; }
+      .sp-13 { left: 10%; animation: sparkle-rise 11s linear 6s   infinite; }
+      .sp-14 { left: 34%; animation: sparkle-rise 11s linear 5.2s infinite; }
+      .sp-15 { left: 58%; animation: sparkle-rise 11s linear 7s   infinite; }
+      .sp-16 { left: 82%; animation: sparkle-rise 11s linear 4.8s infinite; }
+      .sp-17 { left: 18%; animation: sparkle-rise 12s linear 6.5s infinite; }
+      .sp-18 { left: 74%; animation: sparkle-rise 12s linear 8s   infinite; }
+
+      @keyframes sparkle-rise {
+        0%   { transform: translateY(0) scale(0.5); opacity: 0; }
+        10%  { opacity: 1; transform: translateY(-10vh) scale(1); }
+        80%  { opacity: 1; }
+        100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
+      }
+
+      .game-section {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5rem 1.5rem 3rem;
+      }
+
+      .game-wrap {
+        width: 100%;
+        max-width: 42rem;
+        background: #0a0e1a;
+        border: 1px solid rgba(96, 165, 250, 0.4);
+        border-radius: 0.875rem;
+        overflow: hidden;
+        box-shadow:
+          0 0 0 1px rgba(96, 165, 250, 0.15),
+          0 0 40px rgba(96, 165, 250, 0.35),
+          0 0 90px rgba(37, 99, 235, 0.4),
+          0 25px 60px rgba(0, 0, 0, 0.4);
+      }
+
+      .game-header {
+        background: #11172a;
+        border-bottom: 1px solid rgba(96, 165, 250, 0.2);
+        padding: 0.625rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .game-dots { display: flex; gap: 0.4rem; }
+
+      .dot {
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .dot-red    { background: #ef4444; }
+      .dot-yellow { background: #f59e0b; }
+      .dot-green  { background: #10b981; }
+
+      .game-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.55);
+        letter-spacing: 0.02em;
+      }
+
+      .game-body {
+        padding: 2.5rem 1.75rem;
+        min-height: 32rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .state {
+        display: none;
+        width: 100%;
+        text-align: center;
+      }
+
+      .state--active {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: state-fade-in 0.3s ease;
+      }
+
+      @keyframes state-fade-in {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .intro-icon {
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 1.5rem auto;
+        animation: clock-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes clock-pulse {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.06); }
+      }
+
+      .intro-icon svg { width: 100%; height: 100%; display: block; }
+
+      .intro-title {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: clamp(1.75rem, 5vw, 2.5rem);
+        font-weight: 900;
+        color: #fff;
+        line-height: 1.1;
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+      }
+
+      .intro-text {
+        font-size: 1.05rem;
+        color: #d1d5db;
+        margin-bottom: 0.5rem;
+        line-height: 1.6;
+      }
+
+      .intro-text strong { color: #93c5fd; font-weight: 700; }
+      .intro-text strong.green-strong { color: #4ade80; }
+
+      .intro-hint {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin-bottom: 2rem;
+        max-width: 28rem;
+      }
+
+      .intro-hint strong { color: #fbbf24; font-weight: 700; }
+
+      .primary-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #1e3a8a;
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        border: none;
+        border-radius: 0.625rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 8px 30px rgba(251, 191, 36, 0.35);
+        animation: btn-pulse 2.4s ease-in-out infinite;
+      }
+
+      .primary-btn:hover:not(:disabled),
+      .primary-btn:focus-visible:not(:disabled) {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.25), 0 12px 40px rgba(251, 191, 36, 0.5);
+        outline: none;
+        animation-play-state: paused;
+      }
+
+      .primary-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        animation: none;
+      }
+
+      .primary-btn svg {
+        width: 1.1rem !important;
+        height: 1.1rem !important;
+        flex-shrink: 0;
+      }
+
+      @keyframes btn-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4), 0 8px 30px rgba(251,191,36,0.35); }
+        50%      { box-shadow: 0 0 0 10px rgba(251,191,36,0), 0 10px 35px rgba(251,191,36,0.45); }
+      }
+
+      .ghost-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.75rem 1.25rem;
+        background: transparent;
+        color: #94a3b8;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+
+      .ghost-btn:hover, .ghost-btn:focus-visible {
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.5);
+        outline: none;
+      }
+
+      .ghost-btn--link { display: inline-flex; }
+
+      .danger-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.75rem 1.25rem;
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        letter-spacing: 0.05em;
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .danger-btn:hover, .danger-btn:focus-visible {
+        background: rgba(239, 68, 68, 0.3);
+        color: #fff;
+        outline: none;
+      }
+
+      /* HUD - 3 columns: ROUND / LAST / AVG */
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 0.75rem 1rem;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(96, 165, 250, 0.25);
+        border-radius: 0.5rem;
+        width: 100%;
+      }
+
+      .hud-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.15rem;
+      }
+
+      .hud-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #64748b;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+
+      .hud-value {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #f8fafc;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* GAME BOARD */
+      .board-wrap {
+        position: relative;
+        width: 100%;
+        max-width: 24rem;
+        aspect-ratio: 0.8;
+        margin: 0 auto;
+        border: 1.5px solid rgba(96, 165, 250, 0.4);
+        border-radius: 0.75rem;
+        overflow: hidden;
+        background: #0a0e1a;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+        touch-action: none;
+        cursor: none;
+      }
+
+      .game-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .board-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(10, 14, 26, 0.78);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 1rem;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+
+      .board-overlay--hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .overlay-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #fbbf24;
+        letter-spacing: 0.04em;
+        animation: overlay-pulse 1.4s ease-in-out infinite;
+      }
+
+      @keyframes overlay-pulse {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: 0.55; }
+      }
+
+      .game-hint {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        color: #64748b;
+        margin-top: 0.85rem;
+        text-align: center;
+      }
+
+      /* RESULT */
+      .result-icon {
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 1.5rem auto;
+        flex-shrink: 0;
+        animation: result-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      @keyframes result-pop {
+        0%   { transform: scale(0); }
+        70%  { transform: scale(1.15); }
+        100% { transform: scale(1); }
+      }
+
+      .result-icon svg {
+        width: 96px;
+        height: 96px;
+        display: block;
+      }
+
+      .result-title {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 0.75rem;
+        line-height: 1.15;
+      }
+
+      .result-text {
+        font-size: 1rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+        line-height: 1.7;
+      }
+
+      .result-text strong { color: #fbbf24; font-weight: 700; }
+
+      .initials-section { width: 100%; max-width: 24rem; }
+
+      .initials-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #fbbf24;
+        letter-spacing: 0.2em;
+        margin-bottom: 0.85rem;
+      }
+
+      .initials-inputs {
+        display: flex;
+        gap: 0.6rem;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+
+      .initial-box {
+        width: 3.5rem;
+        height: 4rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 2rem;
+        font-weight: 700;
+        text-align: center;
+        background: rgba(15, 23, 42, 0.8);
+        color: #fbbf24;
+        border: 2px solid rgba(96, 165, 250, 0.4);
+        border-radius: 0.5rem;
+        text-transform: uppercase;
+        outline: none;
+        transition: all 0.15s ease;
+        caret-color: #fbbf24;
+      }
+
+      .initial-box:focus {
+        border-color: #fbbf24;
+        background: rgba(15, 23, 42, 1);
+        box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
+      }
+
+      .initial-box--filled {
+        border-color: rgba(251, 191, 36, 0.7);
+        background: rgba(251, 191, 36, 0.08);
+      }
+
+      .initials-error {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        color: #fca5a5;
+        min-height: 1.2rem;
+        margin-bottom: 1rem;
+      }
+
+      #skip-btn { margin-top: 1rem; width: 100%; }
+
+      /* RANK */
+      .rank-reveal {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.06));
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        border-radius: 0.75rem;
+        animation: rank-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      @keyframes rank-pop {
+        0%   { transform: scale(0.7); opacity: 0; }
+        70%  { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); }
+      }
+
+      .rank-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fbbf24;
+        letter-spacing: 0.25em;
+        margin-bottom: 0.5rem;
+      }
+
+      .rank-number {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: clamp(3rem, 9vw, 4.5rem);
+        font-weight: 700;
+        line-height: 1;
+        background: linear-gradient(135deg, #fbbf24, #fde68a, #fbbf24);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gold-shimmer 3.5s ease-in-out infinite;
+        margin-bottom: 0.5rem;
+      }
+
+      @keyframes gold-shimmer {
+        0%, 100% { background-position: 0% 50%; }
+        50%      { background-position: 100% 50%; }
+      }
+
+      .rank-detail {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: 1rem;
+        color: #d1d5db;
+      }
+
+      /* LEADERBOARD */
+      .leaderboard-wrap { width: 100%; margin-bottom: 2rem; }
+
+      .leaderboard-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #94a3b8;
+        letter-spacing: 0.2em;
+        text-align: center;
+        margin-bottom: 0.85rem;
+        padding-bottom: 0.65rem;
+        border-bottom: 1px dashed rgba(96, 165, 250, 0.25);
+      }
+
+      .leaderboard {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .leaderboard-row {
+        display: grid;
+        grid-template-columns: 2.2rem 1fr auto auto;
+        align-items: center;
+        gap: 0.85rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.95rem;
+        color: #cbd5e1;
+        padding: 0.55rem 0.85rem;
+        background: rgba(15, 23, 42, 0.4);
+        border-radius: 0.4rem;
+        border: 1px solid transparent;
+      }
+
+      .leaderboard-row--1 { color: #fbbf24; font-weight: 700; }
+      .leaderboard-row--2 { color: #cbd5e1; font-weight: 600; }
+      .leaderboard-row--3 { color: #d97706; font-weight: 600; }
+
+      .leaderboard-row--me {
+        background: rgba(251, 191, 36, 0.15);
+        border-color: rgba(251, 191, 36, 0.6);
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.25);
+        animation: me-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes me-pulse {
+        0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.25); }
+        50%      { box-shadow: 0 0 30px rgba(251,191,36,0.45); }
+      }
+
+      .rank-num { text-align: center; font-weight: 700; }
+      .rank-initials { letter-spacing: 0.05em; }
+      .rank-score { text-align: right; font-variant-numeric: tabular-nums; }
+      .rank-you {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 900;
+        color: #fbbf24;
+        letter-spacing: 0.1em;
+      }
+
+      .leaderboard-empty {
+        text-align: center;
+        padding: 1rem;
+        color: #64748b;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+      }
+
+      /* SHARE */
+      .share-section {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+      }
+
+      .share-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #94a3b8;
+        letter-spacing: 0.2em;
+        margin-bottom: 0.85rem;
+      }
+
+      .share-buttons {
+        display: flex;
+        gap: 0.6rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .share-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(96, 165, 250, 0.4);
+        border-radius: 0.5rem;
+        color: #93c5fd;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+      }
+
+      .share-btn:hover, .share-btn:focus-visible {
+        background: rgba(251, 191, 36, 0.15);
+        border-color: rgba(251, 191, 36, 0.6);
+        color: #fbbf24;
+        outline: none;
+        transform: translateY(-2px);
+      }
+
+      .share-btn svg { width: 1.2rem; height: 1.2rem; }
+
+      .copy-toast {
+        position: absolute;
+        bottom: -1.75rem;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        color: #4ade80;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+      }
+
+      .copy-toast--show { opacity: 1; }
+
+      .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
+      /* DIALOG */
+      .dialog {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .dialog[hidden] { display: none; }
+
+      .dialog-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.75);
+        backdrop-filter: blur(4px);
+      }
+
+      .dialog-content {
+        position: relative;
+        background: #0a0e1a;
+        border: 1px solid rgba(96, 165, 250, 0.4);
+        border-radius: 0.75rem;
+        padding: 2rem 1.75rem;
+        max-width: 24rem;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 0 40px rgba(96, 165, 250, 0.3), 0 25px 60px rgba(0, 0, 0, 0.5);
+      }
+
+      .dialog-title {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: 1.3rem;
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 0.6rem;
+      }
+
+      .dialog-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        color: #cbd5e1;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+      }
+
+      .dialog-buttons {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 600px) {
+        .game-section { padding: 4rem 0.75rem 2rem; }
+        .game-wrap { border-radius: 0.625rem; }
+        .game-body { padding: 1.5rem 1rem; min-height: 28rem; }
+        .game-title { font-size: 0.7rem; }
+
+        .hud { padding: 0.5rem 0.75rem; gap: 0.5rem; }
+        .hud-value { font-size: 1.05rem; }
+        .hud-label { font-size: 0.55rem; }
+
+        .board-wrap { max-width: 100%; cursor: default; }
+        .game-hint { font-size: 0.65rem; }
+
+        .intro-title { font-size: 1.5rem; }
+        .intro-text { font-size: 0.95rem; }
+        .intro-hint { font-size: 0.78rem; }
+
+        .primary-btn { font-size: 0.9rem; padding: 0.85rem 1.5rem; }
+
+        .initial-box { width: 3rem; height: 3.5rem; font-size: 1.75rem; }
+
+        .leaderboard-row { font-size: 0.85rem; padding: 0.5rem 0.6rem; gap: 0.5rem; }
+
+        .exit-btn-label { display: none; }
+        .exit-btn { padding: 0.5rem; }
+      }
+
+      @media (min-width: 1600px) {
+        .game-wrap { max-width: 48rem; }
+        .game-body { padding: 3rem 2.5rem; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .spark { animation: none; opacity: 0; }
+        .intro-icon { animation: none; }
+        .primary-btn { animation: none; }
+        .reaction-pad--go { animation: none; }
+        .overlay-text { animation: none; }
+        .result-icon { animation: none; }
+        .state--active { animation: none; }
+        .rank-reveal { animation: none; }
+        .rank-number { animation: none; background-position: 0% 50%; }
+        .leaderboard-row--me { animation: none; }
+      }
+    </style>
+  </body>
+</html>
