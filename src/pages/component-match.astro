@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Component Match — Jake's Arcade</title>
     <meta name="description" content="Pair motherboard parts from memory. Match all 6 pairs before the timer runs out at Jake's Arcade." />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Component Match — Jake's Arcade" />
@@ -1187,6 +1187,8 @@
         padding: 0;
         cursor: pointer;
         perspective: 600px;
+        transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
         font-family: inherit;
         -webkit-tap-highlight-color: transparent;
       }
@@ -1649,8 +1651,15 @@
         .spark { animation: none; opacity: 0; }
         .intro-icon { animation: none; }
         .primary-btn { animation: none; }
-        .card { perspective: none; }
-        .card-back, .card-front { transition: none; }
+        /* Replace 3D flip with simple opacity swap for reduced-motion users */
+        .card { perspective: none; transform-style: flat; }
+        .card-back, .card-front {
+          transition: opacity 0.15s ease;
+          transform: none !important;
+        }
+        .card-front { opacity: 0; }
+        .card--flipped .card-back { opacity: 0; }
+        .card--flipped .card-front { opacity: 1; }
         .card--matched .card-front { animation: none; }
         .result-icon { animation: none; }
         .state--active { animation: none; }
