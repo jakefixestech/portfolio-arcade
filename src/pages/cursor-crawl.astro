@@ -521,9 +521,13 @@
 
       function setDirection(nx, ny) {
         // Prevent reversal: can't immediately invert current direction
-        if (snake.length > 1) {
+        if (snake.length > 1 && gameStarted) {
           if (dir.x === -nx && dir.y === -ny) return;
-          if (dir.x === nx && dir.y === ny) return; // no-op
+          if (dir.x === nx && dir.y === ny) {
+            // Still valid - just no direction change needed
+            beginMovement();
+            return;
+          }
         }
         nextDir = { x: nx, y: ny };
         beginMovement();
@@ -1208,13 +1212,12 @@
         justify-content: center;
         text-align: center;
         padding: 1rem;
-        cursor: pointer;
+        pointer-events: none;
         transition: opacity 0.2s;
       }
 
       .board-overlay--hidden {
         opacity: 0;
-        pointer-events: none;
       }
 
       .overlay-text {
