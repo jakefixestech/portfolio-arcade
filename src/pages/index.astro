@@ -86,12 +86,15 @@ if (kv) {
   );
 }
 
+const RANK_POINTS = [100, 60, 40, 25, 15, 10, 6, 3, 2, 1];
+
 const playerData: Record<string, { points: number; games: Set<number> }> = {};
 GAMES.forEach((game, gameIdx) => {
   const scores = leaderboards[gameIdx];
   scores.forEach((entry: ScoreEntry, rank: number) => {
     if (entry.score <= 0) return;
-    const points = rank + 1;
+    if (rank >= RANK_POINTS.length) return;
+    const points = RANK_POINTS[rank];
     if (!playerData[entry.initials]) {
       playerData[entry.initials] = { points: 0, games: new Set() };
     }
@@ -101,9 +104,9 @@ GAMES.forEach((game, gameIdx) => {
 });
 
 let champion: { initials: string; points: number; gamesPlayed: number } | null = null;
-const eligible = Object.entries(playerData).filter(([_, p]) => p.games.size >= 2);
+const eligible = Object.entries(playerData);
 if (eligible.length > 0) {
-  eligible.sort((a, b) => a[1].points - b[1].points);
+  eligible.sort((a, b) => b[1].points - a[1].points);
   champion = {
     initials: eligible[0][0],
     points: eligible[0][1].points,
@@ -326,7 +329,7 @@ if (eligible.length > 0) {
                   <strong>{champion.points}</strong> rank points across <strong>{champion.gamesPlayed}</strong> games
                 </p>
                 <p class="champ-note">
-                  The fewer points, the better. Top this player by ranking high in more games.
+                  Top 10 in any game scores points. The more points, the better.
                 </p>
               </div>
             </>
@@ -355,10 +358,10 @@ if (eligible.length > 0) {
                   <span class="champ-empty-line champ-empty-highlight">YOU.</span>
                 </h2>
                 <p class="champ-stats champ-stats--empty">
-                  Rank in at least <strong>2 games</strong> to claim the throne.
+                  Land on a <strong>top 10</strong> leaderboard to start scoring.
                 </p>
                 <p class="champ-note">
-                  Every game you play matters. Lower total rank-points wins.
+                  1st place earns 100 pts, 2nd earns 60, 3rd earns 40, and on down. Most points wins.
                 </p>
               </div>
             </>
