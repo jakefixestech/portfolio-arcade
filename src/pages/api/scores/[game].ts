@@ -17,6 +17,10 @@ const MAX_SCORE_PER_GAME: Record<string, number> = {
   'usb-defender':    500,    // 500 deflections = serious endurance run
   'bug-smasher':     5000,   // 40 bugs/wave x many waves
   'spam-blaster':    5000,   // wave bonuses + kills add up
+  'tower-stack':     50000,  // tetris-style; strong sustained run before topping out from speed
+  'packet-sort':     10000,  // ~3-4k for perfect run with wave bonuses; generous ceiling
+  'loop-trap':       100000, // pac-man; ~1400/level perfect + bonuses; deep run could approach this
+  'cable-untangle':  25000,  // 7 cables/level cap, ~700+bonus per level, deep run ceiling
 };
 
 const MAX_SCORES = 10;

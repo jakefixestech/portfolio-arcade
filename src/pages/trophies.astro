@@ -1,13 +1,17 @@
 ---
 const GAMES = [
-  { slug: 'whack-a-virus',   name: 'Whack-a-Virus',   iconKey: 'virus' },
-  { slug: 'system-response', name: 'System Response', iconKey: 'response' },
-  { slug: 'component-match', name: 'Component Match', iconKey: 'match' },
-  { slug: 'error-override',  name: 'Error Override',  iconKey: 'error' },
-  { slug: 'cursor-crawl',    name: 'Cursor Crawl',    iconKey: 'cursor' },
-  { slug: 'usb-defender',    name: 'USB Defender',    iconKey: 'usb' },
-  { slug: 'bug-smasher',     name: 'Bug Smasher',     iconKey: 'smasher' },
-  { slug: 'spam-blaster',    name: 'Spam Blaster',    iconKey: 'spam' },
+  { slug: 'whack-a-virus',    name: 'Whack-a-Virus',    iconKey: 'virus' },
+  { slug: 'system-response',  name: 'System Response',  iconKey: 'response' },
+  { slug: 'component-match',  name: 'Component Match',  iconKey: 'match' },
+  { slug: 'error-override',   name: 'Error Override',   iconKey: 'error' },
+  { slug: 'cursor-crawl',     name: 'Cursor Crawl',     iconKey: 'cursor' },
+  { slug: 'usb-defender',     name: 'USB Defender',     iconKey: 'usb' },
+  { slug: 'bug-smasher',      name: 'Bug Smasher',      iconKey: 'smasher' },
+  { slug: 'spam-blaster',     name: 'Spam Blaster',     iconKey: 'spam' },
+  { slug: 'tower-stack',      name: 'Tower Stack',      iconKey: 'tower' },
+  { slug: 'packet-sort',      name: 'Packet Sort',      iconKey: 'packet' },
+  { slug: 'loop-trap',        name: 'Loop Trap',        iconKey: 'loop' },
+  { slug: 'cable-untangle',   name: 'Cable Untangle',   iconKey: 'cable' },
 ];
 
 type ScoreEntry = { initials: string; score: number; timestamp: string };
@@ -275,6 +279,52 @@ const recordHolders = GAMES.map((game, idx) => {
                     <rect x="8" y="14" width="64" height="40" rx="2" fill="none" stroke="currentColor" stroke-width="3"/>
                     <path d="M 8 16 L 40 38 L 72 16" fill="none" stroke="currentColor" stroke-width="2.5"/>
                     <text x="40" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="currentColor">SPAM</text>
+                  </svg>
+                )}
+                {game.iconKey === 'tower' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="20" y="14" width="40" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                    <rect x="14" y="26" width="52" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                    <rect x="22" y="38" width="36" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                    <rect x="10" y="50" width="60" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                    <rect x="18" y="62" width="44" height="6" rx="1" fill="currentColor"/>
+                  </svg>
+                )}
+                {game.iconKey === 'packet' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="14" y="10" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                    <rect x="46" y="22" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                    <rect x="14" y="34" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                    <line x1="8" y1="60" x2="72" y2="60" stroke="currentColor" stroke-width="2.5"/>
+                    <rect x="14" y="62" width="14" height="10" rx="1" fill="currentColor"/>
+                    <rect x="34" y="62" width="14" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="54" y="62" width="14" height="10" rx="1" fill="currentColor"/>
+                  </svg>
+                )}
+                {game.iconKey === 'loop' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="6" width="68" height="68" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                    <line x1="6" y1="22" x2="30" y2="22" stroke="currentColor" stroke-width="2"/>
+                    <line x1="50" y1="22" x2="74" y2="22" stroke="currentColor" stroke-width="2"/>
+                    <line x1="22" y1="22" x2="22" y2="38" stroke="currentColor" stroke-width="2"/>
+                    <line x1="6" y1="46" x2="22" y2="46" stroke="currentColor" stroke-width="2"/>
+                    <line x1="58" y1="46" x2="74" y2="46" stroke="currentColor" stroke-width="2"/>
+                    <line x1="14" y1="54" x2="14" y2="74" stroke="currentColor" stroke-width="2"/>
+                    <line x1="66" y1="54" x2="66" y2="74" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="40" cy="40" r="4" fill="currentColor"/>
+                  </svg>
+                )}
+                {game.iconKey === 'cable' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="18" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="6" y="36" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="6" y="54" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="64" y="18" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="64" y="36" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="64" y="54" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M 16 23 Q 35 23 40 41 T 64 59" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M 16 41 Q 30 60 50 50 T 64 41" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M 16 59 Q 40 30 56 25 T 64 23" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
                   </svg>
                 )}
               </div>

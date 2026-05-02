@@ -1,0 +1,2574 @@
+---
+
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loop Trap — Jake's Arcade</title>
+    <meta name="description" content="Collect tickets and avoid the tracers in a circuit-board maze. Pac-Man with a Jake Fixes Tech twist." />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Loop Trap — Jake's Arcade" />
+    <meta property="og:description" content="Collect tickets and avoid the tracers in a circuit-board maze." />
+    <meta property="og:url" content="https://arcade.jakefixestech.com/loop-trap" />
+    <meta property="og:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
+    <meta property="og:site_name" content="Jake's Arcade" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Loop Trap — Jake's Arcade" />
+    <meta name="twitter:description" content="Collect tickets, dodge tracers." />
+    <meta name="twitter:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Monoton&display=optional"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Monoton&display=optional"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Monoton&display=swap"
+      />
+    </noscript>
+  </head>
+
+  <body>
+    <main class="page">
+
+      <button id="exit-btn" type="button" class="exit-btn" aria-label="Back to Code Maze">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M 9 6 L 4 12 L 9 18 M 4 12 L 19 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span class="exit-btn-label">CODE MAZE</span>
+      </button>
+
+      <a href="/" class="portal-return" aria-label="Return to the portal">
+        <span class="portal-return-icon" aria-hidden="true">↻</span>
+        <span class="portal-return-label">PORTAL</span>
+      </a>
+
+      <div class="motes" aria-hidden="true">
+        {Array.from({ length: 18 }).map((_, i) => (
+          <span class={`mote mt-${i + 1}`}></span>
+        ))}
+      </div>
+
+      <section class="game-section">
+
+        <!-- ARCADE CABINET WRAPPER (desktop only via CSS) -->
+        <div class="cabinet-shell">
+
+          <div class="shell-marquee" aria-hidden="true">
+            <div class="shell-marquee-bulbs">
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+            <p class="shell-marquee-title">LOOP TRAP</p>
+          </div>
+
+          <div class="cabinet-body">
+
+            <div class="shell-side shell-side-l" aria-hidden="true">
+              <div class="shell-side-art">
+                <span class="side-decor side-d1"></span>
+                <span class="side-decor side-d2"></span>
+                <span class="side-decor side-d3"></span>
+              </div>
+            </div>
+            <div class="shell-side shell-side-r" aria-hidden="true">
+              <div class="shell-side-art">
+                <span class="side-decor side-d1"></span>
+                <span class="side-decor side-d2"></span>
+                <span class="side-decor side-d3"></span>
+              </div>
+            </div>
+
+            <div class="shell-bezel">
+
+              <!-- ============================== -->
+              <!-- GAME                            -->
+              <!-- ============================== -->
+              <div class="game-wrap">
+                <div class="game-header" aria-hidden="true">
+                  <div class="game-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                  </div>
+                  <div class="game-title">jake@arcade: ~/loop-trap</div>
+                </div>
+
+                <div class="game-body">
+
+                  <!-- INTRO -->
+                  <div id="state-intro" class="state state--active">
+                    <div class="intro-icon" aria-hidden="true">
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="6" y="6" width="68" height="68" rx="2" fill="#02100a" stroke="#166534" stroke-width="1.5"/>
+                        <line x1="6" y1="22" x2="30" y2="22" stroke="#4ade80" stroke-width="1.5"/>
+                        <line x1="40" y1="22" x2="74" y2="22" stroke="#4ade80" stroke-width="1.5"/>
+                        <line x1="22" y1="22" x2="22" y2="38" stroke="#4ade80" stroke-width="1.5"/>
+                        <line x1="50" y1="22" x2="50" y2="38" stroke="#4ade80" stroke-width="1.5"/>
+                        <line x1="6" y1="46" x2="22" y2="46" stroke="#4ade80" stroke-width="1.5"/>
+                        <line x1="30" y1="38" x2="50" y2="38" stroke="#4ade80" stroke-width="1.5"/>
+                        <line x1="58" y1="46" x2="74" y2="46" stroke="#4ade80" stroke-width="1.5"/>
+                        <line x1="14" y1="54" x2="14" y2="74" stroke="#4ade80" stroke-width="1.5"/>
+                        <line x1="30" y1="54" x2="50" y2="54" stroke="#4ade80" stroke-width="1.5"/>
+                        <line x1="66" y1="54" x2="66" y2="74" stroke="#4ade80" stroke-width="1.5"/>
+                        <line x1="22" y1="62" x2="38" y2="62" stroke="#4ade80" stroke-width="1.5"/>
+                        <line x1="42" y1="62" x2="58" y2="62" stroke="#4ade80" stroke-width="1.5"/>
+                        <circle cx="10" cy="14" r="1" fill="#fbbf24"/>
+                        <circle cx="34" cy="14" r="1" fill="#fbbf24"/>
+                        <circle cx="58" cy="14" r="1" fill="#fbbf24"/>
+                        <circle cx="10" cy="68" r="2.5" fill="#fbbf24"/>
+                        <circle cx="70" cy="68" r="2.5" fill="#fbbf24"/>
+                        <g transform="translate(38, 30) rotate(90)">
+                          <path d="M 0 -5 L 4 3 L 1 3 L 2.5 6 L 0.5 7 L -1 3 L -4 3 Z" fill="#fbbf24" stroke="#92400e" stroke-width="0.8" stroke-linejoin="round"/>
+                        </g>
+                        <g transform="translate(10, 30)">
+                          <path d="M -4 0 Q -4 -4 0 -4 Q 4 -4 4 0 L 4 3 L 3 4 L 2 3 L 1 4 L 0 3 L -1 4 L -2 3 L -3 4 L -4 3 Z" fill="#ec4899" stroke="#9d174d" stroke-width="0.5"/>
+                          <circle cx="-1.5" cy="-1" r="0.7" fill="#fff"/>
+                          <circle cx="1.5" cy="-1" r="0.7" fill="#fff"/>
+                        </g>
+                        <g transform="translate(58, 30)">
+                          <path d="M -4 0 Q -4 -4 0 -4 Q 4 -4 4 0 L 4 3 L 3 4 L 2 3 L 1 4 L 0 3 L -1 4 L -2 3 L -3 4 L -4 3 Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="0.5"/>
+                          <circle cx="-1.5" cy="-1" r="0.7" fill="#fff"/>
+                          <circle cx="1.5" cy="-1" r="0.7" fill="#fff"/>
+                        </g>
+                      </svg>
+                    </div>
+
+                    <h1 class="intro-title">Loop Trap</h1>
+                    <p class="intro-text">
+                      Collect <strong class="green-strong">tickets</strong>. Avoid the <strong class="red-strong">tracers</strong>.
+                    </p>
+                    <p class="intro-hint">
+                      <strong>Arrow keys</strong> or <strong>WASD</strong> to move. Mobile: <strong>swipe</strong>. Eat all tickets to clear the level. Grab a <strong>completed job</strong> to flip the script — tracers turn vulnerable.
+                    </p>
+
+                    <button id="start-btn" class="primary-btn" type="button">
+                      <span>PLAY</span>
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M 7 5 L 7 19 L 19 12 Z" fill="currentColor" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- PLAYING -->
+                  <div id="state-playing" class="state">
+                    <div class="hud">
+                      <div class="hud-item">
+                        <span class="hud-label">SCORE</span>
+                        <span class="hud-value" id="score-display">0</span>
+                      </div>
+                      <div class="hud-item">
+                        <span class="hud-label">LEVEL</span>
+                        <span class="hud-value" id="level-display">1</span>
+                      </div>
+                      <div class="hud-item">
+                        <span class="hud-label">LIVES</span>
+                        <span class="hud-value" id="lives-display">3</span>
+                      </div>
+                    </div>
+
+                    <div class="board-wrap">
+                      <canvas
+                        id="game-canvas"
+                        class="game-canvas"
+                        width="420"
+                        height="480"
+                        aria-label="Loop Trap maze"
+                      ></canvas>
+                      <div id="board-overlay" class="board-overlay">
+                        <p class="overlay-text" id="overlay-text">Press a direction to start</p>
+                      </div>
+                    </div>
+
+                    <p class="game-hint">Arrow keys / WASD on desktop · Swipe on mobile</p>
+                  </div>
+
+                  <!-- RESULT -->
+                  <div id="state-result" class="state">
+                    <div class="result-icon" aria-hidden="true">
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="40" cy="40" r="36" fill="#ef4444" />
+                        <path d="M 28 28 L 52 52 M 52 28 L 28 52" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" />
+                      </svg>
+                    </div>
+
+                    <h2 class="result-title">CAUGHT IN THE LOOP</h2>
+                    <p class="result-text">
+                      Process terminated.<br>
+                      Final score: <strong id="result-score">0</strong><br>
+                      Reached: <strong id="result-level">Level 1</strong>
+                    </p>
+
+                    <div class="initials-section">
+                      <p class="initials-label">ENTER YOUR INITIALS</p>
+                      <div class="initials-inputs" role="group" aria-label="Three letter initials">
+                        <input type="text" class="initial-box" id="init-1" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="First letter" />
+                        <input type="text" class="initial-box" id="init-2" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Second letter" />
+                        <input type="text" class="initial-box" id="init-3" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Third letter" />
+                      </div>
+
+                      <p class="initials-error" id="initials-error" aria-live="polite"></p>
+
+                      <button id="submit-btn" class="primary-btn" type="button" disabled>
+                        <span id="submit-btn-text">SUBMIT SCORE</span>
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M 5 12 L 19 12 M 13 6 L 19 12 L 13 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                      </button>
+
+                      <button id="skip-btn" class="ghost-btn" type="button">Skip — don't save my score</button>
+                    </div>
+                  </div>
+
+                  <!-- LEADERBOARD -->
+                  <div id="state-leaderboard" class="state">
+                    <div id="rank-reveal" class="rank-reveal">
+                      <p class="rank-eyebrow" id="rank-eyebrow">YOU RANKED</p>
+                      <p class="rank-number" id="rank-number">#1</p>
+                      <p class="rank-detail" id="rank-detail">on the leaderboard</p>
+                    </div>
+
+                    <div class="leaderboard-wrap">
+                      <p class="leaderboard-title">TOP 10 — LOOP TRAP</p>
+                      <ol id="leaderboard-list" class="leaderboard"></ol>
+                    </div>
+
+                    <div class="share-section">
+                      <p class="share-eyebrow">SHARE YOUR SCORE</p>
+                      <div class="share-buttons">
+                        <a id="share-fb" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to Facebook">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M 12 2 C 6.477 2 2 6.477 2 12 C 2 17 5.66 21.13 10.44 21.88 L 10.44 14.89 L 7.9 14.89 L 7.9 12 L 10.44 12 L 10.44 9.8 C 10.44 7.29 11.93 5.91 14.22 5.91 C 15.31 5.91 16.45 6.1 16.45 6.1 L 16.45 8.56 L 15.19 8.56 C 13.95 8.56 13.56 9.33 13.56 10.12 L 13.56 12 L 16.34 12 L 15.89 14.89 L 13.56 14.89 L 13.56 21.88 C 18.34 21.13 22 17 22 12 C 22 6.477 17.523 2 12 2 Z" fill="currentColor" />
+                          </svg>
+                        </a>
+                        <a id="share-x" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to X">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M 18.244 2.25 L 21.552 2.25 L 14.325 10.51 L 22.827 21.75 L 16.17 21.75 L 10.956 14.933 L 4.99 21.75 L 1.68 21.75 L 9.41 12.915 L 1.254 2.25 L 8.08 2.25 L 12.793 8.481 L 18.244 2.25 Z M 17.083 19.77 L 18.916 19.77 L 7.084 4.126 L 5.117 4.126 L 17.083 19.77 Z" fill="currentColor" />
+                          </svg>
+                        </a>
+                        <button id="share-native" type="button" class="share-btn" aria-label="Share via system share menu" style="display:none">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M 12 3 L 12 16 M 7 8 L 12 3 L 17 8 M 4 14 L 4 20 a 1 1 0 0 0 1 1 L 19 21 a 1 1 0 0 0 1 -1 L 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                          </svg>
+                        </button>
+                        <button id="share-copy" type="button" class="share-btn" aria-label="Copy link to clipboard">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect x="8" y="8" width="13" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2" />
+                            <path d="M 5 15 L 4 15 a 1 1 0 0 1 -1 -1 L 3 4 a 1 1 0 0 1 1 -1 L 14 3 a 1 1 0 0 1 1 1 L 15 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                          </svg>
+                        </button>
+                      </div>
+                      <p class="copy-toast" id="copy-toast" aria-live="polite">Link copied!</p>
+                    </div>
+
+                    <div class="action-buttons">
+                      <button id="play-again-btn" type="button" class="primary-btn">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M 4 12 a 8 8 0 1 1 2.5 5.7 M 4 12 V 6 M 4 12 H 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span>PLAY AGAIN</span>
+                      </button>
+                      <a href="/code-maze" class="ghost-btn ghost-btn--link">← Back to Code Maze</a>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+              <!-- ============================== -->
+
+            </div>
+
+            <div class="shell-controls" aria-hidden="true">
+              <span class="shell-joystick">
+                <span class="shell-joystick-base"></span>
+                <span class="shell-joystick-stick"></span>
+                <span class="shell-joystick-ball"></span>
+              </span>
+              <span class="shell-buttons">
+                <span class="shell-btn shell-btn-pink"></span>
+                <span class="shell-btn shell-btn-red"></span>
+                <span class="shell-btn shell-btn-orange"></span>
+                <span class="shell-btn shell-btn-cyan"></span>
+              </span>
+            </div>
+
+            <div class="shell-coin" aria-hidden="true">
+              <span class="shell-coin-slot"></span>
+              <span class="shell-coin-label">25¢ INSERT COIN</span>
+            </div>
+
+          </div>
+
+          <span class="shell-floor-shadow" aria-hidden="true"></span>
+
+        </div>
+
+      </section>
+
+      <div id="exit-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="exit-dialog-title" hidden>
+        <div class="dialog-backdrop"></div>
+        <div class="dialog-content">
+          <h2 id="exit-dialog-title" class="dialog-title">Exit mid-game?</h2>
+          <p class="dialog-text">Your score won't be saved if you leave now.</p>
+          <div class="dialog-buttons">
+            <button id="exit-cancel" type="button" class="ghost-btn">Keep playing</button>
+            <button id="exit-confirm" type="button" class="danger-btn">Exit anyway</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // @ts-nocheck
+
+      // ============================================================
+      // LOOP TRAP — Pac-Man style
+      // ============================================================
+      // Maze is a fixed grid. # = wall, . = ticket (dot), o = power pellet,
+      // ' ' = empty corridor, P = player spawn, T = tracer pen exit/spawn,
+      // - = pen door (passable only by tracers leaving). 'a' = ambient empty
+      // (no ticket spawned but walkable, used for the pen interior).
+      // 21 cols x 23 rows feels good and divides nicely.
+      // ============================================================
+
+      const RAW_MAZE = [
+        '#####################',
+        '#.........#.........#',
+        '#o###.###.#.###.###o#',
+        '#.###.###.#.###.###.#',
+        '#...................#',
+        '#.###.#.#####.#.###.#',
+        '#.....#...#...#.....#',
+        '#####.### # ###.#####',
+        '    #.#       #.#    ',
+        '#####.# ##-## #.#####',
+        'a   a.  #aaaaa#  .a   ',
+        '#####.# #aaaaa# #.#####',
+        '    #.# ####### #.#    ',
+        '#####.#         #.#####',
+        '#.........#.........#',
+        '#.###.###.#.###.###.#',
+        '#o..#.....P.....#..o#',
+        '###.#.#.#####.#.#.###',
+        '#.....#...#...#.....#',
+        '#.#######.#.#######.#',
+        '#...................#',
+        '#####################',
+      ];
+
+      // Normalize widths (some rows are shorter for tunnels)
+      const COLS = 21;
+      const ROWS = RAW_MAZE.length;
+      const MAZE = RAW_MAZE.map(row => {
+        if (row.length < COLS) return row.padEnd(COLS, ' ');
+        if (row.length > COLS) return row.substring(0, COLS);
+        return row;
+      });
+
+      const CANVAS_W = 420;
+      const CANVAS_H = 480;
+      // Some vertical headroom for HUD-like spacing inside canvas
+      const CELL = Math.floor(Math.min(CANVAS_W / COLS, CANVAS_H / ROWS));
+      const OFFSET_X = Math.floor((CANVAS_W - CELL * COLS) / 2);
+      const OFFSET_Y = Math.floor((CANVAS_H - CELL * ROWS) / 2);
+
+      const GAME_SLUG = 'loop-trap';
+      const GAME_NAME = 'Loop Trap';
+      const EXIT_TO = '/code-maze';
+
+      // Tracer (ghost) definitions
+      const TRACERS = [
+        { name: 'Spam',   color: '#ec4899', stroke: '#9d174d', personality: 'random'  },
+        { name: 'Virus',  color: '#ef4444', stroke: '#7f1d1d', personality: 'chaser'  },
+        { name: 'Crash',  color: '#f97316', stroke: '#9a3412', personality: 'flank'   },
+        { name: '404',    color: '#22d3ee', stroke: '#0891b2', personality: 'patrol'  },
+      ];
+
+      const POWER_DURATION_MS = 6000; // tracers vulnerable
+      const POWER_FLASH_MS = 2000;    // last 2s of power = flashing warning
+
+      // === DOM refs ===
+      const stateIntro = document.getElementById('state-intro');
+      const statePlaying = document.getElementById('state-playing');
+      const stateResult = document.getElementById('state-result');
+      const stateLeaderboard = document.getElementById('state-leaderboard');
+      const startBtn = document.getElementById('start-btn');
+      const exitBtn = document.getElementById('exit-btn');
+      const scoreDisplay = document.getElementById('score-display');
+      const levelDisplay = document.getElementById('level-display');
+      const livesDisplay = document.getElementById('lives-display');
+      const canvas = document.getElementById('game-canvas');
+      const ctx = canvas.getContext('2d');
+      const boardOverlay = document.getElementById('board-overlay');
+      const overlayText = document.getElementById('overlay-text');
+      const resultScore = document.getElementById('result-score');
+      const resultLevel = document.getElementById('result-level');
+      const initBoxes = [
+        document.getElementById('init-1'),
+        document.getElementById('init-2'),
+        document.getElementById('init-3'),
+      ];
+      const initialsError = document.getElementById('initials-error');
+      const submitBtn = document.getElementById('submit-btn');
+      const submitBtnText = document.getElementById('submit-btn-text');
+      const skipBtn = document.getElementById('skip-btn');
+      const rankNumber = document.getElementById('rank-number');
+      const rankEyebrow = document.getElementById('rank-eyebrow');
+      const rankDetail = document.getElementById('rank-detail');
+      const leaderboardList = document.getElementById('leaderboard-list');
+      const playAgainBtn = document.getElementById('play-again-btn');
+      const exitDialog = document.getElementById('exit-dialog');
+      const exitCancel = document.getElementById('exit-cancel');
+      const exitConfirm = document.getElementById('exit-confirm');
+      const shareFb = document.getElementById('share-fb');
+      const shareX = document.getElementById('share-x');
+      const shareNative = document.getElementById('share-native');
+      const shareCopy = document.getElementById('share-copy');
+      const copyToast = document.getElementById('copy-toast');
+
+      // === Game state ===
+      let board;        // 2D array of cells: { wall, ticket, pellet, door, pen }
+      let player;       // { x, y, dir, nextDir, anim }
+      let tracers;      // [{ x, y, dir, def, mode, scared, eaten }]
+      let score = 0;
+      let lives = 3;
+      let level = 1;
+      let ticketsRemaining = 0;
+      let powerUntil = 0;
+      let lastFrame = 0;
+      let rafHandle = null;
+      let gameRunning = false;
+      let gameStarted = false;
+      let levelTransition = false;
+      let deathPause = 0;
+      let finalScore = 0;
+      let finalLevel = 1;
+      let lastSubmittedRank = null;
+      let lastSubmittedInitials = null;
+
+      function showState(name) {
+        [stateIntro, statePlaying, stateResult, stateLeaderboard].forEach(s => s.classList.remove('state--active'));
+        if (name === 'intro')       stateIntro.classList.add('state--active');
+        if (name === 'playing')     statePlaying.classList.add('state--active');
+        if (name === 'result')      stateResult.classList.add('state--active');
+        if (name === 'leaderboard') stateLeaderboard.classList.add('state--active');
+      }
+
+      function buildBoard() {
+        const b = [];
+        let playerSpawn = null;
+        ticketsRemaining = 0;
+        for (let r = 0; r < ROWS; r++) {
+          const row = [];
+          for (let c = 0; c < COLS; c++) {
+            const ch = MAZE[r][c];
+            const cell = { wall: false, ticket: false, pellet: false, door: false, pen: false };
+            if (ch === '#') cell.wall = true;
+            else if (ch === '.') { cell.ticket = true; ticketsRemaining++; }
+            else if (ch === 'o') { cell.pellet = true; ticketsRemaining++; }
+            else if (ch === '-') cell.door = true;
+            else if (ch === 'a') cell.pen = true;
+            else if (ch === 'P') playerSpawn = { x: c, y: r };
+            row.push(cell);
+          }
+          b.push(row);
+        }
+        if (!playerSpawn) playerSpawn = { x: 10, y: 16 };
+        return { board: b, playerSpawn };
+      }
+
+      function spawnPlayer(spawn) {
+        return {
+          x: spawn.x,
+          y: spawn.y,
+          subX: 0,        // sub-cell offset for smooth motion (-CELL/2..CELL/2 conceptually, here 0..CELL)
+          subY: 0,
+          dir: { x: 0, y: 0 },
+          nextDir: { x: 0, y: 0 },
+          anim: 0,
+          spawn,
+        };
+      }
+
+      function spawnTracers() {
+        // Pen interior is around rows 10-11, cols 8-12. Tracers spawn from there
+        // and exit through the door at row 9, col 10 area.
+        const spawnPositions = [
+          { x: 8,  y: 10 },
+          { x: 10, y: 10 },
+          { x: 12, y: 10 },
+          { x: 10, y: 11 },
+        ];
+        return TRACERS.map((def, i) => ({
+          x: spawnPositions[i].x,
+          y: spawnPositions[i].y,
+          subX: 0,
+          subY: 0,
+          dir: { x: 0, y: -1 }, // start moving up to leave pen
+          def,
+          mode: 'leaving',  // 'leaving' (in pen, heading out) | 'chase' | 'scared' | 'eaten' (back to pen)
+          spawn: spawnPositions[i],
+          releaseDelay: i * 0.8, // staggered release in seconds
+          releasedAt: 0,
+          flashWarn: false,
+        }));
+      }
+
+      function isWalkableCell(x, y, isTracer = false) {
+        if (y < 0 || y >= ROWS) return false;
+        if (x < 0 || x >= COLS) {
+          // wrap tunnels at row 10 (the corridor row)
+          return false;
+        }
+        const cell = board[y][x];
+        if (cell.wall) return false;
+        if (cell.door && !isTracer) return false; // player can't enter pen door
+        return true;
+      }
+
+      function wrapX(x) {
+        // Tunnel wrap on row 10 (the pen corridor row that's empty on both ends)
+        if (x < 0) return COLS - 1;
+        if (x >= COLS) return 0;
+        return x;
+      }
+
+      function startLevel(lvl) {
+        const setup = buildBoard();
+        board = setup.board;
+        player = spawnPlayer(setup.playerSpawn);
+        tracers = spawnTracers();
+        levelTransition = false;
+        powerUntil = 0;
+        deathPause = 0;
+        levelDisplay.textContent = String(lvl);
+      }
+
+      function startGame() {
+        score = 0;
+        lives = 3;
+        level = 1;
+        gameRunning = true;
+        gameStarted = false;
+        lastFrame = 0;
+
+        scoreDisplay.textContent = '0';
+        levelDisplay.textContent = '1';
+        livesDisplay.textContent = String(lives);
+
+        startLevel(level);
+        showState('playing');
+        boardOverlay.classList.remove('board-overlay--hidden');
+        overlayText.textContent = 'Press a direction to start';
+
+        draw();
+        cancelAnimationFrame(rafHandle);
+        rafHandle = requestAnimationFrame(loop);
+      }
+
+      function beginGameplay() {
+        if (gameStarted || !gameRunning) return;
+        gameStarted = true;
+        boardOverlay.classList.add('board-overlay--hidden');
+        // Tracer release timer starts now
+        const now = performance.now();
+        for (const t of tracers) t.releasedAt = now + t.releaseDelay * 1000;
+      }
+
+      function loseLife() {
+        lives--;
+        livesDisplay.textContent = String(lives);
+        if (lives <= 0) {
+          endGame();
+          return;
+        }
+        // Mark not-started so loop returns early until player presses a direction
+        gameStarted = false;
+        // Reset frame timer so dt doesn't explode when player resumes
+        lastFrame = 0;
+        // Reset player
+        player.x = player.spawn.x;
+        player.y = player.spawn.y;
+        player.px = player.spawn.x + 0.5;
+        player.py = player.spawn.y + 0.5;
+        player.subX = 0;
+        player.subY = 0;
+        player.dir = { x: 0, y: 0 };
+        player.nextDir = { x: 0, y: 0 };
+        // Reset tracers
+        for (let i = 0; i < tracers.length; i++) {
+          const t = tracers[i];
+          t.x = t.spawn.x;
+          t.y = t.spawn.y;
+          t.px = t.spawn.x + 0.5;
+          t.py = t.spawn.y + 0.5;
+          t.subX = 0;
+          t.subY = 0;
+          t.dir = { x: 0, y: -1 };
+          t.mode = 'leaving';
+          // Each tracer's stagger relative to "now" — beginGameplay will
+          // reset these again when the player presses a direction.
+          t.releasedAt = performance.now() + 1500 + i * 800;
+          t.releaseDelay = 1.5 + i * 0.8;
+        }
+        // Show overlay so player knows they need to start moving again
+        boardOverlay.classList.remove('board-overlay--hidden');
+        overlayText.textContent = 'Press a direction to continue';
+        // Render the reset state once so player sees the new positions
+        draw();
+        // Restart the animation loop fresh to make sure no stale state lingers
+        cancelAnimationFrame(rafHandle);
+        rafHandle = requestAnimationFrame(loop);
+      }
+
+      function endGame() {
+        if (!gameRunning) return;
+        gameRunning = false;
+        gameStarted = false;
+        cancelAnimationFrame(rafHandle);
+
+        finalScore = score;
+        finalLevel = level;
+        resultScore.textContent = String(finalScore);
+        resultLevel.textContent = `Level ${finalLevel}`;
+
+        initBoxes.forEach(b => { b.value = ''; b.classList.remove('initial-box--filled'); });
+        submitBtn.disabled = true;
+        submitBtnText.textContent = 'SUBMIT SCORE';
+        initialsError.textContent = '';
+
+        showState('result');
+        setTimeout(() => initBoxes[0].focus(), 100);
+      }
+
+      // Movement: entities move continuously. They stop at the center of each cell
+      // to make turn decisions. We track integer cell coords + sub-cell offsets.
+      // For simplicity we use fractional position (px, py) in cell units.
+      // Refactor: convert to fractional position
+      function setupFractional() {
+        // Add fractional pos to player and tracers
+        player.px = player.x + 0.5;
+        player.py = player.y + 0.5;
+        for (const t of tracers) {
+          t.px = t.x + 0.5;
+          t.py = t.y + 0.5;
+        }
+      }
+
+      function tickEntity(e, dt, speed, isTracer) {
+        // Move smoothly. Detect crossing the center of a cell during this
+        // frame's movement — at that crossing, queue direction changes and
+        // wall checks. This prevents the "snap-back" glitch from a fixed
+        // epsilon based atCenter check, which fails at low speeds when
+        // movement-per-frame is larger than the epsilon.
+
+        // If not moving, nothing to do beyond a possible nextDir kick-off
+        if (e.dir.x === 0 && e.dir.y === 0) {
+          // Stationary — try to start moving toward nextDir if possible
+          if (!isTracer && e.nextDir && (e.nextDir.x !== 0 || e.nextDir.y !== 0)) {
+            const cx = Math.floor(e.px);
+            const cy = Math.floor(e.py);
+            const tx = wrapX(cx + e.nextDir.x);
+            const ty = cy + e.nextDir.y;
+            if (isWalkableCell(tx, ty, false)) {
+              e.dir = { ...e.nextDir };
+            }
+          } else if (isTracer) {
+            chooseTracerDir(e);
+          }
+          if (e.dir.x === 0 && e.dir.y === 0) return;
+        }
+
+        const remaining = speed * dt;
+        // Distance to next cell center along current direction
+        let prevPx = e.px;
+        let prevPy = e.py;
+
+        // Try to move; if we cross a cell center, handle direction-change there.
+        // For axis-aligned movement (always the case here), we can compute the
+        // distance to the next center and either move that far + handle, or
+        // move the full frame distance if center is further than `remaining`.
+        const cxNow = Math.floor(e.px);
+        const cyNow = Math.floor(e.py);
+        const centerX = cxNow + 0.5;
+        const centerY = cyNow + 0.5;
+
+        let movedThisFrame = 0;
+        const distToCenter = e.dir.x !== 0
+          ? (e.dir.x > 0 ? centerX - e.px : e.px - centerX)
+          : (e.dir.y > 0 ? centerY - e.py : e.py - centerY);
+
+        if (distToCenter > 0 && distToCenter <= remaining) {
+          // We will cross the center this frame. Snap to center first.
+          if (e.dir.x !== 0) e.px = centerX;
+          if (e.dir.y !== 0) e.py = centerY;
+          movedThisFrame = distToCenter;
+
+          // At center: handle direction changes and wall checks
+          const cx = Math.floor(e.px);
+          const cy = Math.floor(e.py);
+
+          if (!isTracer) {
+            if (e.nextDir && (e.nextDir.x !== 0 || e.nextDir.y !== 0)) {
+              const tx = wrapX(cx + e.nextDir.x);
+              const ty = cy + e.nextDir.y;
+              if (isWalkableCell(tx, ty, false)) {
+                e.dir = { ...e.nextDir };
+              }
+            }
+          } else {
+            chooseTracerDir(e);
+          }
+
+          // Confirm we can keep moving in (possibly new) direction
+          const tx = wrapX(cx + e.dir.x);
+          const ty = cy + e.dir.y;
+          if (e.dir.x === 0 && e.dir.y === 0) {
+            // Stopped at center
+            e.x = cx;
+            e.y = cy;
+            return;
+          }
+          if (!isWalkableCell(tx, ty, isTracer)) {
+            e.dir = { x: 0, y: 0 };
+            e.x = cx;
+            e.y = cy;
+            return;
+          }
+
+          // Move the remainder of the frame in the (possibly new) direction
+          const leftover = remaining - movedThisFrame;
+          e.px += e.dir.x * leftover;
+          e.py += e.dir.y * leftover;
+        } else {
+          // No center crossing this frame; move freely
+          e.px += e.dir.x * remaining;
+          e.py += e.dir.y * remaining;
+        }
+
+        // Tunnel wrap (row 10) — handled before clamping
+        if (e.py >= 10 && e.py <= 11) {
+          if (e.px < -0.3) e.px = COLS - 0.5;
+          if (e.px > COLS + 0.3) e.px = 0.5;
+        } else {
+          if (e.px < 0.5) { e.px = 0.5; e.dir = { x: 0, y: 0 }; }
+          if (e.px > COLS - 0.5) { e.px = COLS - 0.5; e.dir = { x: 0, y: 0 }; }
+        }
+
+        // Sync integer cell
+        e.x = Math.floor(e.px);
+        e.y = Math.floor(e.py);
+      }
+
+      function chooseTracerDir(t) {
+        const cx = t.x;
+        const cy = t.y;
+
+        // If 'leaving' mode: move toward door (row 9 area) and once out switch to chase
+        if (t.mode === 'leaving') {
+          if (performance.now() < t.releasedAt) {
+            // bobble in pen, move up/down
+            t.dir = { x: 0, y: t.dir.y === -1 ? 1 : -1 };
+            return;
+          }
+          // Move toward door at (10, 9) then up
+          if (cy >= 10) {
+            // move toward col 10 first
+            if (cx < 10 && isWalkableCellOrPen(cx + 1, cy)) { t.dir = { x: 1, y: 0 }; return; }
+            if (cx > 10 && isWalkableCellOrPen(cx - 1, cy)) { t.dir = { x: -1, y: 0 }; return; }
+            // at col 10, try going up through door
+            if (cx === 10 && (board[cy - 1][cx].door || isWalkableCell(cx, cy - 1, true))) {
+              t.dir = { x: 0, y: -1 };
+              return;
+            }
+          }
+          if (cy === 9) {
+            // exited the door
+            t.mode = 'chase';
+            t.dir = { x: 0, y: -1 };
+            return;
+          }
+          // fallback
+          t.dir = { x: 0, y: -1 };
+          return;
+        }
+
+        // If 'eaten' mode: head back to pen
+        if (t.mode === 'eaten') {
+          // Simple: move toward pen entrance at (10, 9)
+          const targetX = 10, targetY = 11;
+          if (cx === targetX && cy === targetY) {
+            // arrived in pen; reset to leaving mode
+            t.mode = 'leaving';
+            t.releasedAt = performance.now() + 1000;
+            t.dir = { x: 0, y: -1 };
+            return;
+          }
+          // BFS toward target — but cheaper heuristic: pick neighbor closest to target,
+          // allowing pen/door cells.
+          const opts = [
+            { dir: { x: 1, y: 0 }, nx: cx + 1, ny: cy },
+            { dir: { x: -1, y: 0 }, nx: cx - 1, ny: cy },
+            { dir: { x: 0, y: 1 }, nx: cx, ny: cy + 1 },
+            { dir: { x: 0, y: -1 }, nx: cx, ny: cy - 1 },
+          ].filter(o => o.nx >= 0 && o.nx < COLS && o.ny >= 0 && o.ny < ROWS &&
+                       (isWalkableCellOrPen(o.nx, o.ny) || board[o.ny][o.nx].door));
+          if (opts.length === 0) { t.dir = { x: 0, y: 0 }; return; }
+          opts.sort((a, b) => {
+            const da = (a.nx - targetX) ** 2 + (a.ny - targetY) ** 2;
+            const db = (b.nx - targetX) ** 2 + (b.ny - targetY) ** 2;
+            return da - db;
+          });
+          t.dir = opts[0].dir;
+          return;
+        }
+
+        // Normal chase/scared modes: at every intersection, pick a direction
+        // that doesn't reverse and that's walkable.
+        const validDirs = [];
+        const dirs = [
+          { x: 1, y: 0 }, { x: -1, y: 0 },
+          { x: 0, y: 1 }, { x: 0, y: -1 },
+        ];
+        for (const d of dirs) {
+          // No reversing unless dead-end
+          if (d.x === -t.dir.x && d.y === -t.dir.y && t.dir.x + t.dir.y !== 0) continue;
+          const nx = wrapX(cx + d.x);
+          const ny = cy + d.y;
+          if (isWalkableCell(nx, ny, true) && !(board[ny][nx] && board[ny][nx].door)) {
+            validDirs.push(d);
+          }
+        }
+        if (validDirs.length === 0) {
+          // Allow reverse
+          t.dir = { x: -t.dir.x, y: -t.dir.y };
+          return;
+        }
+
+        // Pick based on personality
+        let target;
+        if (t.mode === 'scared') {
+          // Run away from player
+          target = { x: 2 * (player.x - 10) + 10, y: 2 * (player.y - 11) + 11 };
+          // Actually: pick the dir that maximizes distance from player
+          validDirs.sort((a, b) => {
+            const da = (cx + a.x - player.x) ** 2 + (cy + a.y - player.y) ** 2;
+            const db = (cx + b.x - player.x) ** 2 + (cy + b.y - player.y) ** 2;
+            return db - da;
+          });
+          // Add randomness 30% of the time
+          if (Math.random() < 0.3) {
+            t.dir = validDirs[Math.floor(Math.random() * validDirs.length)];
+          } else {
+            t.dir = validDirs[0];
+          }
+          return;
+        }
+
+        switch (t.def.personality) {
+          case 'random':
+            t.dir = validDirs[Math.floor(Math.random() * validDirs.length)];
+            return;
+          case 'chaser':
+            target = { x: player.x, y: player.y };
+            break;
+          case 'flank':
+            // Aim ahead of player by 4 cells
+            target = { x: player.x + player.dir.x * 4, y: player.y + player.dir.y * 4 };
+            break;
+          case 'patrol':
+            // Patrol target rotates between corners
+            const corners = [
+              { x: 1, y: 1 }, { x: COLS - 2, y: 1 },
+              { x: 1, y: ROWS - 2 }, { x: COLS - 2, y: ROWS - 2 },
+            ];
+            const idx = Math.floor((performance.now() / 4000) % corners.length);
+            target = corners[idx];
+            break;
+          default:
+            target = { x: player.x, y: player.y };
+        }
+
+        validDirs.sort((a, b) => {
+          const da = (cx + a.x - target.x) ** 2 + (cy + a.y - target.y) ** 2;
+          const db = (cx + b.x - target.x) ** 2 + (cy + b.y - target.y) ** 2;
+          return da - db;
+        });
+        t.dir = validDirs[0];
+      }
+
+      function isWalkableCellOrPen(x, y) {
+        if (y < 0 || y >= ROWS || x < 0 || x >= COLS) return false;
+        const cell = board[y][x];
+        return !cell.wall;
+      }
+
+      function loop(timestamp) {
+        if (!gameRunning) return;
+        if (!gameStarted) {
+          rafHandle = requestAnimationFrame(loop);
+          return;
+        }
+        if (lastFrame === 0) lastFrame = timestamp;
+        const dt = Math.min(0.05, (timestamp - lastFrame) / 1000);
+        lastFrame = timestamp;
+
+        if (deathPause > 0) {
+          deathPause -= dt;
+          draw();
+          rafHandle = requestAnimationFrame(loop);
+          return;
+        }
+
+        if (levelTransition) {
+          rafHandle = requestAnimationFrame(loop);
+          return;
+        }
+
+        // Speed scales slightly with level (cells per second)
+        const playerSpeed = 5.5 + (level - 1) * 0.3;
+        const tracerSpeed = 5.0 + (level - 1) * 0.35;
+        const scaredSpeed = 3.2;
+
+        // Initialize fractional positions if needed
+        if (typeof player.px === 'undefined') setupFractional();
+
+        // Player tick
+        tickEntity(player, dt, playerSpeed, false);
+        if (player.dir.x !== 0 || player.dir.y !== 0) {
+          player.anim += dt * 8;
+        }
+
+        // Eat ticket / pellet at player's current cell (when at center)
+        const cx = Math.floor(player.px);
+        const cy = Math.floor(player.py);
+        if (cx >= 0 && cx < COLS && cy >= 0 && cy < ROWS) {
+          const cell = board[cy][cx];
+          if (cell.ticket) {
+            cell.ticket = false;
+            score += 10;
+            ticketsRemaining--;
+            scoreDisplay.textContent = String(score);
+          } else if (cell.pellet) {
+            cell.pellet = false;
+            score += 50;
+            ticketsRemaining--;
+            powerUntil = performance.now() + POWER_DURATION_MS;
+            scoreDisplay.textContent = String(score);
+            // Set tracers to scared
+            for (const t of tracers) {
+              if (t.mode === 'chase') {
+                t.mode = 'scared';
+                // Reverse direction (classic Pac-Man)
+                t.dir = { x: -t.dir.x, y: -t.dir.y };
+              }
+            }
+          }
+        }
+
+        // Power-up management
+        const now = performance.now();
+        const powerActive = now < powerUntil;
+        const flashWarn = powerActive && (powerUntil - now < POWER_FLASH_MS);
+        if (!powerActive) {
+          for (const t of tracers) {
+            if (t.mode === 'scared') t.mode = 'chase';
+            t.flashWarn = false;
+          }
+        } else {
+          for (const t of tracers) t.flashWarn = flashWarn;
+        }
+
+        // Tracer ticks
+        for (const t of tracers) {
+          let speed = tracerSpeed;
+          if (t.mode === 'scared') speed = scaredSpeed;
+          if (t.mode === 'eaten') speed = tracerSpeed * 1.6;
+          if (t.mode === 'leaving' && now < t.releasedAt) speed = 1.5;
+          tickEntity(t, dt, speed, true);
+        }
+
+        // Collisions: any tracer overlapping player cell-distance
+        for (const t of tracers) {
+          const dx = t.px - player.px;
+          const dy = t.py - player.py;
+          if (dx * dx + dy * dy < 0.5) {
+            if (t.mode === 'scared') {
+              // Eat tracer!
+              score += 200;
+              scoreDisplay.textContent = String(score);
+              t.mode = 'eaten';
+            } else if (t.mode === 'chase' || t.mode === 'leaving') {
+              loseLife();
+              return;
+            }
+          }
+        }
+
+        // Level clear?
+        if (ticketsRemaining <= 0) {
+          score += 100 + lives * 25;
+          scoreDisplay.textContent = String(score);
+          level++;
+          levelTransition = true;
+          setTimeout(() => {
+            startLevel(level);
+            // Reset fractional positions for new level
+            setupFractional();
+            levelTransition = false;
+            // Brief pause overlay
+            boardOverlay.classList.remove('board-overlay--hidden');
+            overlayText.textContent = `LEVEL ${level} — GO!`;
+            setTimeout(() => boardOverlay.classList.add('board-overlay--hidden'), 800);
+            // re-stagger tracer release
+            const t0 = performance.now() + 1000;
+            for (let i = 0; i < tracers.length; i++) tracers[i].releasedAt = t0 + i * 600;
+          }, 600);
+        }
+
+        draw();
+        rafHandle = requestAnimationFrame(loop);
+      }
+
+      function setDirection(dx, dy) {
+        if (!gameRunning) return;
+        beginGameplay();
+        player.nextDir = { x: dx, y: dy };
+        // If we're not currently moving, try to apply immediately
+        if (player.dir.x === 0 && player.dir.y === 0) {
+          const cx = Math.floor(player.px);
+          const cy = Math.floor(player.py);
+          if (isWalkableCell(wrapX(cx + dx), cy + dy, false)) {
+            player.dir = { x: dx, y: dy };
+          }
+        }
+      }
+
+      // === Drawing ===
+      function draw() {
+        // Background
+        ctx.fillStyle = '#02100a';
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+        // Draw maze cells
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const cell = board[r][c];
+            const x = OFFSET_X + c * CELL;
+            const y = OFFSET_Y + r * CELL;
+            if (cell.wall) {
+              drawWall(x, y, c, r);
+            } else if (cell.door) {
+              ctx.fillStyle = '#fbbf24';
+              ctx.fillRect(x + 1, y + CELL / 2 - 1, CELL - 2, 2);
+            } else {
+              if (cell.ticket) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath();
+                ctx.arc(x + CELL / 2, y + CELL / 2, 2, 0, Math.PI * 2);
+                ctx.fill();
+              } else if (cell.pellet) {
+                ctx.fillStyle = '#fbbf24';
+                const pulse = 0.85 + 0.15 * Math.sin(performance.now() / 180);
+                ctx.beginPath();
+                ctx.arc(x + CELL / 2, y + CELL / 2, 5 * pulse, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+          }
+        }
+
+        // Draw player (cursor arrow)
+        if (player) {
+          drawPlayer();
+        }
+
+        // Draw tracers
+        for (const t of tracers) {
+          drawTracer(t);
+        }
+      }
+
+      function drawWall(x, y, c, r) {
+        // Matrix-green walls with rounded look
+        ctx.fillStyle = '#022c22';
+        ctx.fillRect(x, y, CELL, CELL);
+        // Inner glow line
+        ctx.strokeStyle = '#4ade80';
+        ctx.lineWidth = 1.5;
+        // Find which sides have walls to draw connecting lines
+        const top    = r > 0 && board[r - 1][c].wall;
+        const bottom = r < ROWS - 1 && board[r + 1][c].wall;
+        const left   = c > 0 && board[r][c - 1].wall;
+        const right  = c < COLS - 1 && board[r][c + 1].wall;
+
+        const cx = x + CELL / 2;
+        const cy = y + CELL / 2;
+
+        ctx.beginPath();
+        if (left)   { ctx.moveTo(x, cy); ctx.lineTo(cx, cy); }
+        if (right)  { ctx.moveTo(cx, cy); ctx.lineTo(x + CELL, cy); }
+        if (top)    { ctx.moveTo(cx, y); ctx.lineTo(cx, cy); }
+        if (bottom) { ctx.moveTo(cx, cy); ctx.lineTo(cx, y + CELL); }
+        ctx.stroke();
+
+        // Add subtle glow effect via a second darker line
+        ctx.strokeStyle = 'rgba(74, 222, 128, 0.3)';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        if (left)   { ctx.moveTo(x, cy); ctx.lineTo(cx, cy); }
+        if (right)  { ctx.moveTo(cx, cy); ctx.lineTo(x + CELL, cy); }
+        if (top)    { ctx.moveTo(cx, y); ctx.lineTo(cx, cy); }
+        if (bottom) { ctx.moveTo(cx, cy); ctx.lineTo(cx, y + CELL); }
+        ctx.stroke();
+      }
+
+      function drawPlayer() {
+        const px = OFFSET_X + player.px * CELL;
+        const py = OFFSET_Y + player.py * CELL;
+        const size = CELL * 0.7;
+
+        ctx.save();
+        ctx.translate(px, py);
+
+        // Rotate based on direction
+        let rot = 0;
+        if (player.dir.x === 1) rot = Math.PI / 2;
+        else if (player.dir.x === -1) rot = -Math.PI / 2;
+        else if (player.dir.y === 1) rot = Math.PI;
+        else if (player.dir.y === -1) rot = 0;
+        else rot = 0;
+        ctx.rotate(rot);
+
+        // Cursor pointer scaled
+        const s = size * 0.55;
+        ctx.fillStyle = '#fbbf24';
+        ctx.strokeStyle = '#92400e';
+        ctx.lineWidth = 1.5;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(0, -s);
+        ctx.lineTo(s * 0.7, s * 0.3);
+        ctx.lineTo(s * 0.18, s * 0.3);
+        ctx.lineTo(s * 0.4, s);
+        ctx.lineTo(s * 0.05, s * 1.05);
+        ctx.lineTo(-s * 0.18, s * 0.4);
+        ctx.lineTo(-s * 0.7, s * 0.5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawTracer(t) {
+        const px = OFFSET_X + t.px * CELL;
+        const py = OFFSET_Y + t.py * CELL;
+        const r = CELL * 0.4;
+
+        let body = t.def.color;
+        let outline = t.def.stroke;
+        let eyeFill = '#fff';
+        let pupilFill = '#0f172a';
+
+        if (t.mode === 'scared') {
+          body = t.flashWarn && Math.floor(performance.now() / 200) % 2 === 0
+            ? '#fff' : '#1e3a8a';
+          outline = '#1e40af';
+          eyeFill = '#fbbf24';
+          pupilFill = '#7f1d1d';
+        } else if (t.mode === 'eaten') {
+          // Eyes only
+          ctx.save();
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.arc(px - r * 0.3, py - r * 0.1, r * 0.3, 0, Math.PI * 2);
+          ctx.arc(px + r * 0.3, py - r * 0.1, r * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.arc(px - r * 0.3 + t.dir.x * 2, py - r * 0.1 + t.dir.y * 2, r * 0.15, 0, Math.PI * 2);
+          ctx.arc(px + r * 0.3 + t.dir.x * 2, py - r * 0.1 + t.dir.y * 2, r * 0.15, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          return;
+        }
+
+        ctx.save();
+        // Body: rounded top + serrated bottom
+        ctx.fillStyle = body;
+        ctx.strokeStyle = outline;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        // Top semicircle
+        ctx.arc(px, py, r, Math.PI, 0);
+        // Right side down
+        ctx.lineTo(px + r, py + r * 0.7);
+        // Serrated bottom (3 zigzags)
+        const teeth = 3;
+        for (let i = 0; i < teeth; i++) {
+          const xa = px + r - (i + 0.5) * (2 * r / teeth);
+          const ya = py + r * 0.95;
+          const xb = px + r - (i + 1) * (2 * r / teeth);
+          const yb = py + r * 0.7;
+          ctx.lineTo(xa, ya);
+          ctx.lineTo(xb, yb);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Eyes
+        ctx.fillStyle = eyeFill;
+        ctx.beginPath();
+        ctx.arc(px - r * 0.32, py - r * 0.1, r * 0.28, 0, Math.PI * 2);
+        ctx.arc(px + r * 0.32, py - r * 0.1, r * 0.28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = pupilFill;
+        ctx.beginPath();
+        ctx.arc(px - r * 0.32 + t.dir.x * 2.5, py - r * 0.1 + t.dir.y * 2.5, r * 0.14, 0, Math.PI * 2);
+        ctx.arc(px + r * 0.32 + t.dir.x * 2.5, py - r * 0.1 + t.dir.y * 2.5, r * 0.14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // === Input ===
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !exitDialog.hidden) {
+          hideExitDialog();
+          return;
+        }
+        if (!statePlaying.classList.contains('state--active')) return;
+        switch (e.key) {
+          case 'ArrowUp': case 'w': case 'W':
+            e.preventDefault(); setDirection(0, -1); break;
+          case 'ArrowDown': case 's': case 'S':
+            e.preventDefault(); setDirection(0, 1); break;
+          case 'ArrowLeft': case 'a': case 'A':
+            e.preventDefault(); setDirection(-1, 0); break;
+          case 'ArrowRight': case 'd': case 'D':
+            e.preventDefault(); setDirection(1, 0); break;
+        }
+      });
+
+      // Touch swipe
+      let touchStartX = 0, touchStartY = 0;
+      let touchActive = false;
+
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        e.preventDefault();
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchActive = true;
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', (e) => {
+        if (!touchActive) return;
+        touchActive = false;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - touchStartX;
+        const dy = t.clientY - touchStartY;
+        const absX = Math.abs(dx);
+        const absY = Math.abs(dy);
+        const MIN = 18;
+        if (absX < MIN && absY < MIN) {
+          beginGameplay();
+          return;
+        }
+        if (absX > absY) setDirection(dx > 0 ? 1 : -1, 0);
+        else setDirection(0, dy > 0 ? 1 : -1);
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', (e) => {
+        if (touchActive) e.preventDefault();
+      }, { passive: false });
+
+      canvas.addEventListener('click', () => beginGameplay());
+
+      // === Score submission ===
+      initBoxes.forEach((box, idx) => {
+        box.addEventListener('input', () => {
+          let val = box.value.toUpperCase().replace(/[^A-Z]/g, '');
+          box.value = val;
+          if (val.length === 1) {
+            box.classList.add('initial-box--filled');
+            if (idx < initBoxes.length - 1) initBoxes[idx + 1].focus();
+            else box.blur();
+          } else {
+            box.classList.remove('initial-box--filled');
+          }
+          updateSubmitState();
+        });
+        box.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && box.value === '' && idx > 0) {
+            initBoxes[idx - 1].focus();
+            initBoxes[idx - 1].value = '';
+            initBoxes[idx - 1].classList.remove('initial-box--filled');
+            updateSubmitState();
+          }
+          if (e.key === 'Enter' && !submitBtn.disabled) submitScore();
+        });
+        box.addEventListener('focus', () => box.select());
+      });
+
+      function getInitials() { return initBoxes.map(b => b.value).join('').toUpperCase(); }
+      function updateSubmitState() {
+        submitBtn.disabled = !/^[A-Z]{3}$/.test(getInitials());
+      }
+
+      async function submitScore() {
+        const initials = getInitials();
+        if (!/^[A-Z]{3}$/.test(initials)) return;
+
+        submitBtn.disabled = true;
+        submitBtnText.textContent = 'SUBMITTING...';
+        initialsError.textContent = '';
+
+        try {
+          const res = await fetch(`/api/scores/${GAME_SLUG}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ initials, score: finalScore }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            initialsError.textContent = data.error || 'Could not save score. Try different initials.';
+            submitBtn.disabled = false;
+            submitBtnText.textContent = 'SUBMIT SCORE';
+            return;
+          }
+          lastSubmittedInitials = initials;
+          lastSubmittedRank = data.madeLeaderboard ? data.rank : null;
+          renderLeaderboard(data.scores || []);
+        } catch (err) {
+          initialsError.textContent = 'Network error. Try again in a sec.';
+          submitBtn.disabled = false;
+          submitBtnText.textContent = 'SUBMIT SCORE';
+        }
+      }
+
+      submitBtn.addEventListener('click', submitScore);
+
+      skipBtn.addEventListener('click', async () => {
+        try {
+          const res = await fetch(`/api/scores/${GAME_SLUG}`);
+          const data = await res.json();
+          lastSubmittedRank = null;
+          lastSubmittedInitials = null;
+          renderLeaderboard(data.scores || []);
+        } catch {
+          renderLeaderboard([]);
+        }
+      });
+
+      function renderLeaderboard(scores) {
+        if (lastSubmittedRank) {
+          const ord = ordinalSuffix(lastSubmittedRank);
+          rankEyebrow.textContent = 'YOU RANKED';
+          rankNumber.textContent = `#${lastSubmittedRank}`;
+          rankDetail.textContent = lastSubmittedRank === 1 ? '🏆 First place!' : `${ord} place on the leaderboard`;
+          document.getElementById('rank-reveal').style.display = '';
+        } else if (lastSubmittedInitials) {
+          rankEyebrow.textContent = 'SCORE SUBMITTED';
+          rankNumber.textContent = String(finalScore);
+          rankDetail.textContent = "Didn't crack the top 10 — keep practicing!";
+          document.getElementById('rank-reveal').style.display = '';
+        } else {
+          document.getElementById('rank-reveal').style.display = 'none';
+        }
+
+        leaderboardList.innerHTML = '';
+        if (scores.length === 0) {
+          const empty = document.createElement('li');
+          empty.className = 'leaderboard-empty';
+          empty.textContent = 'No scores yet. Be the first.';
+          leaderboardList.appendChild(empty);
+        } else {
+          scores.slice(0, 10).forEach((entry, idx) => {
+            const li = document.createElement('li');
+            const rank = idx + 1;
+            const isMe = lastSubmittedRank === rank && lastSubmittedInitials === entry.initials;
+            li.className = `leaderboard-row leaderboard-row--${rank} ${isMe ? 'leaderboard-row--me' : ''}`;
+            li.innerHTML = `
+              <span class="rank-num">${rank}</span>
+              <span class="rank-initials">${escapeHtml(entry.initials)}</span>
+              <span class="rank-score">${entry.score}</span>
+              ${isMe ? '<span class="rank-you">← YOU</span>' : ''}
+            `;
+            leaderboardList.appendChild(li);
+          });
+        }
+        configureShare();
+        showState('leaderboard');
+      }
+
+      function ordinalSuffix(n) {
+        const s = ['th', 'st', 'nd', 'rd'];
+        const v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+      }
+
+      function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
+      function configureShare() {
+        const url = window.location.href;
+        const text = `I scored ${finalScore} on ${GAME_NAME} at Jake's Arcade. Beat me?`;
+        const fullShare = `${text} ${url}`;
+
+        shareFb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`;
+        shareX.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+
+        if (navigator.share) {
+          shareNative.style.display = '';
+          shareNative.onclick = async () => {
+            try { await navigator.share({ title: GAME_NAME + " — Jake's Arcade", text, url }); } catch (e) { }
+          };
+        }
+
+        shareCopy.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(fullShare);
+            copyToast.classList.add('copy-toast--show');
+            setTimeout(() => copyToast.classList.remove('copy-toast--show'), 2000);
+          } catch {
+            const ta = document.createElement('textarea');
+            ta.value = fullShare;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            copyToast.classList.add('copy-toast--show');
+            setTimeout(() => copyToast.classList.remove('copy-toast--show'), 2000);
+          }
+        };
+      }
+
+      playAgainBtn.addEventListener('click', () => startGame());
+
+      function showExitDialog() {
+        exitDialog.hidden = false;
+        setTimeout(() => exitCancel.focus(), 50);
+      }
+      function hideExitDialog() { exitDialog.hidden = true; }
+
+      exitBtn.addEventListener('click', () => {
+        if (gameRunning) showExitDialog();
+        else window.location.href = EXIT_TO;
+      });
+
+      exitCancel.addEventListener('click', hideExitDialog);
+      exitConfirm.addEventListener('click', () => {
+        gameRunning = false;
+        cancelAnimationFrame(rafHandle);
+        window.location.href = EXIT_TO;
+      });
+
+      startBtn.addEventListener('click', startGame);
+    </script>
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; tap-highlight-color: transparent; }
+      html { scroll-behavior: smooth; }
+      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+      body {
+        background: linear-gradient(135deg, #051a10 0%, #02100a 50%, #010805 100%);
+        color: #ffffff;
+        font-family: 'Inter Tight', system-ui, -apple-system, sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .page { position: relative; min-height: 100vh; }
+
+      /* NAVIGATION */
+      .exit-btn {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 100;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1.1rem;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1.5px solid rgba(74, 222, 128, 0.5);
+        border-radius: 4px;
+        color: #86efac;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        cursor: pointer;
+        text-shadow: 0 0 6px rgba(74, 222, 128, 0.7);
+        box-shadow: 0 0 14px rgba(74, 222, 128, 0.3);
+        transition: all 0.2s ease;
+      }
+
+      .exit-btn:hover, .exit-btn:focus-visible {
+        transform: translateY(-2px);
+        border-color: #86efac;
+        box-shadow: 0 0 24px rgba(74, 222, 128, 0.6);
+        color: #d1fae5;
+        outline: none;
+      }
+
+      .exit-btn svg { width: 1rem; height: 1rem; }
+
+      .portal-return {
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        z-index: 100;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.95rem;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 999px;
+        color: rgba(196, 181, 253, 0.85);
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-decoration: none;
+        text-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+        transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      }
+
+      .portal-return-icon {
+        font-size: 0.85rem;
+        animation: portal-return-spin 6s linear infinite;
+        display: inline-block;
+      }
+
+      @keyframes portal-return-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      .portal-return:hover, .portal-return:focus-visible {
+        color: #fff;
+        border-color: rgba(168, 85, 247, 0.8);
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        transform: translateY(-2px);
+        outline: none;
+      }
+
+      /* MOTES */
+      .motes {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      .mote {
+        position: absolute;
+        bottom: -20px;
+        width: 3px;
+        height: 3px;
+        background: #86efac;
+        border-radius: 50%;
+        box-shadow: 0 0 6px #4ade80, 0 0 12px rgba(74, 222, 128, 0.5);
+        opacity: 0;
+      }
+
+      .mt-1  { left:  6%; animation: mote-rise 12s linear  0s   infinite; }
+      .mt-2  { left: 14%; animation: mote-rise 14s linear  1.5s infinite; }
+      .mt-3  { left: 22%; animation: mote-rise 11s linear  3s   infinite; }
+      .mt-4  { left: 30%; animation: mote-rise 13s linear  0.8s infinite; }
+      .mt-5  { left: 38%; animation: mote-rise 12s linear  4s   infinite; }
+      .mt-6  { left: 46%; animation: mote-rise 14s linear  2.2s infinite; }
+      .mt-7  { left: 54%; animation: mote-rise 11s linear  5s   infinite; }
+      .mt-8  { left: 62%; animation: mote-rise 13s linear  1.2s infinite; }
+      .mt-9  { left: 70%; animation: mote-rise 12s linear  3.5s infinite; }
+      .mt-10 { left: 78%; animation: mote-rise 14s linear  0.5s infinite; }
+      .mt-11 { left: 86%; animation: mote-rise 11s linear  4.5s infinite; }
+      .mt-12 { left: 94%; animation: mote-rise 13s linear  2.8s infinite; }
+      .mt-13 { left: 10%; animation: mote-rise 15s linear  6s   infinite; }
+      .mt-14 { left: 34%; animation: mote-rise 15s linear  5.2s infinite; }
+      .mt-15 { left: 58%; animation: mote-rise 15s linear  7s   infinite; }
+      .mt-16 { left: 82%; animation: mote-rise 15s linear  4.8s infinite; }
+      .mt-17 { left: 18%; animation: mote-rise 16s linear  6.5s infinite; }
+      .mt-18 { left: 74%; animation: mote-rise 16s linear  8s   infinite; }
+
+      @keyframes mote-rise {
+        0%   { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; }
+        10%  { opacity: 1; transform: translateY(-10vh) translateX(8px) scale(1); }
+        50%  { transform: translateY(-50vh) translateX(-12px) scale(1); opacity: 0.9; }
+        80%  { opacity: 1; }
+        100% { transform: translateY(-110vh) translateX(6px) scale(0.3); opacity: 0; }
+      }
+
+      .game-section {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5rem 1.5rem 5rem;
+      }
+
+      /* CABINET SHELL — DESKTOP ONLY (>= 900px) */
+      .cabinet-shell {
+        position: relative;
+        width: 100%;
+        max-width: 42rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .shell-marquee, .shell-side, .shell-controls, .shell-coin, .shell-floor-shadow {
+        display: none;
+      }
+
+      .cabinet-body {
+        position: relative;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .shell-bezel { width: 100%; }
+
+      @media (min-width: 900px) {
+        .cabinet-shell {
+          max-width: 48rem;
+          padding-bottom: 30px;
+        }
+
+        .shell-marquee {
+          display: block;
+          width: 88%;
+          padding: 1.1rem 1.5rem 0.95rem;
+          background: linear-gradient(180deg, #166534 0%, #02100a 100%);
+          border: 3px solid #166534;
+          border-bottom: none;
+          border-radius: 12px 12px 0 0;
+          text-align: center;
+          box-shadow:
+            inset 0 0 18px rgba(74, 222, 128, 0.45),
+            0 0 24px rgba(74, 222, 128, 0.5);
+        }
+
+        .shell-marquee-bulbs {
+          display: flex;
+          justify-content: center;
+          gap: 0.45rem;
+          margin-bottom: 0.55rem;
+        }
+
+        .shell-marquee-bulbs span {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #fbbf24;
+          box-shadow: 0 0 5px #fbbf24, 0 0 10px rgba(251, 191, 36, 0.7);
+          animation: shell-bulb-blink 1.6s ease-in-out infinite;
+        }
+        .shell-marquee-bulbs span:nth-child(2n) { animation-delay: 0.3s; }
+        .shell-marquee-bulbs span:nth-child(3n) { animation-delay: 0.6s; }
+
+        @keyframes shell-bulb-blink {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%      { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .shell-marquee-title {
+          font-family: 'Monoton', 'Inter Tight', sans-serif;
+          font-weight: 400;
+          font-size: 1.6rem;
+          letter-spacing: 0.12em;
+          color: #d1fae5;
+          text-shadow:
+            0 0 6px rgba(74, 222, 128, 0.95),
+            0 0 14px rgba(74, 222, 128, 0.7),
+            0 0 28px rgba(74, 222, 128, 0.4);
+        }
+
+        .cabinet-body {
+          position: relative;
+          width: 100%;
+          padding: 0 6%;
+        }
+
+        .shell-side {
+          display: block;
+          position: absolute;
+          top: 0;
+          bottom: 100px;
+          width: 5%;
+          background: linear-gradient(180deg, #1e293b 0%, #010805 100%);
+          border: 2px solid #010805;
+          z-index: 1;
+        }
+
+        .shell-side-l { left: 0; border-radius: 6px 0 0 0; border-right: none; box-shadow: inset -3px 0 6px rgba(0, 0, 0, 0.6); }
+        .shell-side-r { right: 0; border-radius: 0 6px 0 0; border-left: none; box-shadow: inset 3px 0 6px rgba(0, 0, 0, 0.6); }
+
+        .shell-side-art {
+          position: relative;
+          height: 100%;
+          padding: 2rem 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-evenly;
+          align-items: center;
+        }
+
+        .side-decor {
+          width: 60%;
+          height: 30px;
+          background: rgba(74, 222, 128, 0.3);
+          border: 1px solid rgba(74, 222, 128, 0.5);
+          border-radius: 4px;
+          box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
+        }
+
+        .side-d1 { transform: rotate(-3deg); }
+        .side-d2 { transform: rotate(2deg); height: 20px; background: rgba(134, 239, 172, 0.25); border-color: rgba(134, 239, 172, 0.5); box-shadow: 0 0 12px rgba(134, 239, 172, 0.4); }
+        .side-d3 { transform: rotate(-2deg); height: 40px; background: rgba(251, 191, 36, 0.18); border-color: rgba(251, 191, 36, 0.4); box-shadow: 0 0 12px rgba(251, 191, 36, 0.3); }
+
+        .shell-bezel {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          padding: 1.25rem;
+          background: linear-gradient(180deg, #02100a 0%, #010805 100%);
+          border-left: 3px solid #010805;
+          border-right: 3px solid #010805;
+          box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .shell-controls {
+          display: flex;
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          padding: 1rem 2rem;
+          background: linear-gradient(180deg, #475569 0%, #334155 100%);
+          border: 3px solid #1e293b;
+          border-top: none;
+          border-bottom: none;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .shell-joystick {
+          position: relative;
+          width: 40px;
+          height: 40px;
+          flex-shrink: 0;
+        }
+
+        .shell-joystick-base {
+          position: absolute;
+          bottom: 0; left: 50%;
+          transform: translateX(-50%);
+          width: 30px;
+          height: 10px;
+          background: #0f172a;
+          border-radius: 50%;
+        }
+
+        .shell-joystick-stick {
+          position: absolute;
+          bottom: 5px; left: 50%;
+          transform: translateX(-50%);
+          width: 5px;
+          height: 24px;
+          background: linear-gradient(90deg, #1e293b, #475569, #1e293b);
+          border-radius: 2px;
+        }
+
+        .shell-joystick-ball {
+          position: absolute;
+          top: 0; left: 50%;
+          transform: translateX(-50%);
+          width: 16px;
+          height: 16px;
+          background: radial-gradient(circle at 30% 30%, #4ade80, #166534);
+          border-radius: 50%;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 6px rgba(74, 222, 128, 0.5);
+        }
+
+        .shell-buttons {
+          display: flex;
+          gap: 0.55rem;
+          align-items: center;
+        }
+
+        .shell-btn {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          border: 2px solid #0f172a;
+          box-shadow:
+            inset 0 -2px 3px rgba(0, 0, 0, 0.4),
+            inset 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .shell-btn-pink   { background: radial-gradient(circle at 30% 30%, #ec4899, #9d174d); }
+        .shell-btn-red    { background: radial-gradient(circle at 30% 30%, #ef4444, #7f1d1d); }
+        .shell-btn-orange { background: radial-gradient(circle at 30% 30%, #f97316, #9a3412); }
+        .shell-btn-cyan   { background: radial-gradient(circle at 30% 30%, #22d3ee, #155e75); }
+
+        .shell-coin {
+          display: block;
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          padding: 1rem 1rem 1.25rem;
+          background: linear-gradient(180deg, #1e293b 0%, #010805 100%);
+          border: 3px solid #010805;
+          border-top: none;
+          border-radius: 0 0 8px 8px;
+          text-align: center;
+          box-shadow:
+            inset 0 0 18px rgba(0, 0, 0, 0.7),
+            0 8px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .shell-coin-slot {
+          display: block;
+          width: 60px;
+          height: 5px;
+          margin: 0 auto 0.6rem;
+          background: #010805;
+          border-radius: 1px;
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
+        }
+
+        .shell-coin-label {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.65rem;
+          font-weight: 700;
+          letter-spacing: 0.2em;
+          color: #94a3b8;
+        }
+
+        .shell-floor-shadow {
+          display: block;
+          position: absolute;
+          bottom: 0;
+          left: 5%; right: 5%;
+          height: 22px;
+          background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.7) 0%, transparent 70%);
+          filter: blur(8px);
+          z-index: 0;
+        }
+
+        .shell-bezel .game-wrap {
+          max-width: none;
+          border: 1px solid rgba(74, 222, 128, 0.3);
+          border-radius: 6px;
+          box-shadow: inset 0 0 20px rgba(74, 222, 128, 0.2);
+        }
+      }
+
+      /* GAME WRAP */
+      .game-wrap {
+        width: 100%;
+        max-width: 42rem;
+        background: #0a0e1a;
+        border: 1px solid rgba(74, 222, 128, 0.4);
+        border-radius: 0.875rem;
+        overflow: hidden;
+        box-shadow:
+          0 0 0 1px rgba(74, 222, 128, 0.15),
+          0 0 40px rgba(74, 222, 128, 0.35),
+          0 0 90px rgba(22, 101, 52, 0.4),
+          0 25px 60px rgba(0, 0, 0, 0.4);
+      }
+
+      .game-header {
+        background: #0a0e1a;
+        border-bottom: 1px solid rgba(74, 222, 128, 0.2);
+        padding: 0.625rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .game-dots { display: flex; gap: 0.4rem; }
+      .dot { width: 0.7rem; height: 0.7rem; border-radius: 50%; display: inline-block; }
+      .dot-red    { background: #ef4444; }
+      .dot-yellow { background: #f59e0b; }
+      .dot-green  { background: #10b981; }
+
+      .game-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.55);
+      }
+
+      .game-body {
+        padding: 2.5rem 1.75rem;
+        min-height: 32rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .state {
+        display: none;
+        width: 100%;
+        text-align: center;
+      }
+
+      .state--active {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: state-fade-in 0.3s ease;
+      }
+
+      @keyframes state-fade-in {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .intro-icon {
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 1.5rem auto;
+        animation: clock-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes clock-pulse {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.06); }
+      }
+
+      .intro-icon svg { width: 100%; height: 100%; display: block; }
+
+      .intro-title {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: clamp(1.75rem, 5vw, 2.5rem);
+        font-weight: 900;
+        color: #fff;
+        line-height: 1.1;
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+      }
+
+      .intro-text {
+        font-size: 1.05rem;
+        color: #d1d5db;
+        margin-bottom: 0.5rem;
+        line-height: 1.6;
+      }
+
+      .intro-text strong { color: #86efac; font-weight: 700; }
+      .intro-text strong.green-strong { color: #4ade80; }
+      .intro-text strong.red-strong { color: #fca5a5; }
+
+      .intro-hint {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin-bottom: 2rem;
+        max-width: 32rem;
+      }
+
+      .intro-hint strong { color: #fbbf24; font-weight: 700; }
+
+      .primary-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #166534;
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-weight: 900;
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        border: none;
+        border-radius: 0.625rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 8px 30px rgba(251, 191, 36, 0.35);
+        animation: btn-pulse 2.4s ease-in-out infinite;
+      }
+
+      .primary-btn:hover:not(:disabled),
+      .primary-btn:focus-visible:not(:disabled) {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.25), 0 12px 40px rgba(251, 191, 36, 0.5);
+        outline: none;
+        animation-play-state: paused;
+      }
+
+      .primary-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        animation: none;
+      }
+
+      .primary-btn svg {
+        width: 1.1rem !important;
+        height: 1.1rem !important;
+        flex-shrink: 0;
+      }
+
+      @keyframes btn-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4), 0 8px 30px rgba(251,191,36,0.35); }
+        50%      { box-shadow: 0 0 0 10px rgba(251,191,36,0), 0 10px 35px rgba(251,191,36,0.45); }
+      }
+
+      .ghost-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.75rem 1.25rem;
+        background: transparent;
+        color: #94a3b8;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+
+      .ghost-btn:hover, .ghost-btn:focus-visible {
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.5);
+        outline: none;
+      }
+
+      .ghost-btn--link { display: inline-flex; }
+
+      .danger-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.75rem 1.25rem;
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        letter-spacing: 0.05em;
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .danger-btn:hover, .danger-btn:focus-visible {
+        background: rgba(239, 68, 68, 0.3);
+        color: #fff;
+        outline: none;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 0.75rem 1rem;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(74, 222, 128, 0.25);
+        border-radius: 0.5rem;
+        width: 100%;
+      }
+
+      .hud-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.15rem;
+      }
+
+      .hud-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #64748b;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+
+      .hud-value {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #f8fafc;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .board-wrap {
+        position: relative;
+        width: 420px;
+        max-width: 100%;
+        aspect-ratio: 420 / 480;
+        border: 1.5px solid rgba(74, 222, 128, 0.4);
+        border-radius: 0.5rem;
+        overflow: hidden;
+        background: #02100a;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+        touch-action: none;
+      }
+
+      .game-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .board-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(2, 16, 10, 0.78);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 1rem;
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+
+      .board-overlay--hidden { opacity: 0; }
+
+      .overlay-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #fbbf24;
+        letter-spacing: 0.04em;
+        animation: overlay-pulse 1.4s ease-in-out infinite;
+      }
+
+      @keyframes overlay-pulse {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: 0.55; }
+      }
+
+      .game-hint {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-top: 0.85rem;
+        text-align: center;
+        max-width: 32rem;
+      }
+
+      .result-icon {
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 1.5rem auto;
+        flex-shrink: 0;
+        animation: result-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      @keyframes result-pop {
+        0%   { transform: scale(0); }
+        70%  { transform: scale(1.15); }
+        100% { transform: scale(1); }
+      }
+
+      .result-icon svg { width: 96px; height: 96px; display: block; }
+
+      .result-title {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        font-weight: 900;
+        color: #fca5a5;
+        margin-bottom: 0.75rem;
+        line-height: 1.15;
+        letter-spacing: 0.05em;
+      }
+
+      .result-text {
+        font-size: 1rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+        line-height: 1.7;
+      }
+
+      .result-text strong { color: #fbbf24; font-weight: 700; }
+
+      .initials-section { width: 100%; max-width: 24rem; }
+
+      .initials-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #fbbf24;
+        letter-spacing: 0.2em;
+        margin-bottom: 0.85rem;
+      }
+
+      .initials-inputs {
+        display: flex;
+        gap: 0.6rem;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+
+      .initial-box {
+        width: 3.5rem;
+        height: 4rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 2rem;
+        font-weight: 700;
+        text-align: center;
+        background: rgba(15, 23, 42, 0.8);
+        color: #fbbf24;
+        border: 2px solid rgba(74, 222, 128, 0.4);
+        border-radius: 0.5rem;
+        text-transform: uppercase;
+        outline: none;
+        transition: all 0.15s ease;
+        caret-color: #fbbf24;
+      }
+
+      .initial-box:focus {
+        border-color: #fbbf24;
+        background: rgba(15, 23, 42, 1);
+        box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
+      }
+
+      .initial-box--filled {
+        border-color: rgba(251, 191, 36, 0.7);
+        background: rgba(251, 191, 36, 0.08);
+      }
+
+      .initials-error {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        color: #fca5a5;
+        min-height: 1.2rem;
+        margin-bottom: 1rem;
+      }
+
+      #skip-btn { margin-top: 1rem; width: 100%; }
+
+      .rank-reveal {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.06));
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        border-radius: 0.75rem;
+        animation: rank-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      @keyframes rank-pop {
+        0%   { transform: scale(0.7); opacity: 0; }
+        70%  { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); }
+      }
+
+      .rank-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fbbf24;
+        letter-spacing: 0.25em;
+        margin-bottom: 0.5rem;
+      }
+
+      .rank-number {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: clamp(3rem, 9vw, 4.5rem);
+        font-weight: 700;
+        line-height: 1;
+        background: linear-gradient(135deg, #fbbf24, #fde68a, #fbbf24);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gold-shimmer 3.5s ease-in-out infinite;
+        margin-bottom: 0.5rem;
+      }
+
+      @keyframes gold-shimmer {
+        0%, 100% { background-position: 0% 50%; }
+        50%      { background-position: 100% 50%; }
+      }
+
+      .rank-detail {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: 1rem;
+        color: #d1d5db;
+      }
+
+      .leaderboard-wrap { width: 100%; margin-bottom: 2rem; }
+
+      .leaderboard-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #94a3b8;
+        letter-spacing: 0.2em;
+        text-align: center;
+        margin-bottom: 0.85rem;
+        padding-bottom: 0.65rem;
+        border-bottom: 1px dashed rgba(74, 222, 128, 0.25);
+      }
+
+      .leaderboard {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .leaderboard-row {
+        display: grid;
+        grid-template-columns: 2.2rem 1fr auto auto;
+        align-items: center;
+        gap: 0.85rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.95rem;
+        color: #cbd5e1;
+        padding: 0.55rem 0.85rem;
+        background: rgba(15, 23, 42, 0.4);
+        border-radius: 0.4rem;
+        border: 1px solid transparent;
+      }
+
+      .leaderboard-row--1 { color: #fbbf24; font-weight: 700; }
+      .leaderboard-row--2 { color: #cbd5e1; font-weight: 600; }
+      .leaderboard-row--3 { color: #d97706; font-weight: 600; }
+
+      .leaderboard-row--me {
+        background: rgba(251, 191, 36, 0.15);
+        border-color: rgba(251, 191, 36, 0.6);
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.25);
+        animation: me-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes me-pulse {
+        0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.25); }
+        50%      { box-shadow: 0 0 30px rgba(251,191,36,0.45); }
+      }
+
+      .rank-num { text-align: center; font-weight: 700; }
+      .rank-initials { letter-spacing: 0.05em; }
+      .rank-score { text-align: right; font-variant-numeric: tabular-nums; }
+      .rank-you {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 900;
+        color: #fbbf24;
+        letter-spacing: 0.1em;
+      }
+
+      .leaderboard-empty {
+        text-align: center;
+        padding: 1rem;
+        color: #64748b;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+      }
+
+      .share-section {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+      }
+
+      .share-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #94a3b8;
+        letter-spacing: 0.2em;
+        margin-bottom: 0.85rem;
+      }
+
+      .share-buttons {
+        display: flex;
+        gap: 0.6rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .share-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(74, 222, 128, 0.4);
+        border-radius: 0.5rem;
+        color: #86efac;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+      }
+
+      .share-btn:hover, .share-btn:focus-visible {
+        background: rgba(251, 191, 36, 0.15);
+        border-color: rgba(251, 191, 36, 0.6);
+        color: #fbbf24;
+        outline: none;
+        transform: translateY(-2px);
+      }
+
+      .share-btn svg { width: 1.2rem; height: 1.2rem; }
+
+      .copy-toast {
+        position: absolute;
+        bottom: -1.75rem;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        color: #4ade80;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+      }
+
+      .copy-toast--show { opacity: 1; }
+
+      .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
+      .dialog {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .dialog[hidden] { display: none; }
+
+      .dialog-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.75);
+        backdrop-filter: blur(4px);
+      }
+
+      .dialog-content {
+        position: relative;
+        background: #02100a;
+        border: 1px solid rgba(74, 222, 128, 0.4);
+        border-radius: 0.75rem;
+        padding: 2rem 1.75rem;
+        max-width: 24rem;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 0 40px rgba(74, 222, 128, 0.3), 0 25px 60px rgba(0, 0, 0, 0.5);
+      }
+
+      .dialog-title {
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        font-size: 1.3rem;
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 0.6rem;
+      }
+
+      .dialog-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        color: #cbd5e1;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+      }
+
+      .dialog-buttons {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 600px) {
+        .game-section { padding: 4rem 0.75rem 4rem; }
+        .game-wrap { border-radius: 0.625rem; }
+        .game-body { padding: 1.5rem 1rem; min-height: 28rem; }
+        .game-title { font-size: 0.7rem; }
+
+        .hud { padding: 0.5rem 0.75rem; gap: 0.5rem; }
+        .hud-value { font-size: 1.05rem; }
+        .hud-label { font-size: 0.55rem; }
+
+        .game-hint { font-size: 0.6rem; }
+
+        .intro-title { font-size: 1.5rem; }
+        .intro-text { font-size: 0.95rem; }
+        .intro-hint { font-size: 0.7rem; }
+
+        .primary-btn { font-size: 0.9rem; padding: 0.85rem 1.5rem; }
+
+        .initial-box { width: 3rem; height: 3.5rem; font-size: 1.75rem; }
+
+        .leaderboard-row { font-size: 0.85rem; padding: 0.5rem 0.6rem; gap: 0.5rem; }
+
+        .exit-btn-label { display: none; }
+        .exit-btn { padding: 0.5rem; }
+      }
+
+      @media (min-width: 1600px) {
+        .cabinet-shell { max-width: 54rem; }
+        .game-wrap { max-width: none; }
+        .game-body { padding: 3rem 2.5rem; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .mote { animation: none; opacity: 0; }
+        .intro-icon { animation: none; }
+        .primary-btn { animation: none; }
+        .overlay-text { animation: none; }
+        .result-icon { animation: none; }
+        .state--active { animation: none; }
+        .rank-reveal { animation: none; }
+        .rank-number { animation: none; background-position: 0% 50%; }
+        .leaderboard-row--me { animation: none; }
+        .shell-marquee-bulbs span { animation: none !important; }
+        .portal-return-icon { animation: none !important; }
+      }
+    </style>
+  </body>
+</html>

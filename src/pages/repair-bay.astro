@@ -12,6 +12,12 @@ const CABINETS = [
     tagline: 'Bounce bugs back with a USB paddle',
     iconKey: 'usb',
   },
+  {
+    name: 'Tower Stack',
+    slug: 'tower-stack',
+    tagline: 'Build a working tower from falling parts',
+    iconKey: 'tower',
+  },
 ];
 ---
 
@@ -135,6 +141,27 @@ const CABINETS = [
                         <rect x="42" y="38" width="6" height="6" fill="#fbbf24"/>
                         <circle cx="20" cy="60" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5"/>
                         <circle cx="60" cy="22" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5"/>
+                      </svg>
+                    )}
+                    {cab.iconKey === 'tower' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Stack base/floor -->
+                        <line x1="8" y1="72" x2="72" y2="72" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Bottom row: motherboard square (green) -->
+                        <rect x="20" y="56" width="14" height="14" rx="1" fill="#10b981" stroke="#065f46" stroke-width="1.5"/>
+                        <rect x="34" y="56" width="14" height="14" rx="1" fill="#10b981" stroke="#065f46" stroke-width="1.5"/>
+                        <rect x="48" y="56" width="14" height="14" rx="1" fill="#10b981" stroke="#065f46" stroke-width="1.5"/>
+                        <!-- Mid row: GPU L-piece (orange) -->
+                        <rect x="20" y="42" width="14" height="14" rx="1" fill="#f97316" stroke="#9a3412" stroke-width="1.5"/>
+                        <rect x="34" y="42" width="14" height="14" rx="1" fill="#f97316" stroke="#9a3412" stroke-width="1.5"/>
+                        <!-- CPU heatsink T (red) -->
+                        <rect x="48" y="42" width="14" height="14" rx="1" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5"/>
+                        <rect x="34" y="28" width="14" height="14" rx="1" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5"/>
+                        <!-- Top row: RAM stick I-piece (blue) currently falling -->
+                        <rect x="20" y="14" width="14" height="14" rx="1" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.5"/>
+                        <rect x="20" y="14" width="14" height="3" fill="#fbbf24"/>
+                        <!-- Falling indicator arrow -->
+                        <path d="M 27 8 L 27 13 M 24 11 L 27 14 L 30 11" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                       </svg>
                     )}
                   </span>
@@ -451,9 +478,9 @@ const CABINETS = [
       .cabinets {
         position: relative;
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 3rem;
-        max-width: 1100px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        max-width: 1200px;
         margin: 0 auto;
         padding: 2rem 1rem 4rem;
         align-items: end;
@@ -466,7 +493,7 @@ const CABINETS = [
         align-items: center;
         text-decoration: none;
         color: #fff;
-        max-width: 360px;
+        max-width: 320px;
         width: 100%;
         margin: 0 auto;
         opacity: 0;
@@ -731,9 +758,18 @@ const CABINETS = [
         z-index: 0;
       }
 
-      @media (max-width: 768px) {
-        .cabinets { grid-template-columns: 1fr; gap: 3rem; }
+      @media (max-width: 900px) {
+        .cabinets {
+          grid-template-columns: 1fr;
+          gap: 3rem;
+          max-width: 360px;
+        }
         .cabinet { max-width: 320px; }
+      }
+
+      @media (min-width: 901px) and (max-width: 1100px) {
+        .cabinets { gap: 1.5rem; }
+        .cabinet { max-width: 280px; }
       }
 
       @media (max-width: 600px) {
@@ -748,19 +784,23 @@ const CABINETS = [
         .exit-sign { top: 0.75rem; left: 0.75rem; }
         .back-to-lobby { top: 0.75rem; right: 0.75rem; }
         .portal-return {
-          bottom: 0.75rem;
-          right: 0.75rem;
-          padding: 0.45rem 0.75rem;
-          font-size: 0.6rem;
+          bottom: 0.6rem;
+          right: 0.6rem;
+          padding: 0.4rem 0.7rem;
+          font-size: 0.55rem;
+          letter-spacing: 0.12em;
+          gap: 0.35rem;
+          max-width: calc(100vw - 1.2rem);
         }
+        .portal-return-icon { font-size: 0.7rem; }
 
         .cabinets { padding: 1rem 0 3rem; }
         .cabinet { max-width: 280px; }
       }
 
       @media (min-width: 1500px) {
-        .cabinets { gap: 5rem; max-width: 1300px; }
-        .cabinet { max-width: 400px; }
+        .cabinets { gap: 3rem; max-width: 1300px; }
+        .cabinet { max-width: 360px; }
       }
 
       @media (prefers-reduced-motion: reduce) {
