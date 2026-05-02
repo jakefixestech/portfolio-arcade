@@ -23,6 +23,15 @@ const MAX_SCORE_PER_GAME: Record<string, number> = {
   'cable-untangle':  25000,  // 7 cables/level cap, ~700+bonus per level, deep run ceiling
 };
 
+// Allowed origins for POST submissions. Only browsers visiting these
+// URLs can submit scores. Direct curl/bot requests with no Origin header
+// or a foreign Origin will be rejected.
+const ALLOWED_ORIGINS = [
+  'https://arcade.jakefixestech.com',
+  'http://localhost:4321',  // astro dev default
+  'http://localhost:3000',  // alt local dev
+];
+
 const MAX_SCORES = 10;
 const MAX_PAYLOAD_BYTES = 1000;
 
@@ -57,6 +66,14 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   const game = params.game;
   if (!game || !/^[a-z0-9-]+$/.test(game)) {
     return jsonResponse({ error: 'Invalid game' }, 400);
+  }
+
+  // Origin check: only accept submissions from a browser actually visiting
+  // arcade.jakefixestech.com (or localhost during dev). Blocks the bulk of
+  // casual curl/bot leaderboard spam attempts.
+  const origin = request.headers.get('origin');
+  if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
+    return jsonResponse({ error: 'Forbidden origin' }, 403);
   }
 
   // Reject unknown games — only games in MAX_SCORE_PER_GAME can submit
