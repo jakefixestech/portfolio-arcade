@@ -6,7 +6,21 @@ const BLOCKED_INITIALS = [
   'PIS', 'PSY', 'POO', 'PEE', 'BUT', 'SEX', 'HIV'
 ];
 
+// Per-game realistic score ceilings. Blocks fake scores like Aaron's 10M.
+// Anything above these is humanly impossible given each game's mechanics.
+const MAX_SCORE_PER_GAME: Record<string, number> = {
+  'whack-a-virus':   200,    // ~60 realistic in 30s, 200 is wildly generous
+  'system-response': 1000,   // hard cap from formula: max(0, 1000 - avgMs)
+  'component-match': 90000,  // 90s timer, score = remaining ms
+  'error-override':  200,    // 200 WPM is world-class typing speed
+  'cursor-crawl':    400,    // 400 bugs eaten = entire 20x20 grid
+  'usb-defender':    500,    // 500 deflections = serious endurance run
+  'bug-smasher':     5000,   // 40 bugs/wave x many waves
+  'spam-blaster':    5000,   // wave bonuses + kills add up
+};
+
 const MAX_SCORES = 10;
+const MAX_PAYLOAD_BYTES = 1000;
 
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -41,6 +55,18 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     return jsonResponse({ error: 'Invalid game' }, 400);
   }
 
+  // Reject unknown games — only games in MAX_SCORE_PER_GAME can submit
+  const maxForGame = MAX_SCORE_PER_GAME[game];
+  if (maxForGame === undefined) {
+    return jsonResponse({ error: 'Unknown game' }, 400);
+  }
+
+  // Reject oversized payloads early (legit body is ~60 bytes)
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength, 10) > MAX_PAYLOAD_BYTES) {
+    return jsonResponse({ error: 'Payload too large' }, 413);
+  }
+
   // @ts-ignore
   const kv = locals?.runtime?.env?.SCORES_KV;
   if (!kv) {
@@ -63,7 +89,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   if (BLOCKED_INITIALS.includes(initials)) {
     return jsonResponse({ error: 'Please choose different initials' }, 400);
   }
-  if (!Number.isFinite(score) || score < 0 || score > 1000000) {
+  if (!Number.isFinite(score) || score < 0 || score > maxForGame) {
     return jsonResponse({ error: 'Invalid score' }, 400);
   }
 
