@@ -24,17 +24,7 @@
       window.addEventListener('DOMContentLoaded', () => {
         if (!window.ArcadeSound) return;
         window.ArcadeSound.injectToggleButton();
-
-        // Start chill background music on first interaction
-        let musicStarted = false;
-        function startMusicOnce() {
-          if (musicStarted) return;
-          musicStarted = true;
-          window.ArcadeSound.startMusic('portal');
-        }
-        document.addEventListener('click', startMusicOnce, { once: true });
-        document.addEventListener('keydown', startMusicOnce, { once: true });
-        document.addEventListener('touchstart', startMusicOnce, { once: true });
+        window.ArcadeSound.attachMusicAutoStart('portal');
 
         // Hover sound on the portal button itself
         const portalBtn = document.getElementById('portal-btn');

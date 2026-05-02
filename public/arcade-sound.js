@@ -811,6 +811,66 @@
   }
 
   // ---------------------------------------------------------------
+  // Music auto-start helper
+  // ---------------------------------------------------------------
+  // Browsers block audio playback until the user has interacted with
+  // the page. This helper attaches listeners to common gestures and
+  // tries to start the named track on each one until it succeeds.
+  // Once the AudioContext is running and the track is playing, the
+  // listeners are removed.
+  // ---------------------------------------------------------------
+  function attachMusicAutoStart(trackName) {
+    let started = false;
+
+    function attempt() {
+      if (started) return;
+      const ctx = getCtx();
+      if (!ctx) return;
+      // If still suspended, ask to resume; once it's running, start music
+      if (ctx.state === 'running') {
+        started = true;
+        startMusic(trackName);
+        cleanup();
+      } else {
+        // Try resuming and start music inside the resolution
+        ctx.resume().then(() => {
+          if (started) return;
+          if (ctx.state === 'running') {
+            started = true;
+            startMusic(trackName);
+            cleanup();
+          }
+        }).catch(() => { /* still blocked, keep listening */ });
+      }
+    }
+
+    function cleanup() {
+      document.removeEventListener('pointerdown', attempt, true);
+      document.removeEventListener('click', attempt, true);
+      document.removeEventListener('keydown', attempt, true);
+      document.removeEventListener('touchstart', attempt, true);
+      document.removeEventListener('mousemove', attempt, true);
+      document.removeEventListener('scroll', attempt, true);
+    }
+
+    // Capture-phase listeners so we run before any handler that
+    // might call stopPropagation. mousemove and scroll won't unlock
+    // audio on their own, but if audio was unlocked previously in
+    // this session (e.g. the user already played a game in this tab)
+    // they'll hit the `state === 'running'` fast-path and start music.
+    document.addEventListener('pointerdown', attempt, true);
+    document.addEventListener('click', attempt, true);
+    document.addEventListener('keydown', attempt, true);
+    document.addEventListener('touchstart', attempt, true);
+    document.addEventListener('mousemove', attempt, true);
+    document.addEventListener('scroll', attempt, true);
+
+    // Try once immediately in case the context is already running
+    // (e.g. coming back from another arcade page in the same tab)
+    attempt();
+  }
+
+  // ---------------------------------------------------------------
   // Mute toggle button — injected into page, top-right area
   // ---------------------------------------------------------------
   const ICON_MUTED = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 9 L7 9 L12 5 L12 19 L7 15 L3 15 Z" fill="currentColor"/><line x1="16" y1="9" x2="22" y2="15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><line x1="22" y1="9" x2="16" y2="15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
@@ -885,6 +945,7 @@
     onMuteChange: (fn) => state.listeners.push(fn),
     startMusic,
     stopMusic,
+    attachMusicAutoStart,
     // Backwards-compat no-ops in case any page still calls these
     startAmbient: function () {},
     stopAmbient: function () {},
