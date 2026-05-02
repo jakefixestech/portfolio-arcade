@@ -550,6 +550,142 @@
         N.A3, N.rest, N.E3, N.rest,  N.A3, N.E3, N.A3, N.rest,
       ],
     },
+
+    // ===== AMBIENT / CHILL TRACKS (lobby, rooms, portal, trophies) =====
+    // These are quieter and slower — atmospheric, not attention-grabbing.
+
+    // Portal — mysterious, slow, ethereal
+    'portal': {
+      tempo: 70,
+      leadShape: 'triangle',
+      volume: 0.07,
+      lead: [
+        N.A4, N.rest, N.rest, N.E5,  N.rest, N.rest, N.A5, N.rest,
+        N.G5, N.rest, N.rest, N.E5,  N.rest, N.rest, N.D5, N.rest,
+        N.C5, N.rest, N.rest, N.G4,  N.rest, N.rest, N.C5, N.rest,
+        N.B4, N.rest, N.rest, N.E5,  N.rest, N.rest, N.A4, N.rest,
+      ],
+      bass: [
+        N.A2, N.rest, N.rest, N.rest,  N.E3, N.rest, N.rest, N.rest,
+        N.G2, N.rest, N.rest, N.rest,  N.D3, N.rest, N.rest, N.rest,
+        N.C3, N.rest, N.rest, N.rest,  N.G2, N.rest, N.rest, N.rest,
+        N.E3, N.rest, N.rest, N.rest,  N.A2, N.rest, N.rest, N.rest,
+      ],
+    },
+
+    // Lobby — chill upbeat arcade ambient
+    'lobby': {
+      tempo: 85,
+      leadShape: 'triangle',
+      volume: 0.07,
+      lead: [
+        N.E5, N.rest, N.G5, N.rest,  N.A5, N.rest, N.G5, N.E5,
+        N.D5, N.rest, N.E5, N.rest,  N.G5, N.rest, N.A5, N.rest,
+        N.B5, N.rest, N.A5, N.G5,  N.E5, N.rest, N.D5, N.rest,
+        N.E5, N.G5, N.A5, N.G5,  N.E5, N.D5, N.E5, N.rest,
+      ],
+      bass: [
+        N.E3, N.rest, N.E3, N.rest,  N.A3, N.rest, N.A3, N.rest,
+        N.D3, N.rest, N.D3, N.rest,  N.G3, N.rest, N.G3, N.rest,
+        N.E3, N.rest, N.E3, N.rest,  N.A3, N.rest, N.A3, N.rest,
+        N.D3, N.rest, N.G3, N.rest,  N.A3, N.E3, N.A3, N.rest,
+      ],
+    },
+
+    // Repair Bay — relaxed workshop, blue mood
+    'repair-bay': {
+      tempo: 80,
+      leadShape: 'triangle',
+      volume: 0.06,
+      lead: [
+        N.D5, N.rest, N.F5, N.rest,  N.A5, N.rest, N.F5, N.rest,
+        N.D5, N.rest, N.A4, N.rest,  N.D5, N.F5, N.A4, N.rest,
+        N.C5, N.rest, N.E5, N.rest,  N.G5, N.rest, N.E5, N.rest,
+        N.D5, N.rest, N.F5, N.D5,  N.A4, N.D5, N.A4, N.rest,
+      ],
+      bass: [
+        N.D3, N.rest, N.A3, N.rest,  N.D3, N.rest, N.A3, N.rest,
+        N.G3, N.rest, N.D3, N.rest,  N.A3, N.rest, N.D3, N.rest,
+        N.C3, N.rest, N.G3, N.rest,  N.C3, N.rest, N.G3, N.rest,
+        N.D3, N.rest, N.A3, N.rest,  N.D3, N.A3, N.D3, N.rest,
+      ],
+    },
+
+    // Crash Course — slightly tense but laid-back, red mood
+    'crash-course': {
+      tempo: 90,
+      leadShape: 'triangle',
+      volume: 0.06,
+      lead: [
+        N.A4, N.rest, N.C5, N.rest,  N.E5, N.rest, N.C5, N.A4,
+        N.G4, N.rest, N.B4, N.rest,  N.D5, N.rest, N.B4, N.G4,
+        N.F4, N.rest, N.A4, N.rest,  N.C5, N.rest, N.E5, N.rest,
+        N.A4, N.C5, N.E5, N.C5,  N.A4, N.E4, N.A4, N.rest,
+      ],
+      bass: [
+        N.A3, N.rest, N.E3, N.rest,  N.A3, N.rest, N.E3, N.rest,
+        N.G3, N.rest, N.D3, N.rest,  N.G3, N.rest, N.D3, N.rest,
+        N.F3, N.rest, N.C3, N.rest,  N.F3, N.rest, N.C3, N.rest,
+        N.A3, N.rest, N.E3, N.rest,  N.A3, N.E3, N.A3, N.rest,
+      ],
+    },
+
+    // Speed Lab — clean cyberpunk drift, cyan mood
+    'speed-lab': {
+      tempo: 88,
+      leadShape: 'triangle',
+      volume: 0.06,
+      lead: [
+        N.E5, N.rest, N.B4, N.rest,  N.E5, N.rest, N.G5, N.rest,
+        N.D5, N.rest, N.A4, N.rest,  N.D5, N.rest, N.F5, N.rest,
+        N.C5, N.rest, N.G4, N.rest,  N.C5, N.rest, N.E5, N.rest,
+        N.D5, N.E5, N.G5, N.E5,  N.D5, N.B4, N.E5, N.rest,
+      ],
+      bass: [
+        N.E3, N.rest, N.B3, N.rest,  N.E3, N.rest, N.B3, N.rest,
+        N.D3, N.rest, N.A3, N.rest,  N.D3, N.rest, N.A3, N.rest,
+        N.C3, N.rest, N.G3, N.rest,  N.C3, N.rest, N.G3, N.rest,
+        N.D3, N.rest, N.A3, N.rest,  N.E3, N.B3, N.E3, N.rest,
+      ],
+    },
+
+    // Code Maze — chill matrix groove, green mood
+    'code-maze': {
+      tempo: 82,
+      leadShape: 'triangle',
+      volume: 0.06,
+      lead: [
+        N.G4, N.rest, N.B4, N.rest,  N.D5, N.rest, N.G5, N.rest,
+        N.F5, N.rest, N.D5, N.rest,  N.B4, N.rest, N.G4, N.rest,
+        N.A4, N.rest, N.C5, N.rest,  N.E5, N.rest, N.A5, N.rest,
+        N.G5, N.E5, N.D5, N.B4,  N.G4, N.D4, N.G4, N.rest,
+      ],
+      bass: [
+        N.G3, N.rest, N.D3, N.rest,  N.G3, N.rest, N.D3, N.rest,
+        N.G3, N.rest, N.D3, N.rest,  N.G3, N.rest, N.D3, N.rest,
+        N.A3, N.rest, N.E3, N.rest,  N.A3, N.rest, N.E3, N.rest,
+        N.G3, N.D3, N.G3, N.D3,  N.G3, N.D3, N.G3, N.rest,
+      ],
+    },
+
+    // Trophies — slow triumphant hall of fame
+    'trophies': {
+      tempo: 75,
+      leadShape: 'triangle',
+      volume: 0.06,
+      lead: [
+        N.C5, N.rest, N.E5, N.rest,  N.G5, N.rest, N.C6, N.rest,
+        N.B5, N.rest, N.G5, N.rest,  N.E5, N.rest, N.C5, N.rest,
+        N.A4, N.rest, N.C5, N.rest,  N.F5, N.rest, N.A5, N.rest,
+        N.G5, N.E5, N.C5, N.E5,  N.G5, N.C5, N.G4, N.rest,
+      ],
+      bass: [
+        N.C3, N.rest, N.G3, N.rest,  N.C3, N.rest, N.G3, N.rest,
+        N.G3, N.rest, N.D3, N.rest,  N.G3, N.rest, N.D3, N.rest,
+        N.F3, N.rest, N.C3, N.rest,  N.F3, N.rest, N.C3, N.rest,
+        N.C3, N.G3, N.C3, N.G3,  N.C3, N.G3, N.C3, N.rest,
+      ],
+    },
   };
 
   // -------------------------
@@ -568,8 +704,11 @@
     const ctx = getCtx();
     if (!ctx) return;
 
+    // Per-track volume (chill bg tracks are quieter than game tracks)
+    const trackVolume = track.volume !== undefined ? track.volume : 0.13;
+
     const masterGain = ctx.createGain();
-    masterGain.gain.value = state.muted ? 0 : 0.13;
+    masterGain.gain.value = state.muted ? 0 : trackVolume;
     masterGain.connect(ctx.destination);
 
     musicState = {
@@ -577,6 +716,7 @@
       masterGain,
       track,
       ctx,
+      trackVolume,
       nextNoteTime: ctx.currentTime + 0.1,
       step: 0,
       schedulerHandle: null,
@@ -664,7 +804,7 @@
     if (!ctx) return;
     try {
       musicState.masterGain.gain.linearRampToValueAtTime(
-        muted ? 0 : 0.13,
+        muted ? 0 : (musicState.trackVolume || 0.13),
         ctx.currentTime + 0.2
       );
     } catch (e) {}

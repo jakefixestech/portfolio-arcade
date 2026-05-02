@@ -25,6 +25,17 @@
         if (!window.ArcadeSound) return;
         window.ArcadeSound.injectToggleButton();
 
+        // Start chill background music on first interaction
+        let musicStarted = false;
+        function startMusicOnce() {
+          if (musicStarted) return;
+          musicStarted = true;
+          window.ArcadeSound.startMusic('portal');
+        }
+        document.addEventListener('click', startMusicOnce, { once: true });
+        document.addEventListener('keydown', startMusicOnce, { once: true });
+        document.addEventListener('touchstart', startMusicOnce, { once: true });
+
         // Hover sound on the portal button itself
         const portalBtn = document.getElementById('portal-btn');
         if (portalBtn) {
@@ -722,8 +733,11 @@
           if (entered) return;
           entered = true;
 
-          // Portal opening whoosh
-          if (window.ArcadeSound) window.ArcadeSound.play('portal_whoosh');
+          // Portal opening whoosh + stop portal background music
+          if (window.ArcadeSound) {
+            window.ArcadeSound.stopMusic();
+            window.ArcadeSound.play('portal_whoosh');
+          }
 
           // Trigger zoom-through
           portalBtn.classList.add('opening');

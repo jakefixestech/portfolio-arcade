@@ -45,10 +45,24 @@ const CABINETS = [
         if (!window.ArcadeSound) return;
         window.ArcadeSound.injectToggleButton();
 
-// Cabinet hover + click sounds
+        // Start chill room music on first interaction
+        let musicStarted = false;
+        function startMusicOnce() {
+          if (musicStarted) return;
+          musicStarted = true;
+          window.ArcadeSound.startMusic('speed-lab');
+        }
+        document.addEventListener('click', startMusicOnce, { once: true });
+        document.addEventListener('keydown', startMusicOnce, { once: true });
+        document.addEventListener('touchstart', startMusicOnce, { once: true });
+
+        // Cabinet hover + click sounds (stop music when entering a cabinet)
         document.querySelectorAll('.cabinet').forEach((c) => {
           c.addEventListener('mouseenter', () => window.ArcadeSound.play('button_hover'));
-          c.addEventListener('click', () => window.ArcadeSound.play('insert_coin'));
+          c.addEventListener('click', () => {
+            window.ArcadeSound.stopMusic();
+            window.ArcadeSound.play('insert_coin');
+          });
         });
       });
     </script>

@@ -121,6 +121,17 @@ const recordHolders = GAMES.map((game, idx) => {
         if (!window.ArcadeSound) return;
         window.ArcadeSound.injectToggleButton();
 
+        // Start chill trophies music on first interaction
+        let musicStarted = false;
+        function startMusicOnce() {
+          if (musicStarted) return;
+          musicStarted = true;
+          window.ArcadeSound.startMusic('trophies');
+        }
+        document.addEventListener('click', startMusicOnce, { once: true });
+        document.addEventListener('keydown', startMusicOnce, { once: true });
+        document.addEventListener('touchstart', startMusicOnce, { once: true });
+
         // Hover/click sounds on the all-leaderboards toggle
         const summary = document.querySelector('.all-boards-summary');
         if (summary) {

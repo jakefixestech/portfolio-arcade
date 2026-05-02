@@ -59,17 +59,29 @@ const ROOMS = [
   <body>
     <script src="/arcade-sound.js" is:inline></script>
     <script is:inline>
-      // Initialize sound on lobby with ambient hum + hover/click effects
+      // Initialize sound on lobby with chill background music + hover/click
       window.addEventListener('DOMContentLoaded', () => {
         if (!window.ArcadeSound) return;
         window.ArcadeSound.injectToggleButton();
 
-// Doorway hover + click sounds
+        // Start chill lobby music on first interaction
+        let musicStarted = false;
+        function startMusicOnce() {
+          if (musicStarted) return;
+          musicStarted = true;
+          window.ArcadeSound.startMusic('lobby');
+        }
+        document.addEventListener('click', startMusicOnce, { once: true });
+        document.addEventListener('keydown', startMusicOnce, { once: true });
+        document.addEventListener('touchstart', startMusicOnce, { once: true });
+
+        // Doorway hover + click sounds
         document.querySelectorAll('.doorway').forEach((d) => {
           d.addEventListener('mouseenter', () => {
             window.ArcadeSound.play('button_hover');
           });
           d.addEventListener('click', () => {
+            window.ArcadeSound.stopMusic();
             window.ArcadeSound.play('coin');
           });
         });
