@@ -39,6 +39,19 @@ const CABINETS = [
   </head>
 
   <body>
+    <script src="/arcade-sound.js" is:inline></script>
+    <script is:inline>
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.ArcadeSound) return;
+        window.ArcadeSound.injectToggleButton();
+
+// Cabinet hover + click sounds
+        document.querySelectorAll('.cabinet').forEach((c) => {
+          c.addEventListener('mouseenter', () => window.ArcadeSound.play('button_hover'));
+          c.addEventListener('click', () => window.ArcadeSound.play('insert_coin'));
+        });
+      });
+    </script>
     <main class="bay">
 
       <!-- Matrix rain (falling characters down both sides) -->

@@ -44,6 +44,30 @@
   </head>
 
   <body>
+    <script src="/arcade-sound.js" is:inline></script>
+    <script is:inline>
+      // Arcade sound — universal hooks (toggle button, ambient hum, common events)
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.ArcadeSound) return;
+        window.ArcadeSound.injectToggleButton();
+
+// Common UI sounds
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) startBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('insert_coin');
+          window.ArcadeSound.startMusic('packet-sort');
+        });
+
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.addEventListener('click', () => window.ArcadeSound.play('button_click'));
+
+        const playAgainBtn = document.getElementById('play-again-btn');
+        if (playAgainBtn) playAgainBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('coin');
+          window.ArcadeSound.startMusic('packet-sort');
+        });
+      });
+    </script>
     <main class="page">
 
       <button id="exit-btn" type="button" class="exit-btn" aria-label="Back to Speed Lab">
@@ -589,6 +613,7 @@
           // Bonus for clearing a wave + lives remaining
           score += 50 + (lives * 10);
           scoreDisplay.textContent = String(score);
+          if (window.ArcadeSound) window.ArcadeSound.play('level_up');
           startWave(wave + 1);
         }
 
@@ -599,6 +624,10 @@
       function endGame() {
         if (!gameRunning) return;
         gameRunning = false;
+        if (window.ArcadeSound) {
+          window.ArcadeSound.stopMusic();
+          window.ArcadeSound.play('game_over');
+        }
         gameStarted = false;
         cancelAnimationFrame(rafHandle);
 
@@ -767,12 +796,14 @@
           packets.splice(bestIdx, 1);
           packetsResolvedThisWave++;
           pulses.push({ portIdx, t: 0, kind: 'good' });
+          if (window.ArcadeSound) window.ArcadeSound.play('packet_catch');
         } else {
           // Wrong color tap or no packet to catch = penalty
           comboHits = 0;
           score = Math.max(0, score - 5);
           scoreDisplay.textContent = String(score);
           pulses.push({ portIdx, t: 0, kind: 'bad' });
+          if (window.ArcadeSound) window.ArcadeSound.play('packet_miss');
         }
       }
 

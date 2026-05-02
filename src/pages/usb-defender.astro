@@ -44,6 +44,30 @@
   </head>
 
   <body>
+    <script src="/arcade-sound.js" is:inline></script>
+    <script is:inline>
+      // Arcade sound — universal hooks (toggle button, ambient hum, common events)
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.ArcadeSound) return;
+        window.ArcadeSound.injectToggleButton();
+
+// Common UI sounds
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) startBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('insert_coin');
+          window.ArcadeSound.startMusic('usb-defender');
+        });
+
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.addEventListener('click', () => window.ArcadeSound.play('button_click'));
+
+        const playAgainBtn = document.getElementById('play-again-btn');
+        if (playAgainBtn) playAgainBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('coin');
+          window.ArcadeSound.startMusic('usb-defender');
+        });
+      });
+    </script>
     <main class="page">
 
       <button id="exit-btn" type="button" class="exit-btn" aria-label="Back to Repair Bay">
@@ -473,11 +497,13 @@
             score++;
             scoreDisplay.textContent = String(score);
             speedDisplay.textContent = (ballSpeed / BALL_BASE_SPEED).toFixed(1) + 'x';
+            if (window.ArcadeSound) window.ArcadeSound.play('usb_deflect');
           }
 
           if (ball.y - BALL_R > H) {
             lives--;
             updateLivesDisplay();
+            if (window.ArcadeSound) window.ArcadeSound.play('usb_zap');
 
             if (lives <= 0) {
               endGame();
@@ -653,6 +679,10 @@
       function endGame() {
         if (!gameRunning) return;
         gameRunning = false;
+        if (window.ArcadeSound) {
+          window.ArcadeSound.stopMusic();
+          window.ArcadeSound.play('game_over');
+        }
         ballLaunched = false;
         cancelAnimationFrame(rafHandle);
         keysHeld.left = false;

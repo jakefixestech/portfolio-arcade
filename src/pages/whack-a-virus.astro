@@ -44,6 +44,30 @@
   </head>
 
   <body>
+    <script src="/arcade-sound.js" is:inline></script>
+    <script is:inline>
+      // Arcade sound — universal hooks (toggle button, ambient hum, common events)
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.ArcadeSound) return;
+        window.ArcadeSound.injectToggleButton();
+
+// Common UI sounds
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) startBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('insert_coin');
+          window.ArcadeSound.startMusic('whack-a-virus');
+        });
+
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.addEventListener('click', () => window.ArcadeSound.play('button_click'));
+
+        const playAgainBtn = document.getElementById('play-again-btn');
+        if (playAgainBtn) playAgainBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('coin');
+          window.ArcadeSound.startMusic('whack-a-virus');
+        });
+      });
+    </script>
     <main class="page">
 
       <button id="exit-btn" type="button" class="exit-btn" aria-label="Back to Crash Course">
@@ -539,6 +563,7 @@
           scoreDisplay.classList.remove('score-bump');
           void scoreDisplay.offsetWidth;
           scoreDisplay.classList.add('score-bump');
+          if (window.ArcadeSound) window.ArcadeSound.play('whack_hit');
 
           removeVirus(cellIndex, true);
 
@@ -549,6 +574,10 @@
       function endGame() {
         if (!gameRunning) return;
         gameRunning = false;
+        if (window.ArcadeSound) {
+          window.ArcadeSound.stopMusic();
+          window.ArcadeSound.play('game_over');
+        }
 
         clearInterval(timerHandle);
         clearInterval(spawnHandle);

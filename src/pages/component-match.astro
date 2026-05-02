@@ -44,6 +44,30 @@
   </head>
 
   <body>
+    <script src="/arcade-sound.js" is:inline></script>
+    <script is:inline>
+      // Arcade sound — universal hooks (toggle button, ambient hum, common events)
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.ArcadeSound) return;
+        window.ArcadeSound.injectToggleButton();
+
+// Common UI sounds
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) startBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('insert_coin');
+          window.ArcadeSound.startMusic('component-match');
+        });
+
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.addEventListener('click', () => window.ArcadeSound.play('button_click'));
+
+        const playAgainBtn = document.getElementById('play-again-btn');
+        if (playAgainBtn) playAgainBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('coin');
+          window.ArcadeSound.startMusic('component-match');
+        });
+      });
+    </script>
     <main class="page">
 
       <button id="exit-btn" type="button" class="exit-btn" aria-label="Back to Repair Bay">
@@ -565,9 +589,11 @@
           firstPick = null;
           secondPick = null;
           acceptingInput = true;
+          if (window.ArcadeSound) window.ArcadeSound.play('match_pair');
 
           if (matchedPairs >= PAIRS) endGame(true);
         } else {
+          if (window.ArcadeSound) window.ArcadeSound.play('match_wrong');
           setTimeout(() => {
             flipCard(firstPick, false);
             flipCard(secondPick, false);
@@ -580,7 +606,10 @@
 
       function flipCard(idx, faceUp) {
         cards[idx].flipped = faceUp;
-        if (faceUp) cards[idx].el.classList.add('card--flipped');
+        if (faceUp) {
+          cards[idx].el.classList.add('card--flipped');
+          if (window.ArcadeSound) window.ArcadeSound.play('card_flip');
+        }
         else cards[idx].el.classList.remove('card--flipped');
       }
 
@@ -617,6 +646,11 @@
         gameWon = won;
         acceptingInput = false;
         clearInterval(timerHandle);
+
+        if (window.ArcadeSound) {
+          window.ArcadeSound.stopMusic();
+          window.ArcadeSound.play(won ? 'success' : 'game_over');
+        }
 
         if (won) finalScore = Math.max(0, Math.round(TIME_LIMIT_MS - elapsedMs));
         else finalScore = 0;

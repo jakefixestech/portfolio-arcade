@@ -44,6 +44,30 @@
   </head>
 
   <body>
+    <script src="/arcade-sound.js" is:inline></script>
+    <script is:inline>
+      // Arcade sound — universal hooks (toggle button, ambient hum, common events)
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.ArcadeSound) return;
+        window.ArcadeSound.injectToggleButton();
+
+// Common UI sounds
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) startBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('insert_coin');
+          window.ArcadeSound.startMusic('error-override');
+        });
+
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.addEventListener('click', () => window.ArcadeSound.play('button_click'));
+
+        const playAgainBtn = document.getElementById('play-again-btn');
+        if (playAgainBtn) playAgainBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('coin');
+          window.ArcadeSound.startMusic('error-override');
+        });
+      });
+    </script>
     <main class="page">
 
       <button id="exit-btn" type="button" class="exit-btn" aria-label="Back to Speed Lab">
@@ -483,6 +507,7 @@
 
         const typed = errorInput.value;
         renderTarget(typed);
+        if (window.ArcadeSound) window.ArcadeSound.play('error_keystroke');
 
         if (typed.length >= currentTarget.length) {
           const matches = typed.toLowerCase() === currentTarget.toLowerCase();
@@ -491,6 +516,7 @@
             overriddenCount++;
             overriddenDisplay.textContent = String(overriddenCount);
             errorInput.value = '';
+            if (window.ArcadeSound) window.ArcadeSound.play('error_correct');
             nextTarget();
           }
         }
@@ -499,6 +525,10 @@
       function endGame() {
         if (!gameRunning) return;
         gameRunning = false;
+        if (window.ArcadeSound) {
+          window.ArcadeSound.stopMusic();
+          window.ArcadeSound.play('game_over');
+        }
         clearInterval(timerHandle);
         errorInput.disabled = true;
 

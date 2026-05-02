@@ -19,6 +19,19 @@
   </head>
 
   <body>
+    <script src="/arcade-sound.js" is:inline></script>
+    <script is:inline>
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.ArcadeSound) return;
+        window.ArcadeSound.injectToggleButton();
+
+        // Hover sound on the portal button itself
+        const portalBtn = document.getElementById('portal-btn');
+        if (portalBtn) {
+          portalBtn.addEventListener('mouseenter', () => window.ArcadeSound.play('portal_hover'));
+        }
+      });
+    </script>
     <main class="stage" id="stage">
 
       <!-- ============================================ -->
@@ -709,6 +722,9 @@
           if (entered) return;
           entered = true;
 
+          // Portal opening whoosh
+          if (window.ArcadeSound) window.ArcadeSound.play('portal_whoosh');
+
           // Trigger zoom-through
           portalBtn.classList.add('opening');
           portalStage.classList.add('zooming');
@@ -722,11 +738,13 @@
             // "JAKE PRESENTS" appears
             setTimeout(() => {
               lineJake.classList.add('show-jake');
+              if (window.ArcadeSound) window.ArcadeSound.play('portal_present');
             }, 200);
 
             // "THE ARCADE" appears as Jake fades
             setTimeout(() => {
               lineArcade.classList.add('show-arcade');
+              if (window.ArcadeSound) window.ArcadeSound.play('portal_reveal');
             }, 2400);
 
             // Redirect after the arcade title finishes

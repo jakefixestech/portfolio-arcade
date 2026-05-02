@@ -44,6 +44,30 @@
   </head>
 
   <body>
+    <script src="/arcade-sound.js" is:inline></script>
+    <script is:inline>
+      // Arcade sound — universal hooks (toggle button, ambient hum, common events)
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.ArcadeSound) return;
+        window.ArcadeSound.injectToggleButton();
+
+// Common UI sounds
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) startBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('insert_coin');
+          window.ArcadeSound.startMusic('tower-stack');
+        });
+
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.addEventListener('click', () => window.ArcadeSound.play('button_click'));
+
+        const playAgainBtn = document.getElementById('play-again-btn');
+        if (playAgainBtn) playAgainBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('coin');
+          window.ArcadeSound.startMusic('tower-stack');
+        });
+      });
+    </script>
     <main class="page">
 
       <button id="exit-btn" type="button" class="exit-btn" aria-label="Back to Repair Bay">
@@ -572,6 +596,7 @@
             board[by][bx] = { color: piece.color, dark: piece.dark, accent: piece.accent || null };
           }
         }
+        if (window.ArcadeSound) window.ArcadeSound.play('tower_drop');
         clearLines();
         spawnPiece();
       }
@@ -587,6 +612,7 @@
           board.splice(r, 1);
           board.unshift(new Array(COLS).fill(null));
         }
+        if (window.ArcadeSound) window.ArcadeSound.play('tower_clear');
 
         // Score: 1 line = 100, 2 = 300, 3 = 500, 4 = 800 (multiplied by level)
         const linePoints = [0, 100, 300, 500, 800];
@@ -707,6 +733,10 @@
       function endGame() {
         if (!gameRunning) return;
         gameRunning = false;
+        if (window.ArcadeSound) {
+          window.ArcadeSound.stopMusic();
+          window.ArcadeSound.play('game_over');
+        }
         gameStarted = false;
         cancelAnimationFrame(dropTimer);
 

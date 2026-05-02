@@ -115,6 +115,19 @@ const recordHolders = GAMES.map((game, idx) => {
   </head>
 
   <body>
+    <script src="/arcade-sound.js" is:inline></script>
+    <script is:inline>
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.ArcadeSound) return;
+        window.ArcadeSound.injectToggleButton();
+
+        // Hover/click sounds on the all-leaderboards toggle
+        const summary = document.querySelector('.all-boards-summary');
+        if (summary) {
+          summary.addEventListener('click', () => window.ArcadeSound.play('button_click'));
+        }
+      });
+    </script>
     <main class="trophies">
 
       <!-- Ambient background dust -->

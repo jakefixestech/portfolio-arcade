@@ -44,6 +44,30 @@
   </head>
 
   <body>
+    <script src="/arcade-sound.js" is:inline></script>
+    <script is:inline>
+      // Arcade sound — universal hooks (toggle button, ambient hum, common events)
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.ArcadeSound) return;
+        window.ArcadeSound.injectToggleButton();
+
+// Common UI sounds
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) startBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('insert_coin');
+          window.ArcadeSound.startMusic('loop-trap');
+        });
+
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.addEventListener('click', () => window.ArcadeSound.play('button_click'));
+
+        const playAgainBtn = document.getElementById('play-again-btn');
+        if (playAgainBtn) playAgainBtn.addEventListener('click', () => {
+          window.ArcadeSound.play('coin');
+          window.ArcadeSound.startMusic('loop-trap');
+        });
+      });
+    </script>
     <main class="page">
 
       <button id="exit-btn" type="button" class="exit-btn" aria-label="Back to Code Maze">
@@ -640,6 +664,10 @@
       function endGame() {
         if (!gameRunning) return;
         gameRunning = false;
+        if (window.ArcadeSound) {
+          window.ArcadeSound.stopMusic();
+          window.ArcadeSound.play('game_over');
+        }
         gameStarted = false;
         cancelAnimationFrame(rafHandle);
 
@@ -965,12 +993,14 @@
             score += 10;
             ticketsRemaining--;
             scoreDisplay.textContent = String(score);
+            if (window.ArcadeSound) window.ArcadeSound.play('loop_ticket');
           } else if (cell.pellet) {
             cell.pellet = false;
             score += 50;
             ticketsRemaining--;
             powerUntil = performance.now() + POWER_DURATION_MS;
             scoreDisplay.textContent = String(score);
+            if (window.ArcadeSound) window.ArcadeSound.play('loop_pellet');
             // Set tracers to scared
             for (const t of tracers) {
               if (t.mode === 'chase') {
@@ -1014,7 +1044,9 @@
               score += 200;
               scoreDisplay.textContent = String(score);
               t.mode = 'eaten';
+              if (window.ArcadeSound) window.ArcadeSound.play('loop_eat_tracer');
             } else if (t.mode === 'chase' || t.mode === 'leaving') {
+              if (window.ArcadeSound) window.ArcadeSound.play('loop_death');
               loseLife();
               return;
             }
@@ -1027,6 +1059,7 @@
           scoreDisplay.textContent = String(score);
           level++;
           levelTransition = true;
+          if (window.ArcadeSound) window.ArcadeSound.play('level_up');
           setTimeout(() => {
             startLevel(level);
             // Reset fractional positions for new level
