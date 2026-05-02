@@ -255,12 +255,14 @@ const ROOMS = [
         min-height: 100vh;
       }
 
-      body { overflow-x: hidden; }
+      html { overflow-x: hidden; }
+      body { overflow-x: hidden; max-width: 100vw; }
 
       .lobby {
         position: relative;
         min-height: 100vh;
         padding-bottom: 4rem;
+        overflow-x: hidden;
         background:
           radial-gradient(ellipse at 50% 20%, rgba(168, 85, 247, 0.18) 0%, transparent 60%),
           radial-gradient(ellipse at 50% 80%, rgba(34, 211, 238, 0.1) 0%, transparent 50%),
