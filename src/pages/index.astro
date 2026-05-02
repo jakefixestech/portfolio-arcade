@@ -1,125 +1,4 @@
 ---
-const GAMES = [
-  {
-    slug: 'whack-a-virus',
-    name: 'Whack-a-Virus',
-    tagline: 'Smash viruses before they spread',
-    available: true,
-    iconKey: 'virus',
-  },
-  {
-    slug: 'system-response',
-    name: 'System Response',
-    tagline: 'Click the moment the screen turns green',
-    available: true,
-    iconKey: 'response',
-  },
-  {
-    slug: 'component-match',
-    name: 'Component Match',
-    tagline: 'Pair motherboard parts from memory',
-    available: true,
-    iconKey: 'match',
-  },
-  {
-    slug: 'error-override',
-    name: 'Error Override',
-    tagline: 'Type fake error messages at speed',
-    available: true,
-    iconKey: 'error',
-  },
-  {
-    slug: 'cursor-crawl',
-    name: 'Cursor Crawl',
-    tagline: 'Devour bugs as a growing cursor',
-    available: true,
-    iconKey: 'cursor',
-  },
-  {
-    slug: 'usb-defender',
-    name: 'USB Defender',
-    tagline: 'Bounce bugs back with a USB paddle',
-    available: true,
-    iconKey: 'usb',
-  },
-  {
-    slug: 'bug-smasher',
-    name: 'Bug Smasher',
-    tagline: 'Break through walls of bugs',
-    available: true,
-    iconKey: 'smasher',
-  },
-  {
-    slug: 'spam-blaster',
-    name: 'Spam Blaster',
-    tagline: 'Defend your inbox from spam waves',
-    available: true,
-    iconKey: 'spam',
-  },
-];
-
-type ScoreEntry = { initials: string; score: number; timestamp: string };
-
-let leaderboards: ScoreEntry[][] = [];
-// @ts-ignore
-const kv = Astro.locals?.runtime?.env?.SCORES_KV;
-
-if (kv) {
-  leaderboards = await Promise.all(
-    GAMES.map(async (g) => {
-      try {
-        const raw = await kv.get(`scores:${g.slug}`);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw) as ScoreEntry[];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    })
-  );
-} else {
-  const baseUrl = 'https://arcade.jakefixestech.com';
-  leaderboards = await Promise.all(
-    GAMES.map(async (g) => {
-      try {
-        const res = await fetch(`${baseUrl}/api/scores/${g.slug}`);
-        if (!res.ok) return [];
-        const data = await res.json() as { scores?: ScoreEntry[] };
-        return data.scores || [];
-      } catch {
-        return [];
-      }
-    })
-  );
-}
-
-const RANK_POINTS = [100, 60, 40, 25, 15, 10, 6, 3, 2, 1];
-
-const playerData: Record<string, { points: number; games: Set<number> }> = {};
-GAMES.forEach((game, gameIdx) => {
-  const scores = leaderboards[gameIdx];
-  scores.forEach((entry: ScoreEntry, rank: number) => {
-    if (entry.score <= 0) return;
-    if (rank >= RANK_POINTS.length) return;
-    const points = RANK_POINTS[rank];
-    if (!playerData[entry.initials]) {
-      playerData[entry.initials] = { points: 0, games: new Set() };
-    }
-    playerData[entry.initials].points += points;
-    playerData[entry.initials].games.add(gameIdx);
-  });
-});
-
-let champion: { initials: string; points: number; gamesPlayed: number } | null = null;
-const eligible = Object.entries(playerData);
-if (eligible.length > 0) {
-  eligible.sort((a, b) => b[1].points - a[1].points);
-  champion = {
-    initials: eligible[0][0],
-    points: eligible[0][1].points,
-    gamesPlayed: eligible[0][1].games.size,
-  };
-}
 ---
 
 <!doctype html>
@@ -127,509 +6,95 @@ if (eligible.length > 0) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>The Arcade — Jake Fixes Tech</title>
-    <meta name="description" content="Eight hand-built browser games by Jake Fixes Tech. Compete on the leaderboard with three letters and your best score." />
+    <title>Enter The Arcade — Jake Fixes Tech</title>
+    <meta name="description" content="Step through the portal. Eight hand-built browser games await inside Jake's Arcade." />
     <link rel="icon" type="image/png" href="/favicon.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=optional"
-    />
-    <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=optional"
-      media="print"
-      onload="this.media='all'"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Inter+Tight:wght@400;700;900&display=swap"
     />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-      />
-    </noscript>
   </head>
 
   <body>
-    <main class="page">
+    <main class="stage" id="stage">
 
-      <!-- Desktop: animated rising sparkles -->
-      <div class="sparkles desktop-only" aria-hidden="true">
-        {Array.from({ length: 24 }).map((_, i) => (
-          <span class={`spark sp-${i + 1}`}></span>
-        ))}
-      </div>
+      <!-- ============================================ -->
+      <!-- STAGE 1: THE PORTAL DOOR                     -->
+      <!-- ============================================ -->
+      <section class="portal-stage" id="portal-stage" aria-label="Enter the arcade">
 
-      <!-- Mobile: static SVG arcade decorations (no animation) -->
-      <div class="mobile-decorations mobile-only" aria-hidden="true">
-        <!-- Scattered pixel-style shapes -->
-        <svg class="mdec mdec-1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <rect x="9" y="2" width="6" height="6" fill="#fbbf24"/>
-          <rect x="2" y="9" width="6" height="6" fill="#fbbf24"/>
-          <rect x="16" y="9" width="6" height="6" fill="#fbbf24"/>
-          <rect x="9" y="16" width="6" height="6" fill="#fbbf24"/>
-        </svg>
-        <svg class="mdec mdec-2" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M 10 2 L 12 8 L 18 10 L 12 12 L 10 18 L 8 12 L 2 10 L 8 8 Z" fill="#fbbf24"/>
-        </svg>
-        <svg class="mdec mdec-3" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <rect x="10" y="2" width="4" height="20" fill="#fbbf24"/>
-          <rect x="2" y="10" width="20" height="4" fill="#fbbf24"/>
-        </svg>
-        <svg class="mdec mdec-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="3" fill="#fbbf24"/>
-          <circle cx="12" cy="12" r="8" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
-        </svg>
-        <svg class="mdec mdec-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <rect x="2" y="2" width="6" height="6" fill="#fbbf24"/>
-          <rect x="16" y="2" width="6" height="6" fill="#fbbf24"/>
-          <rect x="2" y="16" width="6" height="6" fill="#fbbf24"/>
-          <rect x="16" y="16" width="6" height="6" fill="#fbbf24"/>
-        </svg>
-        <svg class="mdec mdec-6" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M 10 2 L 12 8 L 18 10 L 12 12 L 10 18 L 8 12 L 2 10 L 8 8 Z" fill="#fbbf24"/>
-        </svg>
-        <svg class="mdec mdec-7" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <rect x="9" y="2" width="6" height="6" fill="#fbbf24"/>
-          <rect x="2" y="9" width="6" height="6" fill="#fbbf24"/>
-          <rect x="16" y="9" width="6" height="6" fill="#fbbf24"/>
-          <rect x="9" y="16" width="6" height="6" fill="#fbbf24"/>
-        </svg>
-        <svg class="mdec mdec-8" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <rect x="10" y="2" width="4" height="20" fill="#fbbf24"/>
-          <rect x="2" y="10" width="20" height="4" fill="#fbbf24"/>
-        </svg>
-        <svg class="mdec mdec-9" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="3" fill="#fbbf24"/>
-        </svg>
-        <svg class="mdec mdec-10" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M 10 2 L 12 8 L 18 10 L 12 12 L 10 18 L 8 12 L 2 10 L 8 8 Z" fill="#fbbf24"/>
-        </svg>
-      </div>
-
-      <section class="hero">
-        <div class="hero-inner">
-          <div class="cabinet-wrap" aria-hidden="true">
-            <div class="cabinet-aura"></div>
-
-            <svg class="cabinet" viewBox="0 0 200 320" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 30 60 L 30 290 L 50 310 L 150 310 L 170 290 L 170 60 L 165 30 L 35 30 Z"
-                    fill="#1e293b" stroke="#0f172a" stroke-width="2" stroke-linejoin="round" />
-
-              <path d="M 35 60 L 35 285 L 55 305 L 145 305 L 165 285 L 165 60 L 160 35 L 40 35 Z"
-                    fill="#334155" stroke="#0f172a" stroke-width="1.5" stroke-linejoin="round" />
-
-              <rect x="40" y="40" width="120" height="32" rx="3" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
-              <rect x="44" y="44" width="112" height="24" rx="2" fill="#fef3c7" />
-              <text x="100" y="61" text-anchor="middle" font-family="Inter Tight, sans-serif" font-weight="900" font-size="11" fill="#92400e">ARCADE</text>
-
-              <rect x="45" y="82" width="110" height="100" rx="4" fill="#0a0e1a" stroke="#0f172a" stroke-width="2" />
-
-              <defs>
-                <linearGradient id="screenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#1e3a8a" />
-                  <stop offset="100%" stop-color="#2563eb" />
-                </linearGradient>
-                <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#fbbf24" />
-                  <stop offset="100%" stop-color="#f59e0b" />
-                </linearGradient>
-              </defs>
-              <rect x="50" y="87" width="100" height="90" rx="2" fill="url(#screenGrad)" />
-
-              <g opacity="0.15">
-                <line x1="50" y1="95" x2="150" y2="95" stroke="#fff" stroke-width="0.5" />
-                <line x1="50" y1="105" x2="150" y2="105" stroke="#fff" stroke-width="0.5" />
-                <line x1="50" y1="115" x2="150" y2="115" stroke="#fff" stroke-width="0.5" />
-                <line x1="50" y1="125" x2="150" y2="125" stroke="#fff" stroke-width="0.5" />
-                <line x1="50" y1="135" x2="150" y2="135" stroke="#fff" stroke-width="0.5" />
-                <line x1="50" y1="145" x2="150" y2="145" stroke="#fff" stroke-width="0.5" />
-                <line x1="50" y1="155" x2="150" y2="155" stroke="#fff" stroke-width="0.5" />
-                <line x1="50" y1="165" x2="150" y2="165" stroke="#fff" stroke-width="0.5" />
-              </g>
-
-              <text x="100" y="125" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="9" fill="#fbbf24" class="screen-text">PRESS START</text>
-              <text x="100" y="142" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="400" font-size="7" fill="#93c5fd">8 GAMES</text>
-              <text x="100" y="158" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="400" font-size="6" fill="#bfdbfe" opacity="0.7">©2026 JAKE FIXES TECH</text>
-
-              <rect x="40" y="195" width="120" height="50" rx="3" fill="#475569" stroke="#0f172a" stroke-width="1.5" />
-              <rect x="42" y="197" width="116" height="3" fill="#64748b" opacity="0.6" />
-
-              <ellipse cx="68" cy="220" rx="11" ry="4" fill="#0f172a" />
-              <circle cx="68" cy="218" r="6" fill="#1e293b" stroke="#0f172a" stroke-width="1" />
-              <rect x="66" y="208" width="4" height="12" fill="#fbbf24" stroke="#92400e" stroke-width="0.8" />
-              <circle cx="68" cy="207" r="5" fill="#ef4444" stroke="#7f1d1d" stroke-width="1" />
-              <circle cx="66" cy="205" r="1.5" fill="#fff" opacity="0.6" />
-
-              <circle cx="115" cy="220" r="6" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.2" />
-              <circle cx="115" cy="219" r="5" fill="#dc2626" />
-              <circle cx="113" cy="217" r="1.5" fill="#fef2f2" opacity="0.5" />
-
-              <circle cx="135" cy="220" r="6" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.2" />
-              <circle cx="135" cy="219" r="5" fill="#2563eb" />
-              <circle cx="133" cy="217" r="1.5" fill="#dbeafe" opacity="0.5" />
-
-              <rect x="92" y="258" width="16" height="20" rx="1.5" fill="#1e293b" stroke="#0f172a" stroke-width="1" />
-              <rect x="96" y="263" width="8" height="2.5" rx="0.5" fill="#0a0e1a" />
-              <text x="100" y="276" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="3.5" fill="#94a3b8">25¢</text>
-
-              <rect x="40" y="285" width="120" height="20" fill="#1e293b" />
-
-              <line x1="42" y1="80" x2="42" y2="280" stroke="#0f172a" stroke-width="0.8" />
-              <line x1="158" y1="80" x2="158" y2="280" stroke="#0f172a" stroke-width="0.8" />
-            </svg>
-          </div>
-
-          <div class="hero-content">
-            <p class="hero-eyebrow">JAKE FIXES TECH PRESENTS</p>
-            <h1 class="hero-title">THE ARCADE</h1>
-            <p class="hero-subtitle">
-              Eight hand-built games. One leaderboard. Three letters of glory.
-            </p>
-
-            <a href="#games" class="hero-cta">
-              <span>BROWSE GAMES</span>
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M 12 5 L 12 19 M 6 13 L 12 19 L 18 13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </a>
-          </div>
+        <!-- Starfield backdrop -->
+        <div class="starfield" aria-hidden="true">
+          <span class="star s1"></span><span class="star s2"></span>
+          <span class="star s3"></span><span class="star s4"></span>
+          <span class="star s5"></span><span class="star s6"></span>
+          <span class="star s7"></span><span class="star s8"></span>
+          <span class="star s9"></span><span class="star s10"></span>
+          <span class="star s11"></span><span class="star s12"></span>
+          <span class="star s13"></span><span class="star s14"></span>
+          <span class="star s15"></span><span class="star s16"></span>
+          <span class="star s17"></span><span class="star s18"></span>
+          <span class="star s19"></span><span class="star s20"></span>
         </div>
+
+        <!-- The portal itself -->
+        <button
+          type="button"
+          class="portal"
+          id="portal-btn"
+          aria-label="Open the portal and enter the arcade"
+        >
+          <!-- Outer ring -->
+          <span class="portal-ring portal-ring-1" aria-hidden="true"></span>
+          <span class="portal-ring portal-ring-2" aria-hidden="true"></span>
+          <span class="portal-ring portal-ring-3" aria-hidden="true"></span>
+
+          <!-- Energy core -->
+          <span class="portal-core" aria-hidden="true">
+            <span class="portal-vortex"></span>
+            <span class="portal-shimmer"></span>
+          </span>
+
+          <!-- Glyph text on the portal -->
+          <span class="portal-label" aria-hidden="true">
+            <span class="portal-label-line">CLICK</span>
+            <span class="portal-label-line portal-label-main">TO ENTER</span>
+          </span>
+
+          <!-- Particle bursts on hover -->
+          <span class="portal-particles" aria-hidden="true">
+            <span class="particle p1"></span>
+            <span class="particle p2"></span>
+            <span class="particle p3"></span>
+            <span class="particle p4"></span>
+            <span class="particle p5"></span>
+            <span class="particle p6"></span>
+            <span class="particle p7"></span>
+            <span class="particle p8"></span>
+          </span>
+        </button>
+
+        <!-- Reduced-motion fallback button -->
+        <a href="/lobby" class="enter-fallback" aria-label="Enter the lobby">
+          ENTER →
+        </a>
       </section>
 
-      <section class="champion-section">
-        <div class={`champion-card ${champion ? 'champion-card--active' : 'champion-card--empty'}`}>
-          <div class="champ-rays" aria-hidden="true">
-            <span class="ray ray-1"></span>
-            <span class="ray ray-2"></span>
-            <span class="ray ray-3"></span>
-            <span class="ray ray-4"></span>
-            <span class="ray ray-5"></span>
-            <span class="ray ray-6"></span>
-          </div>
-
-          {champion ? (
-            <>
-              <div class="champ-trophy" aria-hidden="true">
-                <div class="champ-trophy-glow"></div>
-                <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M 18 24 Q 6 24 6 38 Q 6 50 18 50" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" />
-                  <path d="M 62 24 Q 74 24 74 38 Q 74 50 62 50" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" />
-                  <path d="M 16 16 L 64 16 L 60 54 Q 58 60 50 62 L 30 62 Q 22 60 20 54 Z" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" stroke-linejoin="round" />
-                  <path d="M 22 20 L 28 20 L 26 52 Q 25 56 23 58 L 22 58 Z" fill="#fde68a" opacity="0.6" />
-                  <rect x="14" y="13" width="52" height="6" rx="1" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
-                  <path d="M 40 28 L 43 36 L 51 37 L 45 42 L 47 50 L 40 46 L 33 50 L 35 42 L 29 37 L 37 36 Z" fill="#fff" />
-                  <rect x="34" y="62" width="12" height="10" fill="#d97706" stroke="#92400e" stroke-width="1.5" />
-                  <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#d97706" stroke="#92400e" stroke-width="1.5" stroke-linejoin="round" />
-                </svg>
-              </div>
-
-              <div class="champ-content">
-                <div class="champ-badge">
-                  <span class="champ-badge-dot"></span>
-                  <span>REIGNING CHAMPION</span>
-                </div>
-                <div class="champ-initials">{champion.initials}</div>
-                <p class="champ-stats">
-                  <strong>{champion.points}</strong> rank points across <strong>{champion.gamesPlayed}</strong> games
-                </p>
-                <p class="champ-note">
-                  Top 10 in any game scores points. The more points, the better.
-                </p>
-              </div>
-            </>
-          ) : (
-            <>
-              <div class="champ-trophy champ-trophy--empty" aria-hidden="true">
-                <div class="champ-trophy-shimmer"></div>
-                <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M 18 24 Q 6 24 6 38 Q 6 50 18 50" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
-                  <path d="M 62 24 Q 74 24 74 38 Q 74 50 62 50" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
-                  <path d="M 16 16 L 64 16 L 60 54 Q 58 60 50 62 L 30 62 Q 22 60 20 54 Z" fill="#475569" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
-                  <path d="M 22 20 L 28 20 L 26 52 Q 25 56 23 58 L 22 58 Z" fill="#64748b" opacity="0.5" />
-                  <rect x="14" y="13" width="52" height="6" rx="1" fill="#64748b" stroke="#1e293b" stroke-width="1.5" />
-                  <rect x="34" y="62" width="12" height="10" fill="#334155" stroke="#1e293b" stroke-width="1.5" />
-                  <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#334155" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
-                  <text x="40" y="48" text-anchor="middle" font-family="Inter Tight, sans-serif" font-weight="900" font-size="32" fill="#94a3b8">?</text>
-                </svg>
-              </div>
-
-              <div class="champ-content">
-                <div class="champ-badge champ-badge--empty">
-                  <span>THRONE IS OPEN</span>
-                </div>
-                <h2 class="champ-empty-title">
-                  <span class="champ-empty-line">Could be</span>
-                  <span class="champ-empty-line champ-empty-highlight">YOU.</span>
-                </h2>
-                <p class="champ-stats champ-stats--empty">
-                  Land on a <strong>top 10</strong> leaderboard to start scoring.
-                </p>
-                <p class="champ-note">
-                  1st place earns 100 pts, 2nd earns 60, 3rd earns 40, and on down. Most points wins.
-                </p>
-              </div>
-            </>
-          )}
+      <!-- ============================================ -->
+      <!-- STAGE 2: PRESENTATION SEQUENCE               -->
+      <!-- ============================================ -->
+      <section class="present-stage" id="present-stage" aria-hidden="true">
+        <div class="present-text-wrap">
+          <p class="present-line present-jake" id="line-jake">JAKE PRESENTS</p>
+          <h1 class="present-line present-arcade" id="line-arcade">THE ARCADE</h1>
         </div>
+
+        <p class="skip-hint" id="skip-hint">Click anywhere to skip</p>
       </section>
 
-      <section id="games" class="games-section">
-        <div class="games-header">
-          <p class="section-eyebrow">GAMES</p>
-          <h2 class="section-title">Pick your game.</h2>
-        </div>
-
-        <div class="games-grid">
-          {GAMES.map((game, idx) => {
-            const scores = leaderboards[idx];
-            const top3 = scores.slice(0, 3);
-            return (
-              <article class={`game-block ${game.available ? '' : 'game-block--locked'}`} data-game-slug={game.slug}>
-                <div class="game-card">
-                  <div class="game-icon" aria-hidden="true">
-                    {game.iconKey === 'virus' && (
-                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                        <ellipse cx="40" cy="44" rx="22" ry="26" fill="#ef4444" />
-                        <ellipse cx="40" cy="40" rx="20" ry="22" fill="#dc2626" />
-                        <line x1="40" y1="14" x2="40" y2="22" stroke="#dc2626" stroke-width="3.5" stroke-linecap="round" />
-                        <circle cx="40" cy="11" r="2.5" fill="#dc2626" />
-                        <line x1="6" y1="22" x2="20" y2="32" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
-                        <circle cx="6" cy="22" r="2" fill="#dc2626" />
-                        <line x1="74" y1="22" x2="60" y2="32" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
-                        <circle cx="74" cy="22" r="2" fill="#dc2626" />
-                        <line x1="2" y1="44" x2="18" y2="44" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
-                        <circle cx="2" cy="44" r="2" fill="#dc2626" />
-                        <line x1="78" y1="44" x2="62" y2="44" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
-                        <circle cx="78" cy="44" r="2" fill="#dc2626" />
-                        <ellipse cx="32" cy="38" rx="5" ry="6" fill="#fff" />
-                        <ellipse cx="48" cy="38" rx="5" ry="6" fill="#fff" />
-                        <circle cx="32" cy="40" r="2.5" fill="#000" />
-                        <circle cx="48" cy="40" r="2.5" fill="#000" />
-                        <path d="M 28 54 L 31 50 L 34 54 L 37 50 L 40 54 L 43 50 L 46 54 L 49 50 L 52 54" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                      </svg>
-                    )}
-                    {game.iconKey === 'response' && (
-                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="40" cy="40" r="32" fill="#10b981" stroke="#047857" stroke-width="2" />
-                        <circle cx="40" cy="40" r="22" fill="#059669" />
-                        <path d="M 40 22 L 40 40 L 52 48" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
-                        <circle cx="40" cy="40" r="2.5" fill="#fff" />
-                      </svg>
-                    )}
-                    {game.iconKey === 'match' && (
-                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="8" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
-                        <rect x="44" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
-                        <rect x="14" y="22" width="16" height="22" rx="1" fill="#1e40af" />
-                        <rect x="50" y="22" width="16" height="22" rx="1" fill="#1e40af" />
-                        <rect x="17" y="26" width="10" height="3" fill="#fbbf24" />
-                        <rect x="17" y="32" width="10" height="3" fill="#fbbf24" />
-                        <rect x="17" y="38" width="6" height="3" fill="#fbbf24" />
-                        <rect x="53" y="26" width="10" height="3" fill="#fbbf24" />
-                        <rect x="53" y="32" width="10" height="3" fill="#fbbf24" />
-                        <rect x="53" y="38" width="6" height="3" fill="#fbbf24" />
-                        <line x1="36" y1="58" x2="44" y2="58" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
-                        <line x1="36" y1="64" x2="44" y2="64" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
-                      </svg>
-                    )}
-                    {game.iconKey === 'error' && (
-                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="8" y="16" width="64" height="48" rx="3" fill="#0a0e1a" stroke="#1e3a8a" stroke-width="2" />
-                        <rect x="8" y="16" width="64" height="10" rx="3" fill="#1e3a8a" />
-                        <circle cx="14" cy="21" r="1.5" fill="#ef4444" />
-                        <circle cx="20" cy="21" r="1.5" fill="#fbbf24" />
-                        <circle cx="26" cy="21" r="1.5" fill="#10b981" />
-                        <text x="14" y="38" font-family="JetBrains Mono, monospace" font-size="6" font-weight="700" fill="#ef4444">ERROR_</text>
-                        <rect x="14" y="42" width="40" height="2" fill="#fbbf24" />
-                        <rect x="14" y="48" width="50" height="2" fill="#cbd5e1" />
-                        <rect x="14" y="54" width="30" height="2" fill="#cbd5e1" opacity="0.6" />
-                      </svg>
-                    )}
-                    {game.iconKey === 'cursor' && (
-                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M 18 14 L 18 50 L 28 42 L 34 56 L 40 54 L 34 40 L 46 38 Z" fill="#fbbf24" stroke="#92400e" stroke-width="2" stroke-linejoin="round" />
-                        <circle cx="56" cy="50" r="6" fill="#10b981" stroke="#047857" stroke-width="1.5" />
-                        <circle cx="60" cy="62" r="5" fill="#10b981" stroke="#047857" stroke-width="1.5" />
-                        <circle cx="50" cy="64" r="4" fill="#10b981" stroke="#047857" stroke-width="1.5" />
-                        <circle cx="54" cy="48" r="1" fill="#fff" />
-                        <circle cx="58" cy="48" r="1" fill="#fff" />
-                      </svg>
-                    )}
-                    {game.iconKey === 'usb' && (
-                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="14" y="34" width="36" height="14" rx="2" fill="#94a3b8" stroke="#475569" stroke-width="2" />
-                        <rect x="50" y="36" width="14" height="10" rx="1" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5" />
-                        <rect x="18" y="38" width="6" height="6" fill="#fbbf24" />
-                        <rect x="26" y="38" width="6" height="6" fill="#fbbf24" />
-                        <rect x="34" y="38" width="6" height="6" fill="#fbbf24" />
-                        <rect x="42" y="38" width="6" height="6" fill="#fbbf24" />
-                        <circle cx="20" cy="60" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
-                        <circle cx="60" cy="22" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
-                      </svg>
-                    )}
-                    {game.iconKey === 'smasher' && (
-                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="6" y="14" width="14" height="6" rx="1" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
-                        <rect x="22" y="14" width="14" height="6" rx="1" fill="#a855f7" stroke="#581c87" stroke-width="1.5" />
-                        <rect x="38" y="14" width="14" height="6" rx="1" fill="#f59e0b" stroke="#92400e" stroke-width="1.5" />
-                        <rect x="54" y="14" width="14" height="6" rx="1" fill="#10b981" stroke="#047857" stroke-width="1.5" />
-                        <rect x="6" y="22" width="14" height="6" rx="1" fill="#a855f7" stroke="#581c87" stroke-width="1.5" />
-                        <rect x="22" y="22" width="14" height="6" rx="1" fill="#f59e0b" stroke="#92400e" stroke-width="1.5" />
-                        <rect x="54" y="22" width="14" height="6" rx="1" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
-                        <circle cx="40" cy="50" r="6" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
-                        <rect x="22" y="62" width="36" height="6" rx="2" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
-                      </svg>
-                    )}
-                    {game.iconKey === 'spam' && (
-                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="8" y="14" width="18" height="11" rx="1" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5" />
-                        <path d="M 8 15 L 17 21 L 26 15" fill="none" stroke="#7f1d1d" stroke-width="1.5" />
-                        <text x="17" y="24" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="900" font-size="6" fill="#fff">!</text>
-                        <rect x="32" y="14" width="18" height="11" rx="1" fill="#f97316" stroke="#9a3412" stroke-width="1.5" />
-                        <path d="M 32 15 L 41 21 L 50 15" fill="none" stroke="#9a3412" stroke-width="1.5" />
-                        <text x="41" y="24" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="900" font-size="6" fill="#fff">@</text>
-                        <rect x="56" y="14" width="18" height="11" rx="1" fill="#a3a3a3" stroke="#525252" stroke-width="1.5" />
-                        <path d="M 56 15 L 65 21 L 74 15" fill="none" stroke="#525252" stroke-width="1.5" />
-                        <line x1="40" y1="38" x2="40" y2="50" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round" />
-                        <rect x="20" y="56" width="40" height="14" rx="2" fill="#1e3a8a" stroke="#0a0e1a" stroke-width="2" />
-                        <rect x="22" y="58" width="6" height="4" fill="#475569" />
-                        <rect x="30" y="58" width="6" height="4" fill="#475569" />
-                        <rect x="38" y="58" width="6" height="4" fill="#475569" />
-                        <rect x="46" y="58" width="6" height="4" fill="#475569" />
-                        <rect x="54" y="58" width="3" height="4" fill="#475569" />
-                        <rect x="22" y="64" width="6" height="4" fill="#475569" />
-                        <rect x="30" y="64" width="6" height="4" fill="#475569" />
-                        <rect x="38" y="64" width="6" height="4" fill="#475569" />
-                        <rect x="46" y="64" width="6" height="4" fill="#475569" />
-                        <rect x="54" y="64" width="3" height="4" fill="#475569" />
-                        <rect x="36" y="50" width="8" height="6" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" />
-                      </svg>
-                    )}
-                  </div>
-
-                  <div class="game-meta">
-                    <h3 class="game-name">{game.name}</h3>
-                    <p class="game-tagline">{game.tagline}</p>
-                  </div>
-
-                  {game.available ? (
-                    <a href={`/${game.slug}`} class="game-play-btn">
-                      <span>PLAY</span>
-                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M 5 12 L 19 12 M 13 6 L 19 12 L 13 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                      </svg>
-                    </a>
-                  ) : (
-                    <div class="game-play-btn game-play-btn--locked">
-                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" />
-                        <path d="M 8 11 V 7 a 4 4 0 0 1 8 0 V 11" fill="none" stroke="currentColor" stroke-width="2" />
-                      </svg>
-                      <span>COMING SOON</span>
-                    </div>
-                  )}
-                </div>
-
-                <div class="game-leaderboard">
-                  <p class="leaderboard-eyebrow">TOP 3</p>
-                  {top3.length > 0 ? (
-                    <ol class="leaderboard-list">
-                      {top3.map((entry, i) => (
-                        <li class={`leaderboard-row leaderboard-row--${i + 1}`}>
-                          <span class="rank-num">{i + 1}</span>
-                          <span class="rank-initials">{entry.initials}</span>
-                          <span class="rank-score">{entry.score}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  ) : (
-                    <p class="leaderboard-empty">No scores yet. Be the first.</p>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section class="how-section">
-        <div class="how-grid">
-          <div class="how-step">
-            <div class="how-icon" aria-hidden="true">
-              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                <rect x="4" y="10" width="24" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2" />
-                <circle cx="11" cy="17" r="2" fill="currentColor" />
-                <circle cx="21" cy="17" r="2" fill="currentColor" />
-                <line x1="16" y1="6" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              </svg>
-            </div>
-            <p class="how-step-num">01</p>
-            <h3 class="how-step-title">Pick a game</h3>
-            <p class="how-step-text">Eight games, all built by hand. Find the one that suits you.</p>
-          </div>
-          <div class="how-step">
-            <div class="how-icon" aria-hidden="true">
-              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 6 10 L 26 10 L 23 22 Q 22 26 18 26 L 14 26 Q 10 26 9 22 Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
-                <rect x="14" y="26" width="4" height="3" fill="currentColor" />
-                <path d="M 9 28 L 23 28 L 24 30 L 8 30 Z" fill="currentColor" />
-              </svg>
-            </div>
-            <p class="how-step-num">02</p>
-            <h3 class="how-step-title">Beat your best</h3>
-            <p class="how-step-text">Each game has its own leaderboard. Climb it.</p>
-          </div>
-          <div class="how-step">
-            <div class="how-icon" aria-hidden="true">
-              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                <text x="16" y="22" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" fill="currentColor">ABC</text>
-                <line x1="6" y1="26" x2="26" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              </svg>
-            </div>
-            <p class="how-step-num">03</p>
-            <h3 class="how-step-title">Claim three letters</h3>
-            <p class="how-step-text">Three-letter initials, retro style. Make them count.</p>
-          </div>
-        </div>
-      </section>
-
-      <footer class="footer" role="contentinfo">
-        <div class="footer-divider" aria-hidden="true"></div>
-
-        <p class="footer-eyebrow">GAME OVER? NAH. PLAY AGAIN.</p>
-
-        <h2 class="footer-title">JAKE'S ARCADE</h2>
-
-        <p class="footer-tagline">
-          Built with care in Littleton, NH.
-        </p>
-
-        <div class="footer-links">
-          <a href="https://jakefixestech.com" class="footer-link footer-link--primary">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M 3 12 L 5 10 L 12 3 L 19 10 L 21 12 M 5 10 L 5 21 L 19 21 L 19 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            <span>Main Site</span>
-          </a>
-          <a href="https://jakefixestech.com/services" class="footer-link">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M 14.7 6.3 a 1 1 0 0 0 0 1.4 l 1.6 1.6 a 1 1 0 0 0 1.4 0 l 3.77 -3.77 a 6 6 0 0 1 -7.94 7.94 l -6.91 6.91 a 2.12 2.12 0 0 1 -3 -3 l 6.91 -6.91 a 6 6 0 0 1 7.94 -7.94 l -3.76 3.76 z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            <span>Services</span>
-          </a>
-          <a href="https://jakefixestech.com/contact" class="footer-link">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M 22 16.92 v 3 a 2 2 0 0 1 -2.18 2 a 19.79 19.79 0 0 1 -8.63 -3.07 a 19.5 19.5 0 0 1 -6 -6 a 19.79 19.79 0 0 1 -3.07 -8.67 A 2 2 0 0 1 4.11 2 h 3 a 2 2 0 0 1 2 1.72 a 12.84 12.84 0 0 0 0.7 2.81 a 2 2 0 0 1 -0.45 2.11 L 8.09 9.91 a 16 16 0 0 0 6 6 l 1.27 -1.27 a 2 2 0 0 1 2.11 -0.45 a 12.84 12.84 0 0 0 2.81 0.7 A 2 2 0 0 1 22 16.92 z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            <span>Contact Jake</span>
-          </a>
-        </div>
-
-        <p class="footer-signature">— Built by Jake at <a href="https://jakefixestech.com" class="footer-sig-link">Jake Fixes Tech</a> —</p>
-      </footer>
     </main>
 
     <style>
@@ -639,1022 +104,648 @@ if (eligible.length > 0) {
         padding: 0;
       }
 
-      html { scroll-behavior: smooth; }
-      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+      html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+      }
 
       body {
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-        color: #ffffff;
-        font-family: 'Inter Tight', system-ui, -apple-system, sans-serif;
-        min-height: 100vh;
-        overflow-x: hidden;
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        color: #fff;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
 
-      .page { position: relative; min-height: 100vh; }
-
-      /* desktop / mobile visibility helpers */
-      .desktop-only { display: block; }
-      .mobile-only { display: none; }
-      @media (max-width: 768px) {
-        .desktop-only { display: none; }
-        .mobile-only { display: block; }
-      }
-
-      /* ============================================ */
-      /* DESKTOP: animated rising sparkles            */
-      /* ============================================ */
-      .sparkles {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 0;
+      .stage {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
         overflow: hidden;
       }
 
-      .spark {
-        position: absolute;
-        bottom: -20px;
-        width: 4px;
-        height: 4px;
-        background: #fbbf24;
-        border-radius: 50%;
-        box-shadow: 0 0 8px #fbbf24, 0 0 14px rgba(251, 191, 36, 0.5);
-        opacity: 0;
-      }
-
-      .sp-1  { left:  3%; animation: sparkle-rise 7s linear  0s   infinite; }
-      .sp-2  { left: 10%; animation: sparkle-rise 8s linear  1s   infinite; }
-      .sp-3  { left: 16%; animation: sparkle-rise 6s linear  2.5s infinite; }
-      .sp-4  { left: 22%; animation: sparkle-rise 9s linear  0.5s infinite; }
-      .sp-5  { left: 28%; animation: sparkle-rise 7s linear  3s   infinite; }
-      .sp-6  { left: 34%; animation: sparkle-rise 8s linear  1.5s infinite; }
-      .sp-7  { left: 40%; animation: sparkle-rise 6s linear  4s   infinite; }
-      .sp-8  { left: 46%; animation: sparkle-rise 9s linear  2s   infinite; }
-      .sp-9  { left: 52%; animation: sparkle-rise 7s linear  0.8s infinite; }
-      .sp-10 { left: 58%; animation: sparkle-rise 8s linear  3.5s infinite; }
-      .sp-11 { left: 64%; animation: sparkle-rise 6s linear  1.2s infinite; }
-      .sp-12 { left: 70%; animation: sparkle-rise 9s linear  2.8s infinite; }
-      .sp-13 { left: 76%; animation: sparkle-rise 7s linear  4.5s infinite; }
-      .sp-14 { left: 82%; animation: sparkle-rise 8s linear  1.8s infinite; }
-      .sp-15 { left: 88%; animation: sparkle-rise 6s linear  3.2s infinite; }
-      .sp-16 { left: 94%; animation: sparkle-rise 9s linear  5s   infinite; }
-      .sp-17 { left:  6%; animation: sparkle-rise 10s linear 4.2s infinite; }
-      .sp-18 { left: 25%; animation: sparkle-rise 10s linear 5.5s infinite; }
-      .sp-19 { left: 49%; animation: sparkle-rise 10s linear 6s   infinite; }
-      .sp-20 { left: 73%; animation: sparkle-rise 10s linear 3.8s infinite; }
-      .sp-21 { left: 14%; animation: sparkle-rise 11s linear 6.5s infinite; }
-      .sp-22 { left: 38%; animation: sparkle-rise 11s linear 7s   infinite; }
-      .sp-23 { left: 62%; animation: sparkle-rise 11s linear 5.8s infinite; }
-      .sp-24 { left: 86%; animation: sparkle-rise 11s linear 4.8s infinite; }
-
-      @keyframes sparkle-rise {
-        0%   { transform: translateY(0) scale(0.5); opacity: 0; }
-        10%  { opacity: 1; transform: translateY(-10vh) scale(1); }
-        80%  { opacity: 1; }
-        100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
-      }
-
       /* ============================================ */
-      /* MOBILE: static SVG arcade decorations         */
+      /* PORTAL STAGE                                  */
       /* ============================================ */
-      .mobile-decorations {
+      .portal-stage {
         position: absolute;
         inset: 0;
-        pointer-events: none;
-        z-index: 0;
-        overflow: hidden;
-      }
-
-      .mdec {
-        position: absolute;
-        opacity: 0.12;
-      }
-
-      .mdec-1  { top: 8%;  left: 6%;   width: 18px; height: 18px; }
-      .mdec-2  { top: 14%; right: 8%;  width: 14px; height: 14px; opacity: 0.15; }
-      .mdec-3  { top: 28%; left: 4%;   width: 16px; height: 16px; opacity: 0.10; }
-      .mdec-4  { top: 38%; right: 6%;  width: 22px; height: 22px; opacity: 0.10; }
-      .mdec-5  { top: 50%; left: 7%;   width: 18px; height: 18px; opacity: 0.13; }
-      .mdec-6  { top: 60%; right: 5%;  width: 14px; height: 14px; opacity: 0.15; }
-      .mdec-7  { top: 72%; left: 5%;   width: 18px; height: 18px; opacity: 0.10; }
-      .mdec-8  { top: 80%; right: 7%;  width: 16px; height: 16px; opacity: 0.13; }
-      .mdec-9  { top: 90%; left: 8%;   width: 12px; height: 12px; opacity: 0.15; }
-      .mdec-10 { top: 96%; right: 9%;  width: 14px; height: 14px; opacity: 0.12; }
-
-      /* ============================================ */
-      /* HERO                                          */
-      /* ============================================ */
-      .hero {
-        position: relative;
-        z-index: 1;
-        padding: 5rem 1.5rem 4rem;
-      }
-
-      .hero-inner {
-        max-width: 72rem;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 2.5rem;
-        align-items: center;
-        text-align: center;
-      }
-
-      @media (min-width: 768px) {
-        .hero-inner {
-          grid-template-columns: auto 1fr;
-          gap: 3rem;
-          text-align: left;
-        }
-      }
-
-      @media (min-width: 1100px) {
-        .hero-inner { gap: 4rem; }
-      }
-
-      .hero-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-
-      @media (min-width: 768px) {
-        .hero-content { align-items: flex-start; }
-      }
-
-      .hero-eyebrow {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #fbbf24;
-        letter-spacing: 0.25em;
-        margin-bottom: 1rem;
-      }
-
-      .cabinet-wrap {
-        position: relative;
-        width: 200px;
-        height: 280px;
-        margin: 0 auto;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0;
+        background:
+          radial-gradient(ellipse at center, #0f0a2e 0%, #050214 50%, #000 100%);
+        transition: opacity 0.4s ease-out;
       }
 
-      @media (min-width: 768px) {
-        .cabinet-wrap { width: 240px; height: 340px; margin: 0; }
+      .portal-stage.fading {
+        opacity: 0;
+        pointer-events: none;
       }
 
-      @media (min-width: 1100px) {
-        .cabinet-wrap { width: 280px; height: 400px; }
+      /* When zooming, the stage background fades through bright then black
+         in lockstep with the portal zoom, so nothing lingers as a ghost glow. */
+      .portal-stage.zooming {
+        animation: stage-zoom-bg 1.4s ease-out forwards;
       }
 
-      .cabinet-aura {
-        position: absolute;
-        inset: -25%;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0) 65%);
-        animation: aura-pulse 3.5s ease-in-out infinite;
-        z-index: 0;
-      }
-
-      .cabinet {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-        height: 100%;
-        filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 30px rgba(251, 191, 36, 0.3));
-        animation: cabinet-float 4s ease-in-out infinite;
-      }
-
-      .screen-text { animation: blink 1.4s steps(2) infinite; }
-
-      @keyframes aura-pulse {
-        0%, 100% { transform: scale(1); opacity: 0.7; }
-        50%      { transform: scale(1.15); opacity: 1; }
-      }
-
-      @keyframes cabinet-float {
-        0%, 100% { transform: translateY(0); }
-        50%      { transform: translateY(-6px); }
-      }
-
-      @keyframes blink {
-        0%, 50%   { opacity: 1; }
-        51%, 100% { opacity: 0.3; }
-      }
-
-      .hero-title {
-        font-family: 'Inter Tight', system-ui, sans-serif;
-        font-size: clamp(3rem, 9vw, 6rem);
-        font-weight: 900;
-        line-height: 0.95;
-        letter-spacing: -0.03em;
-        background: linear-gradient(135deg, #fbbf24, #fde68a, #fbbf24);
-        background-size: 200% 200%;
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: gold-shimmer 3.5s ease-in-out infinite;
-        margin-bottom: 1.25rem;
-      }
-
-      @keyframes gold-shimmer {
-        0%, 100% { background-position: 0% 50%; }
-        50%      { background-position: 100% 50%; }
-      }
-
-      .hero-subtitle {
-        font-size: clamp(1rem, 2vw, 1.2rem);
-        color: #bfdbfe;
-        line-height: 1.6;
-        max-width: 38rem;
-        margin-bottom: 2rem;
-      }
-
-      .hero-cta {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.65rem;
-        padding: 1.1rem 2.25rem;
-        background: linear-gradient(135deg, #fbbf24, #f59e0b);
-        color: #1e3a8a;
-        font-family: 'Inter Tight', system-ui, sans-serif;
-        font-weight: 900;
-        font-size: 1rem;
-        letter-spacing: 0.08em;
-        text-decoration: none;
-        border-radius: 0.625rem;
-        transition: transform 0.2s, box-shadow 0.2s;
-        box-shadow: 0 12px 40px rgba(251, 191, 36, 0.4);
-        animation: cta-pulse 2.4s ease-in-out infinite;
-      }
-
-      .hero-cta:hover,
-      .hero-cta:focus-visible {
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.25), 0 16px 50px rgba(251, 191, 36, 0.5);
-        outline: none;
-        animation-play-state: paused;
-      }
-
-      .hero-cta svg { width: 1.05rem; height: 1.05rem; flex-shrink: 0; }
-
-      @keyframes cta-pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4), 0 12px 40px rgba(251,191,36,0.4); }
-        50%      { box-shadow: 0 0 0 12px rgba(251,191,36,0), 0 14px 45px rgba(251,191,36,0.5); }
-      }
-
-      /* ============================================ */
-      /* CHAMPION                                      */
-      /* ============================================ */
-      .champion-section {
-        position: relative;
-        z-index: 1;
-        padding: 2rem 1.5rem;
-        max-width: 56rem;
-        margin: 0 auto;
-      }
-
-      .champion-card {
-        position: relative;
-        background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(30, 58, 138, 0.4));
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(251, 191, 36, 0.5);
-        border-radius: 1.25rem;
-        padding: 2.5rem 2rem;
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-        overflow: hidden;
-        box-shadow:
-          0 0 0 1px rgba(251, 191, 36, 0.15),
-          0 0 60px rgba(251, 191, 36, 0.2),
-          0 25px 60px rgba(0, 0, 0, 0.4);
-        animation: champ-card-glow 4s ease-in-out infinite;
-      }
-
-      .champion-card--active {
-        border-color: rgba(251, 191, 36, 0.75);
-        box-shadow:
-          0 0 0 1px rgba(251, 191, 36, 0.25),
-          0 0 80px rgba(251, 191, 36, 0.3),
-          0 25px 60px rgba(0, 0, 0, 0.4);
-      }
-
-      @keyframes champ-card-glow {
-        0%, 100% {
-          box-shadow:
-            0 0 0 1px rgba(251, 191, 36, 0.15),
-            0 0 60px rgba(251, 191, 36, 0.2),
-            0 25px 60px rgba(0, 0, 0, 0.4);
+      @keyframes stage-zoom-bg {
+        0% {
+          background:
+            radial-gradient(circle at center, #0f0a2e 0%, #050214 50%, #000 100%);
         }
         50% {
-          box-shadow:
-            0 0 0 1px rgba(251, 191, 36, 0.3),
-            0 0 100px rgba(251, 191, 36, 0.4),
-            0 25px 60px rgba(0, 0, 0, 0.4);
+          background:
+            radial-gradient(circle at center, #ffffff 0%, #67e8f9 12%, #1e1b4b 35%, #000 70%);
+        }
+        100% {
+          background: #000;
         }
       }
 
-      .champ-rays {
+      .portal-stage.zooming .starfield {
+        animation: starfield-pull 1.4s cubic-bezier(0.7, 0, 0.85, 0) forwards;
+      }
+
+      @keyframes starfield-pull {
+        0%   { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.6); opacity: 0; }
+      }
+
+      /* Starfield */
+      .starfield {
         position: absolute;
         inset: 0;
         pointer-events: none;
-        overflow: hidden;
-        opacity: 0.3;
       }
 
-      .ray {
+      .star {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
+        animation: star-twinkle 3s ease-in-out infinite;
+      }
+
+      .s1  { top:  8%; left: 12%; animation-delay: 0s;   }
+      .s2  { top: 14%; left: 78%; animation-delay: 0.4s; }
+      .s3  { top: 22%; left: 35%; animation-delay: 1.1s; }
+      .s4  { top: 28%; left: 88%; animation-delay: 1.7s; }
+      .s5  { top: 36%; left:  6%; animation-delay: 0.2s; }
+      .s6  { top: 42%; left: 92%; animation-delay: 2.3s; }
+      .s7  { top: 50%; left: 18%; animation-delay: 0.9s; }
+      .s8  { top: 58%; left: 82%; animation-delay: 1.5s; }
+      .s9  { top: 64%; left:  9%; animation-delay: 2.1s; }
+      .s10 { top: 72%; left: 86%; animation-delay: 0.6s; }
+      .s11 { top: 80%; left: 24%; animation-delay: 1.3s; }
+      .s12 { top: 86%; left: 70%; animation-delay: 1.9s; }
+      .s13 { top: 92%; left: 14%; animation-delay: 0.5s; }
+      .s14 { top: 18%; left: 56%; animation-delay: 2.5s; }
+      .s15 { top: 32%; left: 64%; animation-delay: 0.8s; width: 3px; height: 3px; }
+      .s16 { top: 46%; left: 44%; animation-delay: 1.6s; width: 1px; height: 1px; }
+      .s17 { top: 60%; left: 38%; animation-delay: 2.0s; width: 3px; height: 3px; }
+      .s18 { top: 74%; left: 56%; animation-delay: 0.3s; width: 1px; height: 1px; }
+      .s19 { top: 88%; left: 48%; animation-delay: 1.4s; }
+      .s20 { top: 12%; left: 26%; animation-delay: 2.2s; width: 3px; height: 3px; }
+
+      @keyframes star-twinkle {
+        0%, 100% { opacity: 0.3; }
+        50%      { opacity: 1; }
+      }
+
+      /* The portal */
+      .portal {
+        position: relative;
+        width: clamp(220px, 38vmin, 460px);
+        height: clamp(220px, 38vmin, 460px);
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        padding: 0;
+        outline-offset: 8px;
+        animation: portal-breathe 4s ease-in-out infinite;
+      }
+
+      .portal:focus-visible {
+        outline: 3px solid #67e8f9;
+        outline-offset: 12px;
+        border-radius: 50%;
+      }
+
+      @keyframes portal-breathe {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.025); }
+      }
+
+      .portal.opening { animation: none; }
+
+      /* Outer rings */
+      .portal-ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      .portal-ring-1 {
+        border: 2px solid rgba(103, 232, 249, 0.7);
+        box-shadow:
+          0 0 30px rgba(103, 232, 249, 0.6),
+          inset 0 0 30px rgba(103, 232, 249, 0.3);
+        animation: ring-rotate 14s linear infinite;
+      }
+
+      .portal-ring-2 {
+        inset: -8%;
+        border: 1px dashed rgba(168, 85, 247, 0.5);
+        animation: ring-rotate-rev 22s linear infinite;
+      }
+
+      .portal-ring-3 {
+        inset: -16%;
+        border: 1px solid rgba(103, 232, 249, 0.2);
+        animation: ring-rotate 30s linear infinite;
+      }
+
+      @keyframes ring-rotate {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      @keyframes ring-rotate-rev {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(-360deg); }
+      }
+
+      /* Energy core */
+      .portal-core {
+        position: absolute;
+        inset: 6%;
+        border-radius: 50%;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at center,
+            rgba(103, 232, 249, 0.95) 0%,
+            rgba(59, 130, 246, 0.85) 25%,
+            rgba(91, 33, 182, 0.7) 55%,
+            rgba(15, 10, 46, 0.95) 90%);
+        box-shadow:
+          inset 0 0 60px rgba(168, 85, 247, 0.5),
+          0 0 80px rgba(103, 232, 249, 0.4),
+          0 0 140px rgba(168, 85, 247, 0.3);
+      }
+
+      .portal-vortex {
+        position: absolute;
+        inset: -25%;
+        background:
+          conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            rgba(255, 255, 255, 0.4) 30deg,
+            transparent 60deg,
+            rgba(103, 232, 249, 0.5) 90deg,
+            transparent 120deg,
+            rgba(168, 85, 247, 0.4) 180deg,
+            transparent 220deg,
+            rgba(255, 255, 255, 0.3) 270deg,
+            transparent 310deg,
+            transparent 360deg);
+        animation: vortex-spin 8s linear infinite;
+      }
+
+      @keyframes vortex-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      .portal-shimmer {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 30% 30%,
+            rgba(255, 255, 255, 0.6) 0%,
+            transparent 30%);
+        mix-blend-mode: screen;
+        animation: shimmer-drift 6s ease-in-out infinite;
+      }
+
+      @keyframes shimmer-drift {
+        0%, 100% { transform: translate(0, 0); }
+        25%      { transform: translate(8%, -6%); }
+        50%      { transform: translate(-6%, 8%); }
+        75%      { transform: translate(-8%, -4%); }
+      }
+
+      /* Click → zoom INTO the portal */
+      .portal.opening {
+        animation: portal-zoom-in 1.4s cubic-bezier(0.7, 0, 0.85, 0) forwards;
+        pointer-events: none;
+      }
+
+      @keyframes portal-zoom-in {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(18);
+          opacity: 0;
+        }
+      }
+
+      /* Rings fade out fast as we zoom — they'd look weird scaled up */
+      .portal.opening .portal-ring {
+        animation: ring-fade 0.4s ease-out forwards;
+      }
+
+      @keyframes ring-fade {
+        to { opacity: 0; }
+      }
+
+      /* Core flares as we fly in */
+      .portal.opening .portal-core {
+        animation: core-flare 1.4s ease-out forwards;
+      }
+
+      @keyframes core-flare {
+        0% {
+          filter: brightness(1);
+          box-shadow:
+            inset 0 0 60px rgba(168, 85, 247, 0.5),
+            0 0 80px rgba(103, 232, 249, 0.4),
+            0 0 140px rgba(168, 85, 247, 0.3);
+        }
+        70% {
+          filter: brightness(2.5);
+          box-shadow:
+            inset 0 0 200px rgba(255, 255, 255, 1),
+            0 0 300px rgba(255, 255, 255, 0.95),
+            0 0 500px rgba(103, 232, 249, 1);
+        }
+        100% {
+          filter: brightness(4);
+          box-shadow:
+            inset 0 0 400px rgba(255, 255, 255, 1),
+            0 0 600px rgba(255, 255, 255, 1),
+            0 0 800px rgba(255, 255, 255, 1);
+        }
+      }
+
+      /* Vortex spins faster as we approach */
+      .portal.opening .portal-vortex {
+        animation: vortex-spin 0.6s linear infinite;
+      }
+
+      /* The off-center shimmer would lag behind during the zoom and look
+         like a weird oval — kill it fast on click. */
+      .portal.opening .portal-shimmer {
+        animation: shimmer-out 0.25s ease-out forwards;
+      }
+
+      @keyframes shimmer-out {
+        to { opacity: 0; }
+      }
+
+      /* Portal label */
+      .portal-label {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        color: #fff;
+        text-shadow:
+          0 0 8px rgba(103, 232, 249, 0.9),
+          0 0 18px rgba(103, 232, 249, 0.6);
+        letter-spacing: 0.25em;
+        pointer-events: none;
+        z-index: 2;
+        transition: opacity 0.3s ease-out;
+      }
+
+      .portal-label-line {
+        font-size: clamp(0.7rem, 1.6vmin, 0.95rem);
+        font-weight: 600;
+        opacity: 0.85;
+      }
+
+      .portal-label-main {
+        font-size: clamp(1.1rem, 3vmin, 1.8rem);
+        font-weight: 900;
+        letter-spacing: 0.3em;
+        margin-top: 0.4rem;
+        animation: label-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes label-pulse {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: 0.6; }
+      }
+
+      .portal.opening .portal-label { opacity: 0; }
+
+      /* Hover state */
+      .portal:hover .portal-ring-1,
+      .portal:focus-visible .portal-ring-1 {
+        box-shadow:
+          0 0 50px rgba(103, 232, 249, 0.9),
+          inset 0 0 50px rgba(103, 232, 249, 0.5);
+      }
+
+      .portal:hover .portal-core,
+      .portal:focus-visible .portal-core {
+        box-shadow:
+          inset 0 0 80px rgba(168, 85, 247, 0.7),
+          0 0 120px rgba(103, 232, 249, 0.6),
+          0 0 200px rgba(168, 85, 247, 0.5);
+      }
+
+      .portal:hover .particle {
+        animation-play-state: running;
+      }
+
+      /* Particles */
+      .portal-particles {
+        position: absolute;
+        inset: -20%;
+        pointer-events: none;
+      }
+
+      .particle {
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 200%;
-        height: 60px;
-        background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.25), transparent);
-        transform-origin: 0 50%;
-        transform: translate(-50%, -50%) rotate(0deg);
-      }
-
-      .ray-1 { transform: translate(-50%, -50%) rotate(0deg);   animation: ray-spin 30s linear infinite; }
-      .ray-2 { transform: translate(-50%, -50%) rotate(60deg);  animation: ray-spin 30s linear infinite; }
-      .ray-3 { transform: translate(-50%, -50%) rotate(120deg); animation: ray-spin 30s linear infinite; }
-      .ray-4 { transform: translate(-50%, -50%) rotate(180deg); animation: ray-spin 30s linear infinite; }
-      .ray-5 { transform: translate(-50%, -50%) rotate(240deg); animation: ray-spin 30s linear infinite; }
-      .ray-6 { transform: translate(-50%, -50%) rotate(300deg); animation: ray-spin 30s linear infinite; }
-
-      @keyframes ray-spin {
-        from { transform: translate(-50%, -50%) rotate(var(--start, 0deg)); }
-        to   { transform: translate(-50%, -50%) rotate(calc(var(--start, 0deg) + 360deg)); }
-      }
-      .ray-1 { --start: 0deg; }
-      .ray-2 { --start: 60deg; }
-      .ray-3 { --start: 120deg; }
-      .ray-4 { --start: 180deg; }
-      .ray-5 { --start: 240deg; }
-      .ray-6 { --start: 300deg; }
-
-      .champ-trophy {
-        position: relative;
-        width: 120px;
-        height: 130px;
-        flex-shrink: 0;
-        z-index: 1;
-        animation: trophy-float 4s ease-in-out infinite;
-      }
-
-      .champ-trophy svg {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-        height: 100%;
-        filter: drop-shadow(0 4px 14px rgba(251, 191, 36, 0.4));
-      }
-
-      .champ-trophy-glow {
-        position: absolute;
-        inset: -30%;
+        width: 4px;
+        height: 4px;
+        background: #67e8f9;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(251, 191, 36, 0.5) 0%, rgba(251, 191, 36, 0) 65%);
-        animation: trophy-glow-pulse 3s ease-in-out infinite;
+        box-shadow: 0 0 8px #67e8f9;
+        opacity: 0;
+        animation: particle-fly 2s ease-out infinite;
+        animation-play-state: paused;
       }
 
-      .champ-trophy-shimmer {
-        position: absolute;
-        inset: -20%;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(100, 116, 139, 0.2) 0%, rgba(100, 116, 139, 0) 65%);
-        animation: trophy-shimmer 2.5s ease-in-out infinite;
-      }
+      .p1 { animation-delay: 0s;    --angle:   0deg; }
+      .p2 { animation-delay: 0.25s; --angle:  45deg; }
+      .p3 { animation-delay: 0.5s;  --angle:  90deg; }
+      .p4 { animation-delay: 0.75s; --angle: 135deg; }
+      .p5 { animation-delay: 1s;    --angle: 180deg; }
+      .p6 { animation-delay: 1.25s; --angle: 225deg; }
+      .p7 { animation-delay: 1.5s;  --angle: 270deg; }
+      .p8 { animation-delay: 1.75s; --angle: 315deg; }
 
-      .champ-trophy--empty { animation: empty-trophy-bob 3s ease-in-out infinite; }
-
-      .champ-trophy--empty svg {
-        filter: drop-shadow(0 2px 8px rgba(251, 191, 36, 0.15));
-      }
-
-      @keyframes trophy-float {
-        0%, 100% { transform: translateY(0); }
-        50%      { transform: translateY(-5px); }
-      }
-
-      @keyframes empty-trophy-bob {
-        0%, 100% { transform: translateY(0) rotate(0deg); }
-        25%      { transform: translateY(-3px) rotate(-2deg); }
-        75%      { transform: translateY(-3px) rotate(2deg); }
-      }
-
-      @keyframes trophy-glow-pulse {
-        0%, 100% { transform: scale(1); opacity: 0.7; }
-        50%      { transform: scale(1.2); opacity: 1; }
-      }
-
-      @keyframes trophy-shimmer {
-        0%, 100% { opacity: 0.5; }
-        50%      { opacity: 0.9; }
-      }
-
-      .champ-content { flex: 1; position: relative; z-index: 1; }
-
-      .champ-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.4rem 0.85rem;
-        background: rgba(16, 185, 129, 0.12);
-        border: 1px solid rgba(16, 185, 129, 0.45);
-        border-radius: 999px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: #4ade80;
-        letter-spacing: 0.18em;
-        margin-bottom: 1rem;
-      }
-
-      .champ-badge--empty {
-        background: rgba(251, 191, 36, 0.1);
-        border-color: rgba(251, 191, 36, 0.4);
-        color: #fbbf24;
-      }
-
-      .champ-badge-dot {
-        width: 0.5rem;
-        height: 0.5rem;
-        border-radius: 50%;
-        background: #10b981;
-        box-shadow: 0 0 8px #10b981;
-        animation: status-pulse 1.4s ease-in-out infinite;
-      }
-
-      @keyframes status-pulse {
-        0%, 100% { opacity: 1; }
-        50%      { opacity: 0.5; }
-      }
-
-      .champ-initials {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: clamp(2.5rem, 7vw, 4rem);
-        font-weight: 700;
-        line-height: 1;
-        background: linear-gradient(135deg, #fbbf24, #fde68a, #fbbf24);
-        background-size: 200% 200%;
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: gold-shimmer 3.5s ease-in-out infinite;
-        letter-spacing: 0.08em;
-        margin-bottom: 0.75rem;
-      }
-
-      .champ-empty-title {
-        font-family: 'Inter Tight', system-ui, sans-serif;
-        font-size: clamp(1.75rem, 5vw, 2.75rem);
-        font-weight: 900;
-        color: #fff;
-        margin-bottom: 1rem;
-        letter-spacing: -0.02em;
-        line-height: 1.05;
-      }
-
-      .champ-empty-line { display: block; }
-
-      .champ-empty-highlight {
-        background: linear-gradient(135deg, #fbbf24, #fde68a, #fbbf24);
-        background-size: 200% 200%;
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: gold-shimmer 3.5s ease-in-out infinite;
-        font-size: 1.2em;
-        line-height: 1;
-      }
-
-      .champ-stats {
-        font-size: 0.95rem;
-        color: #cbd5e1;
-        margin-bottom: 0.5rem;
-        line-height: 1.5;
-      }
-
-      .champ-stats strong { color: #fbbf24; font-weight: 700; }
-      .champ-stats--empty strong { color: #fff; }
-
-      .champ-note {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.78rem;
-        color: #94a3b8;
-        line-height: 1.5;
-      }
-
-      /* ============================================ */
-      /* GAMES                                         */
-      /* ============================================ */
-      .games-section {
-        position: relative;
-        z-index: 1;
-        padding: 4rem 1.5rem;
-        max-width: 80rem;
-        margin: 0 auto;
-      }
-
-      .games-header { text-align: center; margin-bottom: 3rem; }
-
-      .section-eyebrow {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #fbbf24;
-        letter-spacing: 0.25em;
-        margin-bottom: 0.75rem;
-      }
-
-      .section-title {
-        font-family: 'Inter Tight', system-ui, sans-serif;
-        font-size: clamp(2rem, 5vw, 2.75rem);
-        font-weight: 900;
-        color: #fff;
-        letter-spacing: -0.02em;
-      }
-
-      .games-grid {
-        display: grid;
-        gap: 1.5rem;
-        grid-template-columns: 1fr;
-      }
-
-      .game-block {
-        background: rgba(15, 23, 42, 0.5);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(251, 191, 36, 0.25);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-      }
-
-      .game-block:hover {
-        transform: translateY(-3px);
-        border-color: rgba(251, 191, 36, 0.55);
-        box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
-      }
-
-      .game-block--locked { opacity: 0.65; }
-      .game-block--locked:hover { transform: none; }
-
-      .game-card {
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
-        flex-wrap: wrap;
-      }
-
-      .game-icon {
-        width: 64px;
-        height: 64px;
-        flex-shrink: 0;
-        background: rgba(251, 191, 36, 0.08);
-        border-radius: 0.75rem;
-        padding: 0.75rem;
-        border: 1px solid rgba(251, 191, 36, 0.25);
-      }
-
-      .game-icon svg { width: 100%; height: 100%; }
-
-      .game-meta { flex: 1; min-width: 12rem; }
-
-      .game-name {
-        font-family: 'Inter Tight', system-ui, sans-serif;
-        font-size: 1.25rem;
-        font-weight: 900;
-        color: #fff;
-        margin-bottom: 0.25rem;
-        letter-spacing: -0.01em;
-      }
-
-      .game-tagline {
-        font-size: 0.875rem;
-        color: #cbd5e1;
-        line-height: 1.4;
-      }
-
-      .game-play-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.85rem 1.5rem;
-        background: linear-gradient(135deg, #fbbf24, #f59e0b);
-        color: #1e3a8a;
-        font-family: 'Inter Tight', system-ui, sans-serif;
-        font-weight: 900;
-        font-size: 0.9rem;
-        letter-spacing: 0.08em;
-        text-decoration: none;
-        border-radius: 0.5rem;
-        transition: transform 0.2s, box-shadow 0.2s;
-        flex-shrink: 0;
-      }
-
-      .game-play-btn:hover,
-      .game-play-btn:focus-visible {
-        transform: translateY(-1px);
-        box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
-        outline: none;
-      }
-
-      .game-play-btn svg { width: 0.95rem; height: 0.95rem; }
-
-      .game-play-btn--locked {
-        background: rgba(148, 163, 184, 0.15);
-        color: #94a3b8;
-        cursor: not-allowed;
-        border: 1px solid rgba(148, 163, 184, 0.3);
-      }
-
-      .game-play-btn--locked:hover { transform: none; box-shadow: none; }
-
-      .game-leaderboard {
-        display: block;
-        background: rgba(10, 14, 26, 0.6);
-        border: 1px solid rgba(96, 165, 250, 0.2);
-        border-radius: 0.625rem;
-        padding: 1rem 1.25rem;
-        min-height: auto;
-        height: auto;
-        overflow: visible;
-      }
-
-      .leaderboard-eyebrow {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.65rem;
-        font-weight: 700;
-        color: #94a3b8;
-        letter-spacing: 0.2em;
-        margin-bottom: 0.6rem;
-      }
-
-      .leaderboard-list {
-        list-style: none;
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-      }
-
-      .leaderboard-row {
-        display: grid;
-        grid-template-columns: 2rem 1fr auto;
-        align-items: center;
-        gap: 0.75rem;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.9rem;
-        color: #cbd5e1;
-        padding: 0.35rem 0;
-      }
-
-      .leaderboard-row--1 .rank-num,
-      .leaderboard-row--1 .rank-initials,
-      .leaderboard-row--1 .rank-score {
-        color: #fbbf24;
-        font-weight: 700;
-      }
-
-      .leaderboard-row--2 .rank-num,
-      .leaderboard-row--2 .rank-initials,
-      .leaderboard-row--2 .rank-score {
-        color: #cbd5e1;
-        font-weight: 600;
-      }
-
-      .leaderboard-row--3 .rank-num,
-      .leaderboard-row--3 .rank-initials,
-      .leaderboard-row--3 .rank-score {
-        color: #d97706;
-        font-weight: 600;
-      }
-
-      .rank-num { font-weight: 700; text-align: center; }
-      .rank-initials { letter-spacing: 0.05em; }
-      .rank-score { text-align: right; font-variant-numeric: tabular-nums; }
-
-      .leaderboard-empty {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.78rem;
-        color: #64748b;
-        text-align: center;
-        padding: 0.75rem 0;
-      }
-
-      @media (min-width: 720px) {
-        .game-block {
-          grid-template-columns: 1.4fr 1fr;
-          gap: 2rem;
-          padding: 1.75rem;
-          align-items: center;
+      @keyframes particle-fly {
+        0% {
+          transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0);
+          opacity: 0;
+        }
+        15% { opacity: 1; }
+        100% {
+          transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-180px);
+          opacity: 0;
         }
       }
 
-      @media (min-width: 1024px) {
-        .games-grid { gap: 1.75rem; }
-      }
-
-      /* ============================================ */
-      /* HOW                                           */
-      /* ============================================ */
-      .how-section {
-        position: relative;
-        z-index: 1;
-        padding: 4rem 1.5rem;
-        max-width: 64rem;
-        margin: 0 auto;
-      }
-
-      .how-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 2rem;
-      }
-
-      .how-step {
-        text-align: center;
-        padding: 2rem 1.5rem;
-        background: rgba(15, 23, 42, 0.4);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(96, 165, 250, 0.2);
-        border-radius: 1rem;
-      }
-
-      .how-icon {
-        width: 48px;
-        height: 48px;
-        margin: 0 auto 1rem;
-        color: #fbbf24;
-      }
-
-      .how-icon svg { width: 100%; height: 100%; }
-
-      .how-step-num {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #fbbf24;
-        letter-spacing: 0.2em;
-        margin-bottom: 0.5rem;
-      }
-
-      .how-step-title {
-        font-family: 'Inter Tight', system-ui, sans-serif;
-        font-size: 1.15rem;
-        font-weight: 900;
-        color: #fff;
-        margin-bottom: 0.75rem;
-      }
-
-      .how-step-text {
-        font-size: 0.9rem;
-        color: #cbd5e1;
-        line-height: 1.5;
-      }
-
-      @media (min-width: 720px) {
-        .how-grid { grid-template-columns: repeat(3, 1fr); }
-      }
-
-      /* ============================================ */
-      /* FOOTER                                        */
-      /* ============================================ */
-      .footer {
-        position: relative;
-        z-index: 1;
-        text-align: center;
-        padding: 5rem 1.5rem 5.5rem;
-        max-width: 56rem;
-        margin: 0 auto;
-      }
-
-      .footer-divider {
-        height: 2px;
-        width: 100%;
-        max-width: 40rem;
-        margin: 0 auto 3.5rem auto;
-        background: linear-gradient(
-          90deg,
-          rgba(251, 191, 36, 0) 0%,
-          rgba(251, 191, 36, 0.6) 50%,
-          rgba(251, 191, 36, 0) 100%
-        );
-      }
-
-      .footer-eyebrow {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.95rem;
-        font-weight: 700;
-        color: #fbbf24;
+      /* Reduced-motion fallback button */
+      .enter-fallback {
+        position: absolute;
+        bottom: 8%;
+        left: 50%;
+        transform: translateX(-50%);
+        display: none;
+        padding: 1rem 3rem;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 1.1rem;
+        font-weight: 800;
         letter-spacing: 0.3em;
-        margin-bottom: 1.25rem;
-        opacity: 0.9;
+        color: #67e8f9;
+        background: rgba(15, 10, 46, 0.8);
+        border: 2px solid #67e8f9;
+        border-radius: 4px;
+        text-decoration: none;
+        text-shadow: 0 0 8px rgba(103, 232, 249, 0.6);
       }
 
-      .footer-title {
-        font-family: 'Inter Tight', system-ui, sans-serif;
-        font-size: clamp(2.75rem, 9vw, 5.5rem);
-        font-weight: 900;
-        line-height: 0.95;
-        letter-spacing: -0.03em;
-        background: linear-gradient(135deg, #fbbf24, #fde68a, #fbbf24);
-        background-size: 200% 200%;
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: gold-shimmer 3.5s ease-in-out infinite;
-        margin-bottom: 1.25rem;
+      .enter-fallback:hover,
+      .enter-fallback:focus-visible {
+        background: rgba(103, 232, 249, 0.15);
+        outline: none;
       }
 
-      .footer-tagline {
-        font-family: 'Inter Tight', system-ui, sans-serif;
-        font-size: clamp(1.05rem, 1.8vw, 1.2rem);
-        color: #cbd5e1;
-        line-height: 1.5;
-        margin-bottom: 3rem;
-      }
-
-      .footer-links {
+      /* ============================================ */
+      /* PRESENTATION STAGE                            */
+      /* ============================================ */
+      .present-stage {
+        position: absolute;
+        inset: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.85rem;
-        flex-wrap: wrap;
-        margin-bottom: 3rem;
+        background: #000;
+        opacity: 0;
+        pointer-events: none;
+        cursor: pointer;
       }
 
-      .footer-link {
-        display: inline-flex;
+      .present-stage.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .present-text-wrap {
+        position: relative;
+        text-align: center;
+        padding: 2rem;
+        width: 100%;
+        max-width: 90vw;
+        min-height: clamp(3.5rem, 13vmin, 8rem);
+        display: flex;
         align-items: center;
-        gap: 0.6rem;
-        padding: 0.95rem 1.5rem;
-        background: rgba(15, 23, 42, 0.6);
-        border: 1.5px solid rgba(96, 165, 250, 0.35);
-        border-radius: 0.625rem;
-        color: #e2e8f0;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.95rem;
-        font-weight: 600;
-        letter-spacing: 0.05em;
-        text-decoration: none;
-        transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.2s;
+        justify-content: center;
       }
 
-      .footer-link svg {
-        width: 1.15rem;
-        height: 1.15rem;
-        flex-shrink: 0;
-      }
-
-      .footer-link:hover,
-      .footer-link:focus-visible {
-        border-color: rgba(251, 191, 36, 0.7);
-        color: #fbbf24;
-        background: rgba(15, 23, 42, 0.85);
-        transform: translateY(-2px);
-        outline: none;
-      }
-
-      .footer-link--primary {
-        background: rgba(251, 191, 36, 0.1);
-        border-color: rgba(251, 191, 36, 0.5);
-        color: #fbbf24;
-      }
-
-      .footer-link--primary:hover,
-      .footer-link--primary:focus-visible {
-        background: rgba(251, 191, 36, 0.18);
-        border-color: rgba(251, 191, 36, 0.9);
-      }
-
-      .footer-signature {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.95rem;
-        color: rgba(255, 255, 255, 0.6);
-        letter-spacing: 0.06em;
-      }
-
-      .footer-sig-link {
-        color: #93c5fd;
-        text-decoration: none;
-        border-bottom: 1px dashed rgba(147, 197, 253, 0.5);
-        transition: color 0.2s, border-color 0.2s;
-      }
-
-      .footer-sig-link:hover,
-      .footer-sig-link:focus-visible {
+      .present-line {
+        position: absolute;
+        left: 0;
+        right: 0;
         color: #fff;
-        border-bottom-color: rgba(255, 255, 255, 0.8);
-        outline: none;
+        opacity: 0;
+        line-height: 1;
+      }
+
+      .present-jake {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: clamp(1.25rem, 4.5vmin, 2.5rem);
+        font-weight: 600;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+      }
+
+      .present-arcade {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: clamp(2.75rem, 11vmin, 7rem);
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        text-shadow:
+          0 0 20px rgba(255, 255, 255, 0.4),
+          0 0 50px rgba(103, 232, 249, 0.3);
+      }
+
+      .present-line.show-jake {
+        animation: present-fade 2.4s ease-out forwards;
+      }
+
+      .present-line.show-arcade {
+        animation: present-fade-arcade 3s ease-out forwards;
+      }
+
+      @keyframes present-fade {
+        0%   { opacity: 0; transform: translateY(8px); }
+        25%  { opacity: 1; transform: translateY(0); }
+        80%  { opacity: 1; }
+        100% { opacity: 0; }
+      }
+
+      @keyframes present-fade-arcade {
+        0%   { opacity: 0; transform: scale(0.96); letter-spacing: 0.32em; }
+        20%  { opacity: 1; transform: scale(1); letter-spacing: 0.18em; }
+        85%  { opacity: 1; }
+        100% { opacity: 1; }
+      }
+
+      .skip-hint {
+        position: absolute;
+        bottom: 2.5rem;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.3em;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        opacity: 0;
+        animation: skip-fade-in 0.6s ease-out 0.8s forwards;
+        pointer-events: none;
+      }
+
+      @keyframes skip-fade-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
       }
 
       /* ============================================ */
-      /* MOBILE PERFORMANCE OVERRIDES (max-width: 768) */
+      /* REDUCED MOTION                                */
       /* ============================================ */
-      @media (max-width: 768px) {
-        /* Kill backdrop-filter everywhere - replace with solid bg */
-        .champion-card {
-          backdrop-filter: none;
-          -webkit-backdrop-filter: none;
-          background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 58, 138, 0.85));
-          animation: none;
-        }
-        .game-block {
-          backdrop-filter: none;
-          -webkit-backdrop-filter: none;
-          background: rgba(15, 23, 42, 0.85);
-        }
-        .how-step {
-          backdrop-filter: none;
-          -webkit-backdrop-filter: none;
-          background: rgba(15, 23, 42, 0.7);
+      @media (prefers-reduced-motion: reduce) {
+        .portal,
+        .portal-ring-1,
+        .portal-ring-2,
+        .portal-ring-3,
+        .portal-vortex,
+        .portal-shimmer,
+        .portal-label-main,
+        .star,
+        .particle {
+          animation: none !important;
         }
 
-        /* Disable expensive cabinet effects */
-        .cabinet-aura {
-          display: none;
+        .portal { display: none; }
+
+        .enter-fallback {
+          display: inline-block;
         }
-        .cabinet {
-          filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
-          animation: none;
-        }
-        .screen-text { animation: none; }
-
-        /* Disable champion ray spinning */
-        .champ-rays { display: none; }
-        .champ-trophy { animation: none; }
-        .champ-trophy-glow { display: none; }
-        .champ-trophy-shimmer { display: none; }
-        .champ-trophy--empty { animation: none; }
-
-        /* CTA pulse off, hover transform off (touch device) */
-        .hero-cta { animation: none; box-shadow: 0 6px 20px rgba(251, 191, 36, 0.3); }
-
-        /* Game block hover transform off (touch) */
-        .game-block:hover { transform: none; box-shadow: none; }
-
-        /* Footer title - kill shimmer animation, freeze gradient at 0% */
-        .footer-title { animation: none; background-position: 0% 50%; }
-        .footer-link:hover { transform: none; }
       }
 
       /* ============================================ */
-      /* MOBILE LAYOUT (max-width: 600)                */
+      /* MOBILE TWEAKS                                 */
       /* ============================================ */
       @media (max-width: 600px) {
-        .hero { padding: 3rem 1.25rem 2rem; }
-        .cabinet-wrap { width: 160px; height: 230px; }
-        .champion-card { padding: 1.75rem 1.25rem; flex-direction: column; text-align: center; }
-        .game-block { padding: 1.25rem; }
-        .game-card { gap: 1rem; }
-        .game-play-btn { width: 100%; justify-content: center; }
-
-        .game-leaderboard {
-          display: block !important;
-          width: 100%;
-          min-height: auto;
-          height: auto;
-          padding: 1rem;
+        .portal {
+          width: clamp(220px, 70vmin, 320px);
+          height: clamp(220px, 70vmin, 320px);
         }
-
-        .footer { padding: 4rem 1.25rem 4.5rem; }
-        .footer-divider { margin-bottom: 2.75rem; }
-        .footer-eyebrow { font-size: 0.8rem; letter-spacing: 0.22em; }
-        .footer-tagline { margin-bottom: 2.25rem; }
-        .footer-links { gap: 0.6rem; margin-bottom: 2.25rem; }
-        .footer-link { padding: 0.8rem 1.15rem; font-size: 0.85rem; }
-        .footer-link svg { width: 1rem; height: 1rem; }
-        .footer-signature { font-size: 0.82rem; }
+        .portal-label-main {
+          letter-spacing: 0.25em;
+        }
       }
 
+      /* ============================================ */
+      /* WIDE SCREENS                                  */
+      /* ============================================ */
       @media (min-width: 1600px) {
-        .games-section { max-width: 88rem; }
-        .game-block { padding: 2rem; }
-        .game-name { font-size: 1.4rem; }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .spark { animation: none; opacity: 0; }
-        .cabinet-aura, .cabinet, .screen-text { animation: none; }
-        .hero-title { animation: none; background-position: 0% 50%; }
-        .hero-cta { animation: none; }
-        .champ-trophy { animation: none; }
-        .champ-badge-dot { animation: none; }
-        .champ-initials, .champ-empty-highlight { animation: none; background-position: 0% 50%; }
-        .footer-title { animation: none; background-position: 0% 50%; }
-        .footer-link { transition: none; }
+        .portal {
+          width: clamp(380px, 32vmin, 540px);
+          height: clamp(380px, 32vmin, 540px);
+        }
       }
     </style>
+
+    <script is:inline>
+      (function () {
+        const portalBtn = document.getElementById('portal-btn');
+        const portalStage = document.getElementById('portal-stage');
+        const presentStage = document.getElementById('present-stage');
+        const lineJake = document.getElementById('line-jake');
+        const lineArcade = document.getElementById('line-arcade');
+
+        let entered = false;
+
+        function go() {
+          window.location.href = '/lobby';
+        }
+
+        function startSequence() {
+          if (entered) return;
+          entered = true;
+
+          // Trigger zoom-through
+          portalBtn.classList.add('opening');
+          portalStage.classList.add('zooming');
+
+          // After we've zoomed all the way in, swap to presentation stage
+          setTimeout(() => {
+            portalStage.classList.add('fading');
+            presentStage.classList.add('active');
+            presentStage.setAttribute('aria-hidden', 'false');
+
+            // "JAKE PRESENTS" appears
+            setTimeout(() => {
+              lineJake.classList.add('show-jake');
+            }, 200);
+
+            // "THE ARCADE" appears as Jake fades
+            setTimeout(() => {
+              lineArcade.classList.add('show-arcade');
+            }, 2400);
+
+            // Redirect after the arcade title finishes
+            setTimeout(go, 5400);
+          }, 1400);
+        }
+
+        // Click portal to start
+        portalBtn.addEventListener('click', startSequence);
+
+        // Click anywhere on the present stage to skip
+        presentStage.addEventListener('click', go);
+
+        // Allow keyboard activation of portal
+        portalBtn.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            startSequence();
+          }
+        });
+      })();
+    </script>
   </body>
 </html>

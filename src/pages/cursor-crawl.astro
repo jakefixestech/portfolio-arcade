@@ -27,18 +27,18 @@
     <link
       rel="preload"
       as="style"
-      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=optional"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Monoton&display=optional"
     />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=optional"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Monoton&display=optional"
       media="print"
       onload="this.media='all'"
     />
     <noscript>
       <link
         rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Monoton&display=swap"
       />
     </noscript>
   </head>
@@ -46,184 +46,251 @@
   <body>
     <main class="page">
 
-      <button id="exit-btn" type="button" class="exit-btn" aria-label="Exit to arcade">
+      <button id="exit-btn" type="button" class="exit-btn" aria-label="Back to Code Maze">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M 9 6 L 4 12 L 9 18 M 4 12 L 19 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-        <span class="exit-btn-label">EXIT</span>
+        <span class="exit-btn-label">CODE MAZE</span>
       </button>
 
-      <div class="sparkles" aria-hidden="true">
+      <a href="/" class="portal-return" aria-label="Return to the portal">
+        <span class="portal-return-icon" aria-hidden="true">↻</span>
+        <span class="portal-return-label">PORTAL</span>
+      </a>
+
+      <div class="motes" aria-hidden="true">
         {Array.from({ length: 18 }).map((_, i) => (
-          <span class={`spark sp-${i + 1}`}></span>
+          <span class={`mote mt-${i + 1}`}></span>
         ))}
       </div>
 
       <section class="game-section">
-        <div class="game-wrap">
-          <div class="game-header" aria-hidden="true">
-            <div class="game-dots">
-              <span class="dot dot-red"></span>
-              <span class="dot dot-yellow"></span>
-              <span class="dot dot-green"></span>
+
+        <!-- ARCADE CABINET WRAPPER (desktop only via CSS) -->
+        <div class="cabinet-shell">
+
+          <div class="shell-marquee" aria-hidden="true">
+            <div class="shell-marquee-bulbs">
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span>
             </div>
-            <div class="game-title">jake@arcade: ~/cursor-crawl</div>
+            <p class="shell-marquee-title">CURSOR CRAWL</p>
           </div>
 
-          <div class="game-body">
+          <div class="cabinet-body">
 
-            <!-- INTRO -->
-            <div id="state-intro" class="state state--active">
-              <div class="intro-icon" aria-hidden="true">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M 18 14 L 18 50 L 28 42 L 34 56 L 40 54 L 34 40 L 46 38 Z" fill="#fbbf24" stroke="#92400e" stroke-width="2" stroke-linejoin="round" />
-                  <circle cx="56" cy="50" r="6" fill="#10b981" stroke="#047857" stroke-width="1.5" />
-                  <circle cx="60" cy="62" r="5" fill="#10b981" stroke="#047857" stroke-width="1.5" />
-                  <circle cx="50" cy="64" r="4" fill="#10b981" stroke="#047857" stroke-width="1.5" />
-                  <circle cx="54" cy="48" r="1" fill="#fff" />
-                  <circle cx="58" cy="48" r="1" fill="#fff" />
-                </svg>
+            <div class="shell-side shell-side-l" aria-hidden="true">
+              <div class="shell-side-art">
+                <span class="side-decor side-d1"></span>
+                <span class="side-decor side-d2"></span>
+                <span class="side-decor side-d3"></span>
               </div>
-
-              <h1 class="intro-title">Cursor Crawl</h1>
-              <p class="intro-text">
-                Devour <strong class="green-strong">bugs</strong> as a growing cursor.
-              </p>
-              <p class="intro-hint">
-                <strong>Arrow keys</strong> or <strong>WASD</strong> to move. Mobile: <strong>swipe</strong>. Don't hit walls or your own tail.
-              </p>
-
-              <button id="start-btn" class="primary-btn" type="button">
-                <span>PLAY</span>
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M 7 5 L 7 19 L 19 12 Z" fill="currentColor" />
-                </svg>
-              </button>
             </div>
-
-            <!-- PLAYING -->
-            <div id="state-playing" class="state">
-              <div class="hud">
-                <div class="hud-item">
-                  <span class="hud-label">SCORE</span>
-                  <span class="hud-value" id="score-display">0</span>
-                </div>
-                <div class="hud-item">
-                  <span class="hud-label">LENGTH</span>
-                  <span class="hud-value" id="length-display">3</span>
-                </div>
-                <div class="hud-item">
-                  <span class="hud-label">SPEED</span>
-                  <span class="hud-value" id="speed-display">1x</span>
-                </div>
-              </div>
-
-              <div class="board-wrap">
-                <canvas
-                  id="game-canvas"
-                  class="game-canvas"
-                  width="400"
-                  height="400"
-                  aria-label="Snake game board"
-                ></canvas>
-                <div id="board-overlay" class="board-overlay" aria-hidden="true">
-                  <p class="overlay-text">Tap or press a direction to start</p>
-                </div>
-              </div>
-
-              <p class="game-hint">Arrow keys / WASD on desktop · Swipe on mobile</p>
-            </div>
-
-            <!-- RESULT -->
-            <div id="state-result" class="state">
-              <div class="result-icon" aria-hidden="true">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="40" cy="40" r="36" fill="#ef4444" />
-                  <path d="M 28 28 L 52 52 M 52 28 L 28 52" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" />
-                </svg>
-              </div>
-
-              <h2 class="result-title">Crashed!</h2>
-              <p class="result-text">
-                Bugs eaten (final score): <strong id="result-score">0</strong><br>
-                Final length: <strong id="result-length">0</strong>
-              </p>
-
-              <div class="initials-section">
-                <p class="initials-label">ENTER YOUR INITIALS</p>
-                <div class="initials-inputs" role="group" aria-label="Three letter initials">
-                  <input type="text" class="initial-box" id="init-1" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="First letter" />
-                  <input type="text" class="initial-box" id="init-2" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Second letter" />
-                  <input type="text" class="initial-box" id="init-3" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Third letter" />
-                </div>
-
-                <p class="initials-error" id="initials-error" aria-live="polite"></p>
-
-                <button id="submit-btn" class="primary-btn" type="button" disabled>
-                  <span id="submit-btn-text">SUBMIT SCORE</span>
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M 5 12 L 19 12 M 13 6 L 19 12 L 13 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </button>
-
-                <button id="skip-btn" class="ghost-btn" type="button">Skip — don't save my score</button>
+            <div class="shell-side shell-side-r" aria-hidden="true">
+              <div class="shell-side-art">
+                <span class="side-decor side-d1"></span>
+                <span class="side-decor side-d2"></span>
+                <span class="side-decor side-d3"></span>
               </div>
             </div>
 
-            <!-- LEADERBOARD -->
-            <div id="state-leaderboard" class="state">
-              <div id="rank-reveal" class="rank-reveal">
-                <p class="rank-eyebrow" id="rank-eyebrow">YOU RANKED</p>
-                <p class="rank-number" id="rank-number">#1</p>
-                <p class="rank-detail" id="rank-detail">on the leaderboard</p>
-              </div>
+            <div class="shell-bezel">
 
-              <div class="leaderboard-wrap">
-                <p class="leaderboard-title">TOP 10 — CURSOR CRAWL</p>
-                <ol id="leaderboard-list" class="leaderboard"></ol>
-              </div>
-
-              <div class="share-section">
-                <p class="share-eyebrow">SHARE YOUR SCORE</p>
-                <div class="share-buttons">
-                  <a id="share-fb" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to Facebook">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <path d="M 12 2 C 6.477 2 2 6.477 2 12 C 2 17 5.66 21.13 10.44 21.88 L 10.44 14.89 L 7.9 14.89 L 7.9 12 L 10.44 12 L 10.44 9.8 C 10.44 7.29 11.93 5.91 14.22 5.91 C 15.31 5.91 16.45 6.1 16.45 6.1 L 16.45 8.56 L 15.19 8.56 C 13.95 8.56 13.56 9.33 13.56 10.12 L 13.56 12 L 16.34 12 L 15.89 14.89 L 13.56 14.89 L 13.56 21.88 C 18.34 21.13 22 17 22 12 C 22 6.477 17.523 2 12 2 Z" fill="currentColor" />
-                    </svg>
-                  </a>
-                  <a id="share-x" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to X">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <path d="M 18.244 2.25 L 21.552 2.25 L 14.325 10.51 L 22.827 21.75 L 16.17 21.75 L 10.956 14.933 L 4.99 21.75 L 1.68 21.75 L 9.41 12.915 L 1.254 2.25 L 8.08 2.25 L 12.793 8.481 L 18.244 2.25 Z M 17.083 19.77 L 18.916 19.77 L 7.084 4.126 L 5.117 4.126 L 17.083 19.77 Z" fill="currentColor" />
-                    </svg>
-                  </a>
-                  <button id="share-native" type="button" class="share-btn" aria-label="Share via system share menu" style="display:none">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <path d="M 12 3 L 12 16 M 7 8 L 12 3 L 17 8 M 4 14 L 4 20 a 1 1 0 0 0 1 1 L 19 21 a 1 1 0 0 0 1 -1 L 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </button>
-                  <button id="share-copy" type="button" class="share-btn" aria-label="Copy link to clipboard">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <rect x="8" y="8" width="13" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2" />
-                      <path d="M 5 15 L 4 15 a 1 1 0 0 1 -1 -1 L 3 4 a 1 1 0 0 1 1 -1 L 14 3 a 1 1 0 0 1 1 1 L 15 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                    </svg>
-                  </button>
+              <!-- ============================== -->
+              <!-- ORIGINAL GAME — UNTOUCHED       -->
+              <!-- ============================== -->
+              <div class="game-wrap">
+                <div class="game-header" aria-hidden="true">
+                  <div class="game-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                  </div>
+                  <div class="game-title">jake@arcade: ~/cursor-crawl</div>
                 </div>
-                <p class="copy-toast" id="copy-toast" aria-live="polite">Link copied!</p>
-              </div>
 
-              <div class="action-buttons">
-                <button id="play-again-btn" type="button" class="primary-btn">
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M 4 12 a 8 8 0 1 1 2.5 5.7 M 4 12 V 6 M 4 12 H 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  <span>PLAY AGAIN</span>
-                </button>
-                <a href="/" class="ghost-btn ghost-btn--link">← Back to Arcade</a>
+                <div class="game-body">
+
+                  <div id="state-intro" class="state state--active">
+                    <div class="intro-icon" aria-hidden="true">
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 18 14 L 18 50 L 28 42 L 34 56 L 40 54 L 34 40 L 46 38 Z" fill="#fbbf24" stroke="#92400e" stroke-width="2" stroke-linejoin="round" />
+                        <circle cx="56" cy="50" r="6" fill="#10b981" stroke="#047857" stroke-width="1.5" />
+                        <circle cx="60" cy="62" r="5" fill="#10b981" stroke="#047857" stroke-width="1.5" />
+                        <circle cx="50" cy="64" r="4" fill="#10b981" stroke="#047857" stroke-width="1.5" />
+                        <circle cx="54" cy="48" r="1" fill="#fff" />
+                        <circle cx="58" cy="48" r="1" fill="#fff" />
+                      </svg>
+                    </div>
+
+                    <h1 class="intro-title">Cursor Crawl</h1>
+                    <p class="intro-text">
+                      Devour <strong class="green-strong">bugs</strong> as a growing cursor.
+                    </p>
+                    <p class="intro-hint">
+                      <strong>Arrow keys</strong> or <strong>WASD</strong> to move. Mobile: <strong>swipe</strong>. Don't hit walls or your own tail.
+                    </p>
+
+                    <button id="start-btn" class="primary-btn" type="button">
+                      <span>PLAY</span>
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M 7 5 L 7 19 L 19 12 Z" fill="currentColor" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div id="state-playing" class="state">
+                    <div class="hud">
+                      <div class="hud-item">
+                        <span class="hud-label">SCORE</span>
+                        <span class="hud-value" id="score-display">0</span>
+                      </div>
+                      <div class="hud-item">
+                        <span class="hud-label">LENGTH</span>
+                        <span class="hud-value" id="length-display">3</span>
+                      </div>
+                      <div class="hud-item">
+                        <span class="hud-label">SPEED</span>
+                        <span class="hud-value" id="speed-display">1x</span>
+                      </div>
+                    </div>
+
+                    <div class="board-wrap">
+                      <canvas
+                        id="game-canvas"
+                        class="game-canvas"
+                        width="400"
+                        height="400"
+                        aria-label="Snake game board"
+                      ></canvas>
+                      <div id="board-overlay" class="board-overlay" aria-hidden="true">
+                        <p class="overlay-text">Tap or press a direction to start</p>
+                      </div>
+                    </div>
+
+                    <p class="game-hint">Arrow keys / WASD on desktop · Swipe on mobile</p>
+                  </div>
+
+                  <div id="state-result" class="state">
+                    <div class="result-icon" aria-hidden="true">
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="40" cy="40" r="36" fill="#ef4444" />
+                        <path d="M 28 28 L 52 52 M 52 28 L 28 52" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" />
+                      </svg>
+                    </div>
+
+                    <h2 class="result-title">Crashed!</h2>
+                    <p class="result-text">
+                      Bugs eaten (final score): <strong id="result-score">0</strong><br>
+                      Final length: <strong id="result-length">0</strong>
+                    </p>
+
+                    <div class="initials-section">
+                      <p class="initials-label">ENTER YOUR INITIALS</p>
+                      <div class="initials-inputs" role="group" aria-label="Three letter initials">
+                        <input type="text" class="initial-box" id="init-1" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="First letter" />
+                        <input type="text" class="initial-box" id="init-2" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Second letter" />
+                        <input type="text" class="initial-box" id="init-3" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Third letter" />
+                      </div>
+
+                      <p class="initials-error" id="initials-error" aria-live="polite"></p>
+
+                      <button id="submit-btn" class="primary-btn" type="button" disabled>
+                        <span id="submit-btn-text">SUBMIT SCORE</span>
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M 5 12 L 19 12 M 13 6 L 19 12 L 13 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                      </button>
+
+                      <button id="skip-btn" class="ghost-btn" type="button">Skip — don't save my score</button>
+                    </div>
+                  </div>
+
+                  <div id="state-leaderboard" class="state">
+                    <div id="rank-reveal" class="rank-reveal">
+                      <p class="rank-eyebrow" id="rank-eyebrow">YOU RANKED</p>
+                      <p class="rank-number" id="rank-number">#1</p>
+                      <p class="rank-detail" id="rank-detail">on the leaderboard</p>
+                    </div>
+
+                    <div class="leaderboard-wrap">
+                      <p class="leaderboard-title">TOP 10 — CURSOR CRAWL</p>
+                      <ol id="leaderboard-list" class="leaderboard"></ol>
+                    </div>
+
+                    <div class="share-section">
+                      <p class="share-eyebrow">SHARE YOUR SCORE</p>
+                      <div class="share-buttons">
+                        <a id="share-fb" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to Facebook">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M 12 2 C 6.477 2 2 6.477 2 12 C 2 17 5.66 21.13 10.44 21.88 L 10.44 14.89 L 7.9 14.89 L 7.9 12 L 10.44 12 L 10.44 9.8 C 10.44 7.29 11.93 5.91 14.22 5.91 C 15.31 5.91 16.45 6.1 16.45 6.1 L 16.45 8.56 L 15.19 8.56 C 13.95 8.56 13.56 9.33 13.56 10.12 L 13.56 12 L 16.34 12 L 15.89 14.89 L 13.56 14.89 L 13.56 21.88 C 18.34 21.13 22 17 22 12 C 22 6.477 17.523 2 12 2 Z" fill="currentColor" />
+                          </svg>
+                        </a>
+                        <a id="share-x" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to X">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M 18.244 2.25 L 21.552 2.25 L 14.325 10.51 L 22.827 21.75 L 16.17 21.75 L 10.956 14.933 L 4.99 21.75 L 1.68 21.75 L 9.41 12.915 L 1.254 2.25 L 8.08 2.25 L 12.793 8.481 L 18.244 2.25 Z M 17.083 19.77 L 18.916 19.77 L 7.084 4.126 L 5.117 4.126 L 17.083 19.77 Z" fill="currentColor" />
+                          </svg>
+                        </a>
+                        <button id="share-native" type="button" class="share-btn" aria-label="Share via system share menu" style="display:none">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M 12 3 L 12 16 M 7 8 L 12 3 L 17 8 M 4 14 L 4 20 a 1 1 0 0 0 1 1 L 19 21 a 1 1 0 0 0 1 -1 L 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                          </svg>
+                        </button>
+                        <button id="share-copy" type="button" class="share-btn" aria-label="Copy link to clipboard">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect x="8" y="8" width="13" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2" />
+                            <path d="M 5 15 L 4 15 a 1 1 0 0 1 -1 -1 L 3 4 a 1 1 0 0 1 1 -1 L 14 3 a 1 1 0 0 1 1 1 L 15 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                          </svg>
+                        </button>
+                      </div>
+                      <p class="copy-toast" id="copy-toast" aria-live="polite">Link copied!</p>
+                    </div>
+
+                    <div class="action-buttons">
+                      <button id="play-again-btn" type="button" class="primary-btn">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M 4 12 a 8 8 0 1 1 2.5 5.7 M 4 12 V 6 M 4 12 H 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span>PLAY AGAIN</span>
+                      </button>
+                      <a href="/code-maze" class="ghost-btn ghost-btn--link">← Back to Code Maze</a>
+                    </div>
+                  </div>
+
+                </div>
               </div>
+              <!-- ============================== -->
+              <!-- END ORIGINAL GAME               -->
+              <!-- ============================== -->
+
+            </div>
+
+            <div class="shell-controls" aria-hidden="true">
+              <span class="shell-joystick">
+                <span class="shell-joystick-base"></span>
+                <span class="shell-joystick-stick"></span>
+                <span class="shell-joystick-ball"></span>
+              </span>
+              <span class="shell-buttons">
+                <span class="shell-btn shell-btn-green"></span>
+                <span class="shell-btn shell-btn-green2"></span>
+                <span class="shell-btn shell-btn-yellow"></span>
+                <span class="shell-btn shell-btn-green"></span>
+              </span>
+            </div>
+
+            <div class="shell-coin" aria-hidden="true">
+              <span class="shell-coin-slot"></span>
+              <span class="shell-coin-label">25¢ INSERT COIN</span>
             </div>
 
           </div>
+
+          <span class="shell-floor-shadow" aria-hidden="true"></span>
+
         </div>
+
       </section>
 
       <div id="exit-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="exit-dialog-title" hidden>
@@ -242,18 +309,17 @@
     <script>
       // @ts-nocheck
 
-      // === Config ===
-      const GRID_SIZE = 20;          // 20x20 cells
+      const GRID_SIZE = 20;
       const CANVAS_SIZE = 400;
       const CELL = CANVAS_SIZE / GRID_SIZE;
       const START_LEN = 3;
-      const TICK_BASE_MS = 160;      // initial speed
-      const TICK_MIN_MS = 80;        // fastest speed
-      const SPEED_RAMP_PER_BUG = 4;  // ms shaved per bug eaten
+      const TICK_BASE_MS = 160;
+      const TICK_MIN_MS = 80;
+      const SPEED_RAMP_PER_BUG = 4;
       const GAME_SLUG = 'cursor-crawl';
       const GAME_NAME = 'Cursor Crawl';
+      const EXIT_TO = '/code-maze';
 
-      // === DOM refs ===
       const stateIntro = document.getElementById('state-intro');
       const statePlaying = document.getElementById('state-playing');
       const stateResult = document.getElementById('state-result');
@@ -291,16 +357,15 @@
       const shareCopy = document.getElementById('share-copy');
       const copyToast = document.getElementById('copy-toast');
 
-      // === Game state ===
-      let snake = [];                  // [{x,y}], head at index 0
-      let dir = { x: 1, y: 0 };        // current direction
-      let nextDir = { x: 1, y: 0 };    // queued direction (prevents reversal mid-tick)
-      let bug = null;                  // {x,y}
+      let snake = [];
+      let dir = { x: 1, y: 0 };
+      let nextDir = { x: 1, y: 0 };
+      let bug = null;
       let score = 0;
       let tickMs = TICK_BASE_MS;
       let tickHandle = null;
       let gameRunning = false;
-      let gameStarted = false;         // movement begins after first input
+      let gameStarted = false;
       let finalScore = 0;
       let lastSubmittedRank = null;
       let lastSubmittedInitials = null;
@@ -314,7 +379,6 @@
       }
 
       function spawnBug() {
-        // Pick a random empty cell.
         const occupied = new Set(snake.map(s => `${s.x},${s.y}`));
         const free = [];
         for (let y = 0; y < GRID_SIZE; y++) {
@@ -327,7 +391,6 @@
       }
 
       function startGame() {
-        // Reset state
         snake = [
           { x: 10, y: 10 },
           { x: 9, y: 10 },
@@ -366,23 +429,18 @@
       function tick() {
         if (!gameRunning || !gameStarted) return;
 
-        // Apply queued direction (single change per tick)
         dir = nextDir;
 
         const head = snake[0];
         const newHead = { x: head.x + dir.x, y: head.y + dir.y };
 
-        // Wall collision
         if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
           endGame();
           return;
         }
 
-        // Self collision (check against all current segments — including the tail
-        // because the tail only moves AFTER we add the new head)
         for (let i = 0; i < snake.length; i++) {
           if (snake[i].x === newHead.x && snake[i].y === newHead.y) {
-            // Allow moving into the tail tip if not eating (because tail will move out)
             if (i === snake.length - 1 && !(bug && newHead.x === bug.x && newHead.y === bug.y)) {
               continue;
             }
@@ -393,7 +451,6 @@
 
         snake.unshift(newHead);
 
-        // Eat bug?
         if (bug && newHead.x === bug.x && newHead.y === bug.y) {
           score++;
           scoreDisplay.textContent = String(score);
@@ -411,11 +468,9 @@
       }
 
       function draw() {
-        // Background grid
         ctx.fillStyle = '#0a0e1a';
         ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-        // Subtle grid lines
         ctx.strokeStyle = 'rgba(96, 165, 250, 0.08)';
         ctx.lineWidth = 1;
         for (let i = 1; i < GRID_SIZE; i++) {
@@ -429,12 +484,10 @@
           ctx.stroke();
         }
 
-        // Bug
         if (bug) {
           drawBug(bug.x, bug.y);
         }
 
-        // Snake body (back to front, so head is on top)
         for (let i = snake.length - 1; i >= 0; i--) {
           const s = snake[i];
           if (i === 0) {
@@ -449,7 +502,6 @@
         const x = gx * CELL;
         const y = gy * CELL;
         const inset = 2;
-        // Gradient color from gold to amber based on position
         const t = idx / Math.max(1, total - 1);
         const r = Math.round(251 + (217 - 251) * t);
         const g = Math.round(191 + (119 - 191) * t);
@@ -461,10 +513,8 @@
       function drawHead(gx, gy, d) {
         const x = gx * CELL;
         const y = gy * CELL;
-        // Cursor pointer shape pointing in current direction
         ctx.save();
         ctx.translate(x + CELL / 2, y + CELL / 2);
-        // Rotate based on direction
         let rot = 0;
         if (d.x === 1 && d.y === 0) rot = Math.PI / 2;
         else if (d.x === -1 && d.y === 0) rot = -Math.PI / 2;
@@ -472,14 +522,12 @@
         else if (d.x === 0 && d.y === -1) rot = 0;
         ctx.rotate(rot);
 
-        // Cursor pointer (scaled to fit cell)
         const s = CELL * 0.5;
         ctx.fillStyle = '#fbbf24';
         ctx.strokeStyle = '#92400e';
         ctx.lineWidth = 1.5;
         ctx.lineJoin = 'round';
         ctx.beginPath();
-        // Classic arrow cursor pointing up (will be rotated)
         ctx.moveTo(0, -s);
         ctx.lineTo(s * 0.7, s * 0.3);
         ctx.lineTo(s * 0.18, s * 0.3);
@@ -497,12 +545,10 @@
         const cx = gx * CELL + CELL / 2;
         const cy = gy * CELL + CELL / 2;
         const r = CELL * 0.32;
-        // Body
         ctx.fillStyle = '#dc2626';
         ctx.beginPath();
         ctx.ellipse(cx, cy + r * 0.1, r, r * 1.15, 0, 0, Math.PI * 2);
         ctx.fill();
-        // Antennae
         ctx.strokeStyle = '#7f1d1d';
         ctx.lineWidth = 1.2;
         ctx.beginPath();
@@ -511,7 +557,6 @@
         ctx.moveTo(cx + r * 0.4, cy - r * 0.7);
         ctx.lineTo(cx + r * 0.7, cy - r * 1.2);
         ctx.stroke();
-        // Eyes
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(cx - r * 0.3, cy - r * 0.2, r * 0.18, 0, Math.PI * 2);
@@ -520,11 +565,9 @@
       }
 
       function setDirection(nx, ny) {
-        // Prevent reversal: can't immediately invert current direction
         if (snake.length > 1 && gameStarted) {
           if (dir.x === -nx && dir.y === -ny) return;
           if (dir.x === nx && dir.y === ny) {
-            // Still valid - just no direction change needed
             beginMovement();
             return;
           }
@@ -533,14 +576,11 @@
         beginMovement();
       }
 
-      // === Keyboard controls ===
       document.addEventListener('keydown', (e) => {
-        // Escape closes exit dialog from any state
         if (e.key === 'Escape' && !exitDialog.hidden) {
           hideExitDialog();
           return;
         }
-        // Movement keys only while playing
         if (!statePlaying.classList.contains('state--active')) return;
         switch (e.key) {
           case 'ArrowUp': case 'w': case 'W':
@@ -554,7 +594,6 @@
         }
       });
 
-      // === Touch / swipe controls ===
       let touchStartX = 0;
       let touchStartY = 0;
       let touchActive = false;
@@ -577,7 +616,6 @@
         const absY = Math.abs(dy);
         const MIN_SWIPE = 18;
         if (absX < MIN_SWIPE && absY < MIN_SWIPE) {
-          // Treat as tap to begin if not started
           beginMovement();
           return;
         }
@@ -589,11 +627,9 @@
       }, { passive: false });
 
       canvas.addEventListener('touchmove', (e) => {
-        // Prevent scrolling while interacting with the board
         if (touchActive) e.preventDefault();
       }, { passive: false });
 
-      // Click on canvas before first move = begin
       canvas.addEventListener('click', () => {
         beginMovement();
       });
@@ -617,7 +653,6 @@
         setTimeout(() => initBoxes[0].focus(), 100);
       }
 
-      // === Initials input handling ===
       initBoxes.forEach((box, idx) => {
         box.addEventListener('input', (e) => {
           let val = box.value.toUpperCase();
@@ -626,15 +661,11 @@
 
           if (val.length === 1) {
             box.classList.add('initial-box--filled');
-            if (idx < initBoxes.length - 1) {
-              initBoxes[idx + 1].focus();
-            } else {
-              box.blur();
-            }
+            if (idx < initBoxes.length - 1) initBoxes[idx + 1].focus();
+            else box.blur();
           } else {
             box.classList.remove('initial-box--filled');
           }
-
           updateSubmitState();
         });
 
@@ -645,19 +676,13 @@
             initBoxes[idx - 1].classList.remove('initial-box--filled');
             updateSubmitState();
           }
-          if (e.key === 'Enter' && !submitBtn.disabled) {
-            submitScore();
-          }
+          if (e.key === 'Enter' && !submitBtn.disabled) submitScore();
         });
 
-        box.addEventListener('focus', () => {
-          box.select();
-        });
+        box.addEventListener('focus', () => box.select());
       });
 
-      function getInitials() {
-        return initBoxes.map(b => b.value).join('').toUpperCase();
-      }
+      function getInitials() { return initBoxes.map(b => b.value).join('').toUpperCase(); }
 
       function updateSubmitState() {
         const initials = getInitials();
@@ -752,7 +777,6 @@
         }
 
         configureShare();
-
         showState('leaderboard');
       }
 
@@ -777,9 +801,7 @@
         if (navigator.share) {
           shareNative.style.display = '';
           shareNative.onclick = async () => {
-            try {
-              await navigator.share({ title: GAME_NAME + " — Jake's Arcade", text, url });
-            } catch (e) { }
+            try { await navigator.share({ title: GAME_NAME + " — Jake's Arcade", text, url }); } catch (e) { }
           };
         }
 
@@ -801,32 +823,24 @@
         };
       }
 
-      playAgainBtn.addEventListener('click', () => {
-        startGame();
-      });
+      playAgainBtn.addEventListener('click', () => startGame());
 
       function showExitDialog() {
         exitDialog.hidden = false;
         setTimeout(() => exitCancel.focus(), 50);
       }
-
-      function hideExitDialog() {
-        exitDialog.hidden = true;
-      }
+      function hideExitDialog() { exitDialog.hidden = true; }
 
       exitBtn.addEventListener('click', () => {
-        if (gameRunning) {
-          showExitDialog();
-        } else {
-          window.location.href = '/';
-        }
+        if (gameRunning) showExitDialog();
+        else window.location.href = EXIT_TO;
       });
 
       exitCancel.addEventListener('click', hideExitDialog);
       exitConfirm.addEventListener('click', () => {
         gameRunning = false;
         clearTimeout(tickHandle);
-        window.location.href = '/';
+        window.location.href = EXIT_TO;
       });
 
       startBtn.addEventListener('click', startGame);
@@ -838,7 +852,7 @@
       @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
       body {
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        background: linear-gradient(135deg, #051a10 0%, #02100a 50%, #010805 100%);
         color: #ffffff;
         font-family: 'Inter Tight', system-ui, -apple-system, sans-serif;
         min-height: 100vh;
@@ -849,39 +863,84 @@
 
       .page { position: relative; min-height: 100vh; }
 
+      /* NAVIGATION (top-left CODE MAZE, btm-right PORTAL) */
       .exit-btn {
         position: fixed;
         top: 1rem;
-        right: 1rem;
+        left: 1rem;
         z-index: 100;
         display: inline-flex;
         align-items: center;
-        gap: 0.4rem;
-        padding: 0.6rem 1rem;
-        background: rgba(15, 23, 42, 0.7);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(96, 165, 250, 0.4);
-        border-radius: 0.5rem;
-        color: #e2e8f0;
+        gap: 0.5rem;
+        padding: 0.65rem 1.1rem;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1.5px solid rgba(74, 222, 128, 0.5);
+        border-radius: 4px;
+        color: #86efac;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.75rem;
         font-weight: 700;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.18em;
         cursor: pointer;
+        text-shadow: 0 0 6px rgba(74, 222, 128, 0.7);
+        box-shadow: 0 0 14px rgba(74, 222, 128, 0.3);
         transition: all 0.2s ease;
       }
 
       .exit-btn:hover, .exit-btn:focus-visible {
-        background: rgba(15, 23, 42, 0.9);
-        border-color: rgba(251, 191, 36, 0.6);
-        color: #fbbf24;
+        transform: translateY(-2px);
+        border-color: #86efac;
+        box-shadow: 0 0 24px rgba(74, 222, 128, 0.6);
+        color: #d1fae5;
         outline: none;
       }
 
       .exit-btn svg { width: 1rem; height: 1rem; }
 
-      .sparkles {
+      .portal-return {
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        z-index: 100;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.95rem;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 999px;
+        color: rgba(196, 181, 253, 0.85);
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-decoration: none;
+        text-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+        transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      }
+
+      .portal-return-icon {
+        font-size: 0.85rem;
+        animation: portal-return-spin 6s linear infinite;
+        display: inline-block;
+      }
+
+      @keyframes portal-return-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      .portal-return:hover, .portal-return:focus-visible {
+        color: #fff;
+        border-color: rgba(168, 85, 247, 0.8);
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        transform: translateY(-2px);
+        outline: none;
+      }
+
+      /* GREEN MOTES (Code Maze vibe) */
+      .motes {
         position: fixed;
         inset: 0;
         pointer-events: none;
@@ -889,41 +948,42 @@
         overflow: hidden;
       }
 
-      .spark {
+      .mote {
         position: absolute;
         bottom: -20px;
-        width: 4px;
-        height: 4px;
-        background: #fbbf24;
+        width: 3px;
+        height: 3px;
+        background: #86efac;
         border-radius: 50%;
-        box-shadow: 0 0 8px #fbbf24, 0 0 14px rgba(251, 191, 36, 0.5);
+        box-shadow: 0 0 6px #4ade80, 0 0 12px rgba(74, 222, 128, 0.5);
         opacity: 0;
       }
 
-      .sp-1  { left:  6%; animation: sparkle-rise 8s linear  0s   infinite; }
-      .sp-2  { left: 14%; animation: sparkle-rise 9s linear  1.5s infinite; }
-      .sp-3  { left: 22%; animation: sparkle-rise 7s linear  3s   infinite; }
-      .sp-4  { left: 30%; animation: sparkle-rise 10s linear 0.8s infinite; }
-      .sp-5  { left: 38%; animation: sparkle-rise 8s linear  4s   infinite; }
-      .sp-6  { left: 46%; animation: sparkle-rise 9s linear  2.2s infinite; }
-      .sp-7  { left: 54%; animation: sparkle-rise 7s linear  5s   infinite; }
-      .sp-8  { left: 62%; animation: sparkle-rise 10s linear 1.2s infinite; }
-      .sp-9  { left: 70%; animation: sparkle-rise 8s linear  3.5s infinite; }
-      .sp-10 { left: 78%; animation: sparkle-rise 9s linear  0.5s infinite; }
-      .sp-11 { left: 86%; animation: sparkle-rise 7s linear  4.5s infinite; }
-      .sp-12 { left: 94%; animation: sparkle-rise 10s linear 2.8s infinite; }
-      .sp-13 { left: 10%; animation: sparkle-rise 11s linear 6s   infinite; }
-      .sp-14 { left: 34%; animation: sparkle-rise 11s linear 5.2s infinite; }
-      .sp-15 { left: 58%; animation: sparkle-rise 11s linear 7s   infinite; }
-      .sp-16 { left: 82%; animation: sparkle-rise 11s linear 4.8s infinite; }
-      .sp-17 { left: 18%; animation: sparkle-rise 12s linear 6.5s infinite; }
-      .sp-18 { left: 74%; animation: sparkle-rise 12s linear 8s   infinite; }
+      .mt-1  { left:  6%; animation: mote-rise 12s linear  0s   infinite; }
+      .mt-2  { left: 14%; animation: mote-rise 14s linear  1.5s infinite; }
+      .mt-3  { left: 22%; animation: mote-rise 11s linear  3s   infinite; }
+      .mt-4  { left: 30%; animation: mote-rise 13s linear  0.8s infinite; }
+      .mt-5  { left: 38%; animation: mote-rise 12s linear  4s   infinite; }
+      .mt-6  { left: 46%; animation: mote-rise 14s linear  2.2s infinite; }
+      .mt-7  { left: 54%; animation: mote-rise 11s linear  5s   infinite; }
+      .mt-8  { left: 62%; animation: mote-rise 13s linear  1.2s infinite; }
+      .mt-9  { left: 70%; animation: mote-rise 12s linear  3.5s infinite; }
+      .mt-10 { left: 78%; animation: mote-rise 14s linear  0.5s infinite; }
+      .mt-11 { left: 86%; animation: mote-rise 11s linear  4.5s infinite; }
+      .mt-12 { left: 94%; animation: mote-rise 13s linear  2.8s infinite; }
+      .mt-13 { left: 10%; animation: mote-rise 15s linear  6s   infinite; }
+      .mt-14 { left: 34%; animation: mote-rise 15s linear  5.2s infinite; }
+      .mt-15 { left: 58%; animation: mote-rise 15s linear  7s   infinite; }
+      .mt-16 { left: 82%; animation: mote-rise 15s linear  4.8s infinite; }
+      .mt-17 { left: 18%; animation: mote-rise 16s linear  6.5s infinite; }
+      .mt-18 { left: 74%; animation: mote-rise 16s linear  8s   infinite; }
 
-      @keyframes sparkle-rise {
-        0%   { transform: translateY(0) scale(0.5); opacity: 0; }
-        10%  { opacity: 1; transform: translateY(-10vh) scale(1); }
+      @keyframes mote-rise {
+        0%   { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; }
+        10%  { opacity: 1; transform: translateY(-10vh) translateX(8px) scale(1); }
+        50%  { transform: translateY(-50vh) translateX(-12px) scale(1); opacity: 0.9; }
         80%  { opacity: 1; }
-        100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
+        100% { transform: translateY(-110vh) translateX(6px) scale(0.3); opacity: 0; }
       }
 
       .game-section {
@@ -933,9 +993,285 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 5rem 1.5rem 3rem;
+        padding: 5rem 1.5rem 5rem;
       }
 
+      /* CABINET SHELL — DESKTOP ONLY (>= 900px) */
+      .cabinet-shell {
+        position: relative;
+        width: 100%;
+        max-width: 42rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .shell-marquee,
+      .shell-side,
+      .shell-controls,
+      .shell-coin,
+      .shell-floor-shadow {
+        display: none;
+      }
+
+      .cabinet-body {
+        position: relative;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .shell-bezel { width: 100%; }
+
+      @media (min-width: 900px) {
+        .cabinet-shell {
+          max-width: 48rem;
+          padding-bottom: 30px;
+        }
+
+        .shell-marquee {
+          display: block;
+          width: 88%;
+          padding: 1.1rem 1.5rem 0.95rem;
+          background: linear-gradient(180deg, #166534 0%, #02100a 100%);
+          border: 3px solid #166534;
+          border-bottom: none;
+          border-radius: 12px 12px 0 0;
+          text-align: center;
+          box-shadow:
+            inset 0 0 18px rgba(74, 222, 128, 0.45),
+            0 0 24px rgba(74, 222, 128, 0.5);
+        }
+
+        .shell-marquee-bulbs {
+          display: flex;
+          justify-content: center;
+          gap: 0.45rem;
+          margin-bottom: 0.55rem;
+        }
+
+        .shell-marquee-bulbs span {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #fbbf24;
+          box-shadow: 0 0 5px #fbbf24, 0 0 10px rgba(251, 191, 36, 0.7);
+          animation: shell-bulb-blink 1.6s ease-in-out infinite;
+        }
+        .shell-marquee-bulbs span:nth-child(2n) { animation-delay: 0.3s; }
+        .shell-marquee-bulbs span:nth-child(3n) { animation-delay: 0.6s; }
+
+        @keyframes shell-bulb-blink {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%      { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .shell-marquee-title {
+          font-family: 'Monoton', 'Inter Tight', sans-serif;
+          font-weight: 400;
+          font-size: 1.6rem;
+          letter-spacing: 0.12em;
+          color: #d1fae5;
+          text-shadow:
+            0 0 6px rgba(74, 222, 128, 0.95),
+            0 0 14px rgba(74, 222, 128, 0.7),
+            0 0 28px rgba(74, 222, 128, 0.4);
+        }
+
+        .cabinet-body {
+          position: relative;
+          width: 100%;
+          padding: 0 6%;
+        }
+
+        .shell-side {
+          display: block;
+          position: absolute;
+          top: 0;
+          bottom: 100px;
+          width: 5%;
+          background: linear-gradient(180deg, #1e293b 0%, #010805 100%);
+          border: 2px solid #010805;
+          z-index: 1;
+        }
+
+        .shell-side-l {
+          left: 0;
+          border-radius: 6px 0 0 0;
+          border-right: none;
+          box-shadow: inset -3px 0 6px rgba(0, 0, 0, 0.6);
+        }
+
+        .shell-side-r {
+          right: 0;
+          border-radius: 0 6px 0 0;
+          border-left: none;
+          box-shadow: inset 3px 0 6px rgba(0, 0, 0, 0.6);
+        }
+
+        .shell-side-art {
+          position: relative;
+          height: 100%;
+          padding: 2rem 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-evenly;
+          align-items: center;
+        }
+
+        .side-decor {
+          width: 60%;
+          height: 30px;
+          background: rgba(74, 222, 128, 0.3);
+          border: 1px solid rgba(74, 222, 128, 0.5);
+          border-radius: 4px;
+          box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
+        }
+
+        .side-d1 { transform: rotate(-3deg); }
+        .side-d2 { transform: rotate(2deg); height: 20px; background: rgba(134, 239, 172, 0.25); border-color: rgba(134, 239, 172, 0.5); box-shadow: 0 0 12px rgba(134, 239, 172, 0.4); }
+        .side-d3 { transform: rotate(-2deg); height: 40px; background: rgba(251, 191, 36, 0.18); border-color: rgba(251, 191, 36, 0.4); box-shadow: 0 0 12px rgba(251, 191, 36, 0.3); }
+
+        .shell-bezel {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          padding: 1.25rem;
+          background: linear-gradient(180deg, #02100a 0%, #010805 100%);
+          border-left: 3px solid #010805;
+          border-right: 3px solid #010805;
+          box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .shell-controls {
+          display: flex;
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          padding: 1rem 2rem;
+          background: linear-gradient(180deg, #475569 0%, #334155 100%);
+          border: 3px solid #1e293b;
+          border-top: none;
+          border-bottom: none;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .shell-joystick {
+          position: relative;
+          width: 40px;
+          height: 40px;
+          flex-shrink: 0;
+        }
+
+        .shell-joystick-base {
+          position: absolute;
+          bottom: 0; left: 50%;
+          transform: translateX(-50%);
+          width: 30px;
+          height: 10px;
+          background: #0f172a;
+          border-radius: 50%;
+        }
+
+        .shell-joystick-stick {
+          position: absolute;
+          bottom: 5px; left: 50%;
+          transform: translateX(-50%);
+          width: 5px;
+          height: 24px;
+          background: linear-gradient(90deg, #1e293b, #475569, #1e293b);
+          border-radius: 2px;
+        }
+
+        .shell-joystick-ball {
+          position: absolute;
+          top: 0; left: 50%;
+          transform: translateX(-50%);
+          width: 16px;
+          height: 16px;
+          background: radial-gradient(circle at 30% 30%, #4ade80, #166534);
+          border-radius: 50%;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 6px rgba(74, 222, 128, 0.5);
+        }
+
+        .shell-buttons {
+          display: flex;
+          gap: 0.55rem;
+          align-items: center;
+        }
+
+        .shell-btn {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          border: 2px solid #0f172a;
+          box-shadow:
+            inset 0 -2px 3px rgba(0, 0, 0, 0.4),
+            inset 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .shell-btn-green   { background: radial-gradient(circle at 30% 30%, #4ade80, #166534); }
+        .shell-btn-green2  { background: radial-gradient(circle at 30% 30%, #86efac, #15803d); }
+        .shell-btn-yellow  { background: radial-gradient(circle at 30% 30%, #fbbf24, #b45309); }
+
+        .shell-coin {
+          display: block;
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          padding: 1rem 1rem 1.25rem;
+          background: linear-gradient(180deg, #1e293b 0%, #010805 100%);
+          border: 3px solid #010805;
+          border-top: none;
+          border-radius: 0 0 8px 8px;
+          text-align: center;
+          box-shadow:
+            inset 0 0 18px rgba(0, 0, 0, 0.7),
+            0 8px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .shell-coin-slot {
+          display: block;
+          width: 60px;
+          height: 5px;
+          margin: 0 auto 0.6rem;
+          background: #010805;
+          border-radius: 1px;
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
+        }
+
+        .shell-coin-label {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.65rem;
+          font-weight: 700;
+          letter-spacing: 0.2em;
+          color: #94a3b8;
+        }
+
+        .shell-floor-shadow {
+          display: block;
+          position: absolute;
+          bottom: 0;
+          left: 5%; right: 5%;
+          height: 22px;
+          background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.7) 0%, transparent 70%);
+          filter: blur(8px);
+          z-index: 0;
+        }
+
+        .shell-bezel .game-wrap {
+          max-width: none;
+          border: 1px solid rgba(74, 222, 128, 0.3);
+          border-radius: 6px;
+          box-shadow: inset 0 0 20px rgba(74, 222, 128, 0.2);
+        }
+      }
+
+      /* ORIGINAL GAME-WRAP (unchanged) */
       .game-wrap {
         width: 100%;
         max-width: 42rem;
@@ -1142,7 +1478,6 @@
         outline: none;
       }
 
-      /* HUD - 3 columns: ROUND / LAST / AVG */
       .hud {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -1180,7 +1515,6 @@
         font-variant-numeric: tabular-nums;
       }
 
-      /* GAME BOARD */
       .board-wrap {
         position: relative;
         width: 100%;
@@ -1216,9 +1550,7 @@
         transition: opacity 0.2s;
       }
 
-      .board-overlay--hidden {
-        opacity: 0;
-      }
+      .board-overlay--hidden { opacity: 0; }
 
       .overlay-text {
         font-family: 'JetBrains Mono', monospace;
@@ -1242,7 +1574,6 @@
         text-align: center;
       }
 
-      /* RESULT */
       .result-icon {
         width: 96px;
         height: 96px;
@@ -1337,7 +1668,6 @@
 
       #skip-btn { margin-top: 1rem; width: 100%; }
 
-      /* RANK */
       .rank-reveal {
         text-align: center;
         margin-bottom: 2rem;
@@ -1388,7 +1718,6 @@
         color: #d1d5db;
       }
 
-      /* LEADERBOARD */
       .leaderboard-wrap { width: 100%; margin-bottom: 2rem; }
 
       .leaderboard-title {
@@ -1459,7 +1788,6 @@
         font-size: 0.85rem;
       }
 
-      /* SHARE */
       .share-section {
         text-align: center;
         margin-bottom: 2rem;
@@ -1530,7 +1858,6 @@
         width: 100%;
       }
 
-      /* DIALOG */
       .dialog {
         position: fixed;
         inset: 0;
@@ -1586,7 +1913,7 @@
       }
 
       @media (max-width: 600px) {
-        .game-section { padding: 4rem 0.75rem 2rem; }
+        .game-section { padding: 4rem 0.75rem 4rem; }
         .game-wrap { border-radius: 0.625rem; }
         .game-body { padding: 1.5rem 1rem; min-height: 28rem; }
         .game-title { font-size: 0.7rem; }
@@ -1613,21 +1940,23 @@
       }
 
       @media (min-width: 1600px) {
-        .game-wrap { max-width: 48rem; }
+        .cabinet-shell { max-width: 54rem; }
+        .game-wrap { max-width: none; }
         .game-body { padding: 3rem 2.5rem; }
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .spark { animation: none; opacity: 0; }
+        .mote { animation: none; opacity: 0; }
         .intro-icon { animation: none; }
         .primary-btn { animation: none; }
-        .reaction-pad--go { animation: none; }
         .overlay-text { animation: none; }
         .result-icon { animation: none; }
         .state--active { animation: none; }
         .rank-reveal { animation: none; }
         .rank-number { animation: none; background-position: 0% 50%; }
         .leaderboard-row--me { animation: none; }
+        .shell-marquee-bulbs span { animation: none !important; }
+        .portal-return-icon { animation: none !important; }
       }
     </style>
   </body>

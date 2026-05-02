@@ -1,0 +1,1220 @@
+---
+const GAMES = [
+  { slug: 'whack-a-virus',   name: 'Whack-a-Virus',   iconKey: 'virus' },
+  { slug: 'system-response', name: 'System Response', iconKey: 'response' },
+  { slug: 'component-match', name: 'Component Match', iconKey: 'match' },
+  { slug: 'error-override',  name: 'Error Override',  iconKey: 'error' },
+  { slug: 'cursor-crawl',    name: 'Cursor Crawl',    iconKey: 'cursor' },
+  { slug: 'usb-defender',    name: 'USB Defender',    iconKey: 'usb' },
+  { slug: 'bug-smasher',     name: 'Bug Smasher',     iconKey: 'smasher' },
+  { slug: 'spam-blaster',    name: 'Spam Blaster',    iconKey: 'spam' },
+];
+
+type ScoreEntry = { initials: string; score: number; timestamp: string };
+
+let leaderboards: ScoreEntry[][] = [];
+// @ts-ignore
+const kv = Astro.locals?.runtime?.env?.SCORES_KV;
+
+if (kv) {
+  leaderboards = await Promise.all(
+    GAMES.map(async (g) => {
+      try {
+        const raw = await kv.get(`scores:${g.slug}`);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw) as ScoreEntry[];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    })
+  );
+} else {
+  const baseUrl = 'https://arcade.jakefixestech.com';
+  leaderboards = await Promise.all(
+    GAMES.map(async (g) => {
+      try {
+        const res = await fetch(`${baseUrl}/api/scores/${g.slug}`);
+        if (!res.ok) return [];
+        const data = await res.json() as { scores?: ScoreEntry[] };
+        return data.scores || [];
+      } catch {
+        return [];
+      }
+    })
+  );
+}
+
+const RANK_POINTS = [100, 60, 40, 25, 15, 10, 6, 3, 2, 1];
+
+const playerData: Record<string, { points: number; games: Set<number> }> = {};
+GAMES.forEach((game, gameIdx) => {
+  const scores = leaderboards[gameIdx];
+  scores.forEach((entry: ScoreEntry, rank: number) => {
+    if (entry.score <= 0) return;
+    if (rank >= RANK_POINTS.length) return;
+    const points = RANK_POINTS[rank];
+    if (!playerData[entry.initials]) {
+      playerData[entry.initials] = { points: 0, games: new Set() };
+    }
+    playerData[entry.initials].points += points;
+    playerData[entry.initials].games.add(gameIdx);
+  });
+});
+
+let champion: { initials: string; points: number; gamesPlayed: number } | null = null;
+const eligible = Object.entries(playerData);
+if (eligible.length > 0) {
+  eligible.sort((a, b) => b[1].points - a[1].points);
+  champion = {
+    initials: eligible[0][0],
+    points: eligible[0][1].points,
+    gamesPlayed: eligible[0][1].games.size,
+  };
+}
+
+// Top 10 honor roll
+const honorRoll = eligible
+  .map(([initials, data]) => ({
+    initials,
+    points: data.points,
+    gamesPlayed: data.games.size,
+  }))
+  .sort((a, b) => b.points - a.points)
+  .slice(0, 10);
+
+// #1 record holder per game
+const recordHolders = GAMES.map((game, idx) => {
+  const top = leaderboards[idx]?.[0];
+  return {
+    game,
+    holder: top && top.score > 0 ? top : null,
+  };
+});
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trophies — Jake's Arcade</title>
+    <meta name="description" content="The Hall of Fame. Champions, record holders, and the honor roll of Jake's Arcade." />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Monoton&family=JetBrains+Mono:wght@400;600;700&family=Inter+Tight:wght@400;600;700;900&display=swap"
+    />
+  </head>
+
+  <body>
+    <main class="trophies">
+
+      <!-- Ambient background dust -->
+      <div class="ambient" aria-hidden="true">
+        <span class="dust d1"></span><span class="dust d2"></span>
+        <span class="dust d3"></span><span class="dust d4"></span>
+        <span class="dust d5"></span><span class="dust d6"></span>
+        <span class="dust d7"></span><span class="dust d8"></span>
+        <span class="dust d9"></span><span class="dust d10"></span>
+      </div>
+
+      <!-- Navigation: EXIT (main site) + LOBBY (back) + PORTAL (front door) -->
+      <a href="https://jakefixestech.com" class="exit-sign" aria-label="Exit the arcade and return to Jake Fixes Tech">
+        <span class="exit-arrow" aria-hidden="true">←</span>
+        <span class="exit-label">EXIT</span>
+      </a>
+
+      <a href="/lobby" class="back-to-lobby" aria-label="Back to the lobby">
+        <span class="back-arrow" aria-hidden="true">←</span>
+        <span class="back-label">LOBBY</span>
+      </a>
+
+      <a href="/" class="portal-return" aria-label="Return to the portal">
+        <span class="portal-return-icon" aria-hidden="true">↻</span>
+        <span class="portal-return-label">PORTAL</span>
+      </a>
+
+      <!-- Ceiling sign -->
+      <header class="hall-marquee">
+        <p class="marquee-eyebrow">YOU HAVE ENTERED</p>
+        <h1 class="marquee-title">HALL OF FAME</h1>
+        <div class="marquee-rule" aria-hidden="true">
+          <span class="rule-line"></span>
+          <span class="rule-star">★</span>
+          <span class="rule-line"></span>
+        </div>
+      </header>
+
+      <!-- ============================================ -->
+      <!-- SECTION 1: CHAMPION'S THRONE                  -->
+      <!-- ============================================ -->
+      <section class="champion-section" aria-labelledby="champion-heading">
+        <div class="spotlight" aria-hidden="true"></div>
+
+        <h2 id="champion-heading" class="section-title">THE CHAMPION</h2>
+
+        {champion ? (
+          <div class="throne throne--occupied">
+            <div class="throne-trophy" aria-hidden="true">
+              <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 18 24 Q 6 24 6 38 Q 6 50 18 50" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+                <path d="M 62 24 Q 74 24 74 38 Q 74 50 62 50" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+                <path d="M 16 16 L 64 16 L 60 54 Q 58 60 50 62 L 30 62 Q 22 60 20 54 Z" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M 22 20 L 28 20 L 26 52 Q 25 56 23 58 L 22 58 Z" fill="#fde68a" opacity="0.6"/>
+                <rect x="14" y="13" width="52" height="6" rx="1" fill="#fbbf24" stroke="#92400e" stroke-width="1.5"/>
+                <path d="M 40 28 L 43 36 L 51 37 L 45 42 L 47 50 L 40 46 L 33 50 L 35 42 L 29 37 L 37 36 Z" fill="#fff"/>
+                <rect x="34" y="62" width="12" height="10" fill="#d97706" stroke="#92400e" stroke-width="1.5"/>
+                <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#d97706" stroke="#92400e" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <div class="throne-info">
+              <p class="throne-label">REIGNING CHAMPION</p>
+              <p class="throne-initials">{champion.initials}</p>
+              <p class="throne-stats">
+                <strong>{champion.points}</strong> rank points · <strong>{champion.gamesPlayed}</strong> games
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div class="throne throne--empty">
+            <div class="throne-trophy throne-trophy--empty" aria-hidden="true">
+              <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 18 24 Q 6 24 6 38 Q 6 50 18 50" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                <path d="M 62 24 Q 74 24 74 38 Q 74 50 62 50" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                <path d="M 16 16 L 64 16 L 60 54 Q 58 60 50 62 L 30 62 Q 22 60 20 54 Z" fill="#475569" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round"/>
+                <rect x="14" y="13" width="52" height="6" rx="1" fill="#64748b" stroke="#1e293b" stroke-width="1.5"/>
+                <rect x="34" y="62" width="12" height="10" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>
+                <path d="M 24 72 L 56 72 L 60 86 L 20 86 Z" fill="#334155" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round"/>
+                <text x="40" y="48" text-anchor="middle" font-family="Inter Tight, sans-serif" font-weight="900" font-size="32" fill="#94a3b8">?</text>
+              </svg>
+            </div>
+
+            <div class="throne-info">
+              <p class="throne-label">THE THRONE IS OPEN</p>
+              <p class="throne-empty-title">Could be <span class="gold-text">YOU</span></p>
+              <p class="throne-stats">Land in any game's top 10 to start scoring rank points.</p>
+            </div>
+          </div>
+        )}
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SECTION 2: RECORD HOLDERS                     -->
+      <!-- ============================================ -->
+      <section class="records-section" aria-labelledby="records-heading">
+        <h2 id="records-heading" class="section-title">RECORD HOLDERS</h2>
+        <p class="section-subtitle">First place in each game</p>
+
+        <div class="record-grid">
+          {recordHolders.map(({ game, holder }) => (
+            <div class={`record-case ${holder ? 'record-case--filled' : 'record-case--empty'}`}>
+              <div class="record-icon" aria-hidden="true">
+                {game.iconKey === 'virus' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="40" cy="44" rx="22" ry="26" fill="currentColor"/>
+                    <line x1="40" y1="14" x2="40" y2="22" stroke="currentColor" stroke-width="3"/>
+                    <line x1="6" y1="22" x2="20" y2="32" stroke="currentColor" stroke-width="2.5"/>
+                    <line x1="74" y1="22" x2="60" y2="32" stroke="currentColor" stroke-width="2.5"/>
+                    <line x1="2" y1="44" x2="18" y2="44" stroke="currentColor" stroke-width="2.5"/>
+                    <line x1="78" y1="44" x2="62" y2="44" stroke="currentColor" stroke-width="2.5"/>
+                    <ellipse cx="32" cy="38" rx="5" ry="6" fill="#000"/>
+                    <ellipse cx="48" cy="38" rx="5" ry="6" fill="#000"/>
+                  </svg>
+                )}
+                {game.iconKey === 'response' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="currentColor" stroke-width="3"/>
+                    <path d="M 40 22 L 40 40 L 52 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  </svg>
+                )}
+                {game.iconKey === 'match' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="14" width="28" height="38" rx="3" fill="none" stroke="currentColor" stroke-width="3"/>
+                    <rect x="44" y="14" width="28" height="38" rx="3" fill="none" stroke="currentColor" stroke-width="3"/>
+                    <line x1="36" y1="58" x2="44" y2="58" stroke="currentColor" stroke-width="3"/>
+                    <line x1="36" y1="64" x2="44" y2="64" stroke="currentColor" stroke-width="3"/>
+                  </svg>
+                )}
+                {game.iconKey === 'error' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="16" width="64" height="48" rx="3" fill="none" stroke="currentColor" stroke-width="3"/>
+                    <line x1="8" y1="26" x2="72" y2="26" stroke="currentColor" stroke-width="2"/>
+                    <text x="14" y="50" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" fill="currentColor">ERR_</text>
+                  </svg>
+                )}
+                {game.iconKey === 'cursor' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M 18 14 L 18 50 L 28 42 L 34 56 L 40 54 L 34 40 L 46 38 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+                  </svg>
+                )}
+                {game.iconKey === 'usb' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="14" y="34" width="36" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="3"/>
+                    <rect x="50" y="36" width="14" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                  </svg>
+                )}
+                {game.iconKey === 'smasher' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="14" width="14" height="6" fill="currentColor"/>
+                    <rect x="22" y="14" width="14" height="6" fill="currentColor" opacity="0.7"/>
+                    <rect x="38" y="14" width="14" height="6" fill="currentColor"/>
+                    <rect x="54" y="14" width="14" height="6" fill="currentColor" opacity="0.7"/>
+                    <rect x="6" y="22" width="14" height="6" fill="currentColor" opacity="0.7"/>
+                    <rect x="22" y="22" width="14" height="6" fill="currentColor"/>
+                    <circle cx="40" cy="50" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="22" y="62" width="36" height="6" rx="2" fill="currentColor"/>
+                  </svg>
+                )}
+                {game.iconKey === 'spam' && (
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="14" width="64" height="40" rx="2" fill="none" stroke="currentColor" stroke-width="3"/>
+                    <path d="M 8 16 L 40 38 L 72 16" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                    <text x="40" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="currentColor">SPAM</text>
+                  </svg>
+                )}
+              </div>
+
+              <div class="record-meta">
+                <p class="record-game-name">{game.name}</p>
+                {holder ? (
+                  <>
+                    <p class="record-holder-initials">{holder.initials}</p>
+                    <p class="record-holder-score">{holder.score.toLocaleString()}</p>
+                  </>
+                ) : (
+                  <>
+                    <p class="record-holder-initials record-holder-initials--empty">—</p>
+                    <p class="record-holder-score record-holder-score--empty">UNCLAIMED</p>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SECTION 3: HONOR ROLL (TOP 10)                -->
+      <!-- ============================================ -->
+      <section class="honor-section" aria-labelledby="honor-heading">
+        <h2 id="honor-heading" class="section-title">THE HONOR ROLL</h2>
+        <p class="section-subtitle">Top 10 by total rank points</p>
+
+        {honorRoll.length > 0 ? (
+          <ol class="honor-list">
+            {honorRoll.map((player, i) => (
+              <li class={`honor-row ${i === 0 ? 'honor-row--gold' : i === 1 ? 'honor-row--silver' : i === 2 ? 'honor-row--bronze' : ''}`}>
+                <span class="honor-rank">{String(i + 1).padStart(2, '0')}</span>
+                <span class="honor-initials">{player.initials}</span>
+                <span class="honor-games">{player.gamesPlayed} {player.gamesPlayed === 1 ? 'game' : 'games'}</span>
+                <span class="honor-points">{player.points} <span class="honor-pts-label">PTS</span></span>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <div class="honor-empty">
+            <p>No scores have been recorded yet. Be the first to claim a top 10 spot.</p>
+          </div>
+        )}
+
+        <p class="honor-note">
+          <span class="note-icon" aria-hidden="true">★</span>
+          1st place earns 100 pts · 2nd 60 · 3rd 40 · scaling down to 1 pt for 10th.
+        </p>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SECTION 4: ALL LEADERBOARDS (collapsible)     -->
+      <!-- ============================================ -->
+      <section class="all-boards-section" aria-labelledby="boards-heading">
+        <details class="all-boards">
+          <summary class="all-boards-summary">
+            <span class="summary-text">VIEW ALL LEADERBOARDS</span>
+            <span class="summary-arrow" aria-hidden="true">▾</span>
+          </summary>
+
+          <h2 id="boards-heading" class="visually-hidden">Top 3 of every game</h2>
+
+          <div class="boards-grid">
+            {GAMES.map((game, idx) => {
+              const top3 = leaderboards[idx]?.slice(0, 3) || [];
+              return (
+                <div class="board-card">
+                  <h3 class="board-game-name">{game.name}</h3>
+                  {top3.length > 0 ? (
+                    <ol class="board-list">
+                      {top3.map((entry, i) => (
+                        <li class={`board-row board-row--${i + 1}`}>
+                          <span class="board-rank">{i + 1}</span>
+                          <span class="board-initials">{entry.initials}</span>
+                          <span class="board-score">{entry.score.toLocaleString()}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p class="board-empty">No scores yet</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </details>
+      </section>
+
+    </main>
+
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --c-bg: #050214;
+        --c-gold: #fbbf24;
+        --c-gold-light: #fde68a;
+        --c-gold-dark: #d97706;
+        --c-gold-deep: #92400e;
+        --c-silver: #cbd5e1;
+        --c-bronze: #d97706;
+
+        --c-gold-glow: rgba(251, 191, 36, 0.7);
+        --c-gold-soft: rgba(251, 191, 36, 0.15);
+      }
+
+      html, body {
+        background: var(--c-bg);
+        color: #fff;
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100vh;
+      }
+
+      body { overflow-x: hidden; }
+
+      .trophies {
+        position: relative;
+        min-height: 100vh;
+        padding: 0 1.5rem 5rem;
+        background:
+          radial-gradient(ellipse at 50% 12%, rgba(251, 191, 36, 0.18) 0%, transparent 55%),
+          radial-gradient(ellipse at 50% 90%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+          linear-gradient(180deg, #0a0820 0%, #050214 60%, #000 100%);
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      /* ============================================ */
+      /* AMBIENT                                       */
+      /* ============================================ */
+      .ambient {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      .dust {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: rgba(251, 191, 36, 0.6);
+        border-radius: 50%;
+        box-shadow: 0 0 4px rgba(251, 191, 36, 0.5);
+        animation: dust-drift 22s linear infinite;
+      }
+
+      .d1  { left:  8%; top: 100%; animation-delay:  0s;  }
+      .d2  { left: 18%; top: 100%; animation-delay:  3s;  }
+      .d3  { left: 28%; top: 100%; animation-delay:  6s;  }
+      .d4  { left: 38%; top: 100%; animation-delay:  9s;  }
+      .d5  { left: 48%; top: 100%; animation-delay: 12s;  }
+      .d6  { left: 58%; top: 100%; animation-delay: 15s;  }
+      .d7  { left: 68%; top: 100%; animation-delay: 18s;  }
+      .d8  { left: 78%; top: 100%; animation-delay:  2s;  }
+      .d9  { left: 88%; top: 100%; animation-delay:  5s;  }
+      .d10 { left: 95%; top: 100%; animation-delay:  8s;  }
+
+      @keyframes dust-drift {
+        0%   { transform: translateY(0); opacity: 0; }
+        10%  { opacity: 0.5; }
+        90%  { opacity: 0.5; }
+        100% { transform: translateY(-110vh); opacity: 0; }
+      }
+
+      /* ============================================ */
+      /* NAVIGATION (EXIT, LOBBY, PORTAL)              */
+      /* ============================================ */
+      .exit-sign {
+        position: fixed;
+        top: 1.25rem;
+        left: 1.25rem;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.65rem 1.1rem;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid #22c55e;
+        border-radius: 4px;
+        color: #4ade80;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.25em;
+        text-decoration: none;
+        text-shadow:
+          0 0 6px rgba(74, 222, 128, 0.9),
+          0 0 14px rgba(74, 222, 128, 0.5);
+        box-shadow:
+          0 0 0 1px rgba(74, 222, 128, 0.2),
+          0 0 18px rgba(74, 222, 128, 0.45),
+          inset 0 0 12px rgba(74, 222, 128, 0.18);
+        transition: transform 0.2s, box-shadow 0.2s;
+        animation: exit-flicker 6s steps(60) infinite;
+      }
+
+      .exit-arrow { font-size: 1rem; font-weight: 800; }
+
+      .exit-sign:hover, .exit-sign:focus-visible {
+        transform: translateY(-2px);
+        box-shadow:
+          0 0 0 1px rgba(74, 222, 128, 0.4),
+          0 0 30px rgba(74, 222, 128, 0.7),
+          inset 0 0 16px rgba(74, 222, 128, 0.3);
+        outline: none;
+      }
+
+      @keyframes exit-flicker {
+        0%, 100%       { opacity: 1; }
+        96%, 96.5%     { opacity: 0.4; }
+        97%, 97.4%     { opacity: 1; }
+        97.5%, 97.8%   { opacity: 0.5; }
+        98%            { opacity: 1; }
+      }
+
+      .back-to-lobby {
+        position: fixed;
+        top: 1.25rem;
+        right: 1.25rem;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1rem;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1.5px solid rgba(251, 191, 36, 0.5);
+        border-radius: 4px;
+        color: var(--c-gold);
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-decoration: none;
+        text-shadow: 0 0 6px var(--c-gold-glow);
+        box-shadow: 0 0 14px rgba(251, 191, 36, 0.3);
+        transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      }
+
+      .back-to-lobby:hover, .back-to-lobby:focus-visible {
+        transform: translateY(-2px);
+        border-color: var(--c-gold);
+        box-shadow: 0 0 24px rgba(251, 191, 36, 0.6);
+        outline: none;
+      }
+
+      .portal-return {
+        position: fixed;
+        bottom: 1.25rem;
+        right: 1.25rem;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.95rem;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 999px;
+        color: rgba(196, 181, 253, 0.85);
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-decoration: none;
+        text-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+        transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      }
+
+      .portal-return-icon {
+        font-size: 0.85rem;
+        display: inline-block;
+        animation: portal-return-spin 6s linear infinite;
+      }
+
+      @keyframes portal-return-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      .portal-return:hover, .portal-return:focus-visible {
+        color: #fff;
+        border-color: rgba(168, 85, 247, 0.8);
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        transform: translateY(-2px);
+        outline: none;
+      }
+
+      /* ============================================ */
+      /* CEILING MARQUEE                               */
+      /* ============================================ */
+      .hall-marquee {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        padding: 5rem 1rem 2.5rem;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      .marquee-eyebrow {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.45em;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 1rem;
+      }
+
+      .marquee-title {
+        font-family: 'Monoton', 'Orbitron', system-ui, sans-serif;
+        font-size: clamp(2.5rem, 9vw, 6rem);
+        font-weight: 400;
+        line-height: 1;
+        letter-spacing: 0.05em;
+        color: #fde68a;
+        text-shadow:
+          0 0 6px rgba(251, 191, 36, 1),
+          0 0 14px rgba(251, 191, 36, 0.9),
+          0 0 28px rgba(251, 191, 36, 0.7),
+          0 0 56px rgba(251, 191, 36, 0.4);
+        animation: marquee-flicker 8s steps(80) infinite;
+      }
+
+      @keyframes marquee-flicker {
+        0%, 100%       { opacity: 1; }
+        45%, 45.4%     { opacity: 0.6; }
+        45.6%, 46%     { opacity: 1; }
+        78%, 78.3%     { opacity: 0.45; }
+        78.6%, 79%     { opacity: 1; }
+      }
+
+      .marquee-rule {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      .rule-line {
+        width: 80px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--c-gold-glow), transparent);
+      }
+
+      .rule-star {
+        color: var(--c-gold);
+        font-size: 1.2rem;
+        text-shadow: 0 0 8px var(--c-gold-glow);
+      }
+
+      /* ============================================ */
+      /* SECTIONS — shared header                       */
+      /* ============================================ */
+      .section-title {
+        font-family: 'Monoton', 'Orbitron', system-ui, sans-serif;
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        font-weight: 400;
+        text-align: center;
+        color: var(--c-gold);
+        letter-spacing: 0.06em;
+        text-shadow:
+          0 0 5px var(--c-gold-glow),
+          0 0 14px rgba(251, 191, 36, 0.5);
+        margin-bottom: 0.5rem;
+      }
+
+      .section-subtitle {
+        text-align: center;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.3em;
+        color: rgba(255, 255, 255, 0.45);
+        text-transform: uppercase;
+        margin-bottom: 2.5rem;
+      }
+
+      /* ============================================ */
+      /* SECTION 1: CHAMPION'S THRONE                  */
+      /* ============================================ */
+      .champion-section {
+        position: relative;
+        z-index: 2;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem 0 4rem;
+      }
+
+      .spotlight {
+        position: absolute;
+        top: -2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(80%, 600px);
+        height: 100%;
+        background: radial-gradient(ellipse at 50% 30%, rgba(251, 191, 36, 0.18) 0%, transparent 65%);
+        pointer-events: none;
+      }
+
+      .throne {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 2.5rem;
+        padding: 2.5rem;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 27, 75, 0.6));
+        border: 2px solid rgba(251, 191, 36, 0.6);
+        border-radius: 1rem;
+        box-shadow:
+          0 0 0 1px rgba(251, 191, 36, 0.2),
+          0 0 60px rgba(251, 191, 36, 0.25),
+          0 25px 60px rgba(0, 0, 0, 0.5),
+          inset 0 0 30px rgba(251, 191, 36, 0.08);
+      }
+
+      .throne--occupied {
+        animation: throne-pulse 4s ease-in-out infinite;
+      }
+
+      @keyframes throne-pulse {
+        0%, 100% {
+          box-shadow:
+            0 0 0 1px rgba(251, 191, 36, 0.2),
+            0 0 60px rgba(251, 191, 36, 0.25),
+            0 25px 60px rgba(0, 0, 0, 0.5),
+            inset 0 0 30px rgba(251, 191, 36, 0.08);
+        }
+        50% {
+          box-shadow:
+            0 0 0 1px rgba(251, 191, 36, 0.35),
+            0 0 100px rgba(251, 191, 36, 0.4),
+            0 25px 60px rgba(0, 0, 0, 0.5),
+            inset 0 0 40px rgba(251, 191, 36, 0.15);
+        }
+      }
+
+      .throne-trophy {
+        flex-shrink: 0;
+        width: 130px;
+        height: 145px;
+        filter: drop-shadow(0 6px 18px rgba(251, 191, 36, 0.5));
+        animation: trophy-float 4s ease-in-out infinite;
+      }
+
+      @keyframes trophy-float {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-6px); }
+      }
+
+      .throne-trophy svg { width: 100%; height: 100%; }
+
+      .throne-trophy--empty {
+        filter: drop-shadow(0 4px 10px rgba(100, 116, 139, 0.4));
+        animation: empty-trophy-bob 3s ease-in-out infinite;
+      }
+
+      @keyframes empty-trophy-bob {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        25%      { transform: translateY(-3px) rotate(-2deg); }
+        75%      { transform: translateY(-3px) rotate(2deg); }
+      }
+
+      .throne-info { flex: 1; }
+
+      .throne-label {
+        display: inline-block;
+        padding: 0.35rem 0.85rem;
+        background: rgba(251, 191, 36, 0.12);
+        border: 1px solid rgba(251, 191, 36, 0.4);
+        border-radius: 999px;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: var(--c-gold);
+        margin-bottom: 1rem;
+      }
+
+      .throne-initials {
+        font-family: 'Monoton', 'JetBrains Mono', monospace;
+        font-size: clamp(3rem, 8vw, 5rem);
+        font-weight: 400;
+        line-height: 1;
+        color: var(--c-gold-light);
+        letter-spacing: 0.08em;
+        text-shadow:
+          0 0 8px var(--c-gold-glow),
+          0 0 20px rgba(251, 191, 36, 0.6);
+        margin-bottom: 1rem;
+      }
+
+      .throne-empty-title {
+        font-family: 'Monoton', 'Orbitron', system-ui, sans-serif;
+        font-size: clamp(1.75rem, 5vw, 3rem);
+        font-weight: 400;
+        color: #fff;
+        margin-bottom: 1rem;
+        letter-spacing: 0.03em;
+      }
+
+      .gold-text {
+        color: var(--c-gold-light);
+        text-shadow: 0 0 10px var(--c-gold-glow);
+      }
+
+      .throne-stats {
+        font-size: 0.95rem;
+        color: #cbd5e1;
+        line-height: 1.5;
+      }
+
+      .throne-stats strong { color: var(--c-gold-light); font-weight: 700; }
+
+      /* ============================================ */
+      /* SECTION 2: RECORD HOLDERS                     */
+      /* ============================================ */
+      .records-section {
+        position: relative;
+        z-index: 2;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 0 4rem;
+      }
+
+      .record-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+      }
+
+      .record-case {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 1.5rem 1rem;
+        background:
+          linear-gradient(180deg,
+            rgba(120, 80, 0, 0.18) 0%,
+            rgba(20, 15, 5, 0.7) 100%);
+        border: 1.5px solid rgba(251, 191, 36, 0.5);
+        border-radius: 0.75rem;
+        box-shadow:
+          0 0 16px rgba(251, 191, 36, 0.15),
+          inset 0 0 14px rgba(251, 191, 36, 0.06);
+        transition: transform 0.25s, box-shadow 0.25s;
+      }
+
+      .record-case--filled:hover {
+        transform: translateY(-3px);
+        box-shadow:
+          0 0 24px rgba(251, 191, 36, 0.35),
+          inset 0 0 16px rgba(251, 191, 36, 0.12);
+      }
+
+      .record-case--empty {
+        opacity: 0.55;
+        border-color: rgba(100, 116, 139, 0.3);
+        background: linear-gradient(180deg, rgba(20, 15, 5, 0.4) 0%, rgba(10, 8, 2, 0.7) 100%);
+      }
+
+      .record-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 0.85rem;
+        color: var(--c-gold);
+        filter: drop-shadow(0 0 6px var(--c-gold-glow));
+      }
+
+      .record-case--empty .record-icon {
+        color: #64748b;
+        filter: none;
+      }
+
+      .record-icon svg { width: 100%; height: 100%; }
+
+      .record-game-name {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+      }
+
+      .record-holder-initials {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--c-gold-light);
+        letter-spacing: 0.08em;
+        text-shadow: 0 0 8px var(--c-gold-glow);
+        line-height: 1;
+        margin-bottom: 0.4rem;
+      }
+
+      .record-holder-initials--empty {
+        color: #64748b;
+        text-shadow: none;
+      }
+
+      .record-holder-score {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #cbd5e1;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .record-holder-score--empty {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: #475569;
+      }
+
+      /* ============================================ */
+      /* SECTION 3: HONOR ROLL                         */
+      /* ============================================ */
+      .honor-section {
+        position: relative;
+        z-index: 2;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 2rem 0 4rem;
+      }
+
+      .honor-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .honor-row {
+        display: grid;
+        grid-template-columns: 3rem 1fr auto auto;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.85rem 1.25rem;
+        background:
+          linear-gradient(135deg, rgba(120, 80, 0, 0.12), rgba(20, 15, 5, 0.5));
+        border: 1px solid rgba(251, 191, 36, 0.25);
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .honor-row--gold {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(40, 25, 5, 0.6));
+        border-color: rgba(251, 191, 36, 0.6);
+        box-shadow: 0 0 18px rgba(251, 191, 36, 0.2);
+      }
+
+      .honor-row--silver {
+        background: linear-gradient(135deg, rgba(203, 213, 225, 0.12), rgba(20, 15, 5, 0.5));
+        border-color: rgba(203, 213, 225, 0.4);
+      }
+
+      .honor-row--bronze {
+        background: linear-gradient(135deg, rgba(217, 119, 6, 0.14), rgba(20, 15, 5, 0.5));
+        border-color: rgba(217, 119, 6, 0.4);
+      }
+
+      .honor-rank {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--c-gold);
+        text-align: center;
+      }
+
+      .honor-row--silver .honor-rank { color: var(--c-silver); }
+      .honor-row--bronze .honor-rank { color: var(--c-bronze); }
+      .honor-row:not(.honor-row--gold):not(.honor-row--silver):not(.honor-row--bronze) .honor-rank {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .honor-initials {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.08em;
+      }
+
+      .honor-row--gold .honor-initials {
+        color: var(--c-gold-light);
+        text-shadow: 0 0 6px var(--c-gold-glow);
+      }
+
+      .honor-games {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.45);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-family: 'Orbitron', system-ui, sans-serif;
+      }
+
+      .honor-points {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .honor-row--gold .honor-points { color: var(--c-gold-light); }
+
+      .honor-pts-label {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.18em;
+        margin-left: 0.25rem;
+      }
+
+      .honor-empty {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px dashed rgba(251, 191, 36, 0.25);
+        border-radius: 8px;
+        color: #94a3b8;
+        font-size: 0.95rem;
+      }
+
+      .honor-note {
+        margin-top: 2rem;
+        text-align: center;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        color: rgba(255, 255, 255, 0.45);
+        line-height: 1.6;
+      }
+
+      .note-icon {
+        color: var(--c-gold);
+        margin-right: 0.4rem;
+      }
+
+      /* ============================================ */
+      /* SECTION 4: ALL LEADERBOARDS (collapsible)     */
+      /* ============================================ */
+      .all-boards-section {
+        position: relative;
+        z-index: 2;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 0 0;
+      }
+
+      .all-boards {
+        border: 1px solid rgba(251, 191, 36, 0.25);
+        border-radius: 8px;
+        background: rgba(15, 23, 42, 0.4);
+        overflow: hidden;
+      }
+
+      .all-boards-summary {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1.25rem;
+        cursor: pointer;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.25em;
+        color: var(--c-gold);
+        text-shadow: 0 0 6px var(--c-gold-glow);
+        list-style: none;
+        transition: background 0.2s;
+      }
+
+      .all-boards-summary::-webkit-details-marker { display: none; }
+
+      .all-boards-summary:hover, .all-boards-summary:focus-visible {
+        background: rgba(251, 191, 36, 0.06);
+        outline: none;
+      }
+
+      .summary-arrow {
+        display: inline-block;
+        transition: transform 0.3s;
+        font-size: 0.9rem;
+      }
+
+      .all-boards[open] .summary-arrow {
+        transform: rotate(180deg);
+      }
+
+      .boards-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        padding: 1.5rem;
+      }
+
+      .board-card {
+        background: rgba(10, 14, 26, 0.7);
+        border: 1px solid rgba(96, 165, 250, 0.18);
+        border-radius: 6px;
+        padding: 1rem;
+      }
+
+      .board-game-name {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+        text-align: center;
+      }
+
+      .board-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .board-row {
+        display: grid;
+        grid-template-columns: 1.4rem 1fr auto;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        color: #cbd5e1;
+      }
+
+      .board-row--1 { color: var(--c-gold-light); font-weight: 700; }
+      .board-row--2 { color: var(--c-silver); font-weight: 600; }
+      .board-row--3 { color: var(--c-bronze); font-weight: 600; }
+
+      .board-rank { text-align: center; font-weight: 700; }
+      .board-initials { letter-spacing: 0.05em; }
+      .board-score { text-align: right; font-variant-numeric: tabular-nums; }
+
+      .board-empty {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        color: #475569;
+        text-align: center;
+        padding: 0.75rem 0;
+      }
+
+      /* ============================================ */
+      /* RESPONSIVE                                    */
+      /* ============================================ */
+      @media (max-width: 900px) {
+        .record-grid { grid-template-columns: repeat(2, 1fr); }
+        .boards-grid { grid-template-columns: repeat(2, 1fr); }
+        .throne {
+          flex-direction: column;
+          text-align: center;
+          gap: 1.5rem;
+          padding: 2rem 1.5rem;
+        }
+        .throne-trophy { width: 110px; height: 125px; }
+      }
+
+      @media (max-width: 600px) {
+        .trophies { padding: 0 1rem 4rem; }
+        .hall-marquee { padding: 4rem 0.5rem 1.5rem; }
+
+        .exit-sign, .back-to-lobby {
+          padding: 0.5rem 0.75rem;
+          font-size: 0.65rem;
+          letter-spacing: 0.18em;
+        }
+        .exit-sign { top: 0.75rem; left: 0.75rem; }
+        .back-to-lobby { top: 0.75rem; right: 0.75rem; }
+        .portal-return {
+          bottom: 0.75rem;
+          right: 0.75rem;
+          padding: 0.45rem 0.75rem;
+          font-size: 0.6rem;
+        }
+
+        .throne { padding: 1.5rem 1.25rem; }
+        .throne-trophy { width: 90px; height: 100px; }
+
+        .record-grid { gap: 0.75rem; }
+        .record-case { padding: 1.1rem 0.75rem; }
+
+        .honor-row {
+          grid-template-columns: 2.25rem 1fr auto;
+          gap: 0.6rem;
+          padding: 0.7rem 0.85rem;
+        }
+        .honor-games { display: none; }
+        .honor-points { font-size: 0.9rem; }
+
+        .boards-grid { grid-template-columns: 1fr; }
+      }
+
+      @media (min-width: 1500px) {
+        .records-section { max-width: 1400px; }
+        .all-boards-section { max-width: 1400px; }
+      }
+
+      /* ============================================ */
+      /* REDUCED MOTION                                */
+      /* ============================================ */
+      @media (prefers-reduced-motion: reduce) {
+        .marquee-title, .exit-sign, .dust, .throne, .throne-trophy,
+        .throne-trophy--empty, .portal-return-icon {
+          animation: none !important;
+        }
+      }
+    </style>
+  </body>
+</html>

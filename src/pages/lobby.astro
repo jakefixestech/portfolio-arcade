@@ -1,0 +1,883 @@
+---
+const ROOMS = [
+  {
+    name: 'Repair Bay',
+    slug: 'repair-bay',
+    tagline: 'Component Match · USB Defender',
+    color: 'blue',
+    iconKey: 'gear',
+  },
+  {
+    name: 'Crash Course',
+    slug: 'crash-course',
+    tagline: 'Whack-a-Virus · Bug Smasher · Spam Blaster',
+    color: 'red',
+    iconKey: 'virus',
+  },
+  {
+    name: 'Trophies',
+    slug: 'trophies',
+    tagline: 'Hall of Fame',
+    color: 'gold',
+    iconKey: 'trophy',
+    featured: true,
+  },
+  {
+    name: 'Speed Lab',
+    slug: 'speed-lab',
+    tagline: 'System Response · Error Override',
+    color: 'cyan',
+    iconKey: 'stopwatch',
+  },
+  {
+    name: 'Code Maze',
+    slug: 'code-maze',
+    tagline: 'Cursor Crawl',
+    color: 'matrix',
+    iconKey: 'cursor',
+  },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Lobby — Jake's Arcade</title>
+    <meta name="description" content="Welcome to Jake's Arcade. Pick a room and play." />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Monoton&family=Inter+Tight:wght@400;600;700;900&display=swap"
+    />
+  </head>
+
+  <body>
+    <main class="lobby">
+
+      <!-- ============================================ -->
+      <!-- AMBIENT BACKGROUND                            -->
+      <!-- ============================================ -->
+      <div class="ambient" aria-hidden="true">
+        <span class="dust d1"></span><span class="dust d2"></span>
+        <span class="dust d3"></span><span class="dust d4"></span>
+        <span class="dust d5"></span><span class="dust d6"></span>
+        <span class="dust d7"></span><span class="dust d8"></span>
+        <span class="dust d9"></span><span class="dust d10"></span>
+        <span class="dust d11"></span><span class="dust d12"></span>
+
+        <!-- Side ambient color washes for ultra-wide screens -->
+        <span class="side-wash side-wash-l"></span>
+        <span class="side-wash side-wash-r"></span>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- EXIT SIGN — leaves the arcade, back to main site -->
+      <!-- ============================================ -->
+      <a href="https://jakefixestech.com" class="exit-sign" aria-label="Exit the arcade and return to Jake Fixes Tech">
+        <span class="exit-arrow" aria-hidden="true">←</span>
+        <span class="exit-label">EXIT</span>
+      </a>
+
+      <!-- ============================================ -->
+      <!-- PORTAL RETURN — quiet in-world navigation     -->
+      <!-- ============================================ -->
+      <a href="/" class="portal-return" aria-label="Return to the portal">
+        <span class="portal-return-icon" aria-hidden="true">↻</span>
+        <span class="portal-return-label">PORTAL</span>
+      </a>
+
+      <!-- ============================================ -->
+      <!-- CEILING NEON SIGN                             -->
+      <!-- ============================================ -->
+      <header class="marquee">
+        <p class="marquee-eyebrow">WELCOME TO</p>
+        <h1 class="marquee-title">JAKE'S ARCADE</h1>
+        <div class="marquee-bulbs" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </header>
+
+      <!-- ============================================ -->
+      <!-- ARCADE HALL — DOORWAYS                        -->
+      <!-- ============================================ -->
+      <section class="hall" aria-label="Arcade rooms">
+        <div class="hall-floor" aria-hidden="true"></div>
+
+        <div class="doorways">
+          {ROOMS.map((room, idx) => (
+            <a
+              href={`/${room.slug}`}
+              class={`doorway doorway--${room.color} ${room.featured ? 'doorway--featured' : ''}`}
+              style={`--reveal-delay: ${0.6 + idx * 0.18}s;`}
+              aria-label={`Enter ${room.name}: ${room.tagline}`}
+            >
+              <span class="doorway-glow" aria-hidden="true"></span>
+              <span class="doorway-frame" aria-hidden="true">
+                <span class="doorway-frame-top"></span>
+              </span>
+
+              <span class="doorway-interior" aria-hidden="true">
+                <span class="doorway-light"></span>
+              </span>
+
+              <span class="doorway-sign">
+                <span class="doorway-icon" aria-hidden="true">
+                  {room.iconKey === 'gear' && (
+                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="16" cy="16" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                      <path d="M16 3 L17 7 L21 5 L22 9 L26 9 L25 13 L29 14 L27 18 L29 22 L25 23 L26 27 L22 27 L21 31 L17 29 L16 33 L15 29 L11 31 L10 27 L6 27 L7 23 L3 22 L5 18 L3 14 L7 13 L6 9 L10 9 L11 5 L15 7 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    </svg>
+                  )}
+                  {room.iconKey === 'virus' && (
+                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+                      <line x1="16" y1="3" x2="16" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="16" y1="23" x2="16" y2="29" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="3" y1="16" x2="9" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="23" y1="16" x2="29" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="6" y1="6" x2="11" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="21" y1="21" x2="26" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="26" y1="6" x2="21" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="11" y1="21" x2="6" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="16" cy="3" r="1.5" fill="currentColor"/>
+                      <circle cx="16" cy="29" r="1.5" fill="currentColor"/>
+                      <circle cx="3" cy="16" r="1.5" fill="currentColor"/>
+                      <circle cx="29" cy="16" r="1.5" fill="currentColor"/>
+                    </svg>
+                  )}
+                  {room.iconKey === 'trophy' && (
+                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M9 5 L23 5 L22 17 Q21 20 17 21 L15 21 Q11 20 10 17 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                      <path d="M9 8 Q4 8 4 13 Q4 17 9 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M23 8 Q28 8 28 13 Q28 17 23 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="14" y1="21" x2="14" y2="25" stroke="currentColor" stroke-width="2"/>
+                      <line x1="18" y1="21" x2="18" y2="25" stroke="currentColor" stroke-width="2"/>
+                      <line x1="10" y1="27" x2="22" y2="27" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                  )}
+                  {room.iconKey === 'stopwatch' && (
+                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="16" cy="18" r="11" fill="none" stroke="currentColor" stroke-width="2"/>
+                      <line x1="16" y1="18" x2="16" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="16" y1="18" x2="21" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="13" y1="3" x2="19" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="16" y1="3" x2="16" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="25" y1="6" x2="28" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  )}
+                  {room.iconKey === 'cursor' && (
+                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7 4 L7 22 L12 18 L15 26 L18 25 L15 17 L21 17 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                      <line x1="22" y1="6" x2="28" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="22" y1="11" x2="28" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="24" y1="22" x2="28" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="24" y1="27" x2="28" y2="27" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  )}
+                </span>
+                <span class="doorway-name">{room.name}</span>
+                <span class="doorway-tagline">{room.tagline}</span>
+              </span>
+
+              <span class="doorway-floor-glow" aria-hidden="true"></span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- TICKER FOOTER                                 -->
+      <!-- ============================================ -->
+      <footer class="ticker">
+        <div class="ticker-track" aria-hidden="true">
+          <span class="ticker-item">★ INSERT COIN</span>
+          <span class="ticker-item">EIGHT GAMES</span>
+          <span class="ticker-item">ONE LEADERBOARD</span>
+          <span class="ticker-item">THREE LETTERS OF GLORY</span>
+          <span class="ticker-item">BUILT IN LITTLETON, NH</span>
+          <span class="ticker-item">★ INSERT COIN</span>
+          <span class="ticker-item">EIGHT GAMES</span>
+          <span class="ticker-item">ONE LEADERBOARD</span>
+          <span class="ticker-item">THREE LETTERS OF GLORY</span>
+          <span class="ticker-item">BUILT IN LITTLETON, NH</span>
+        </div>
+      </footer>
+
+    </main>
+
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --c-bg: #050214;
+        --c-bg-2: #0a0820;
+
+        --c-blue: #3b82f6;
+        --c-blue-glow: rgba(59, 130, 246, 0.7);
+        --c-blue-soft: rgba(59, 130, 246, 0.15);
+
+        --c-red: #f97316;
+        --c-red-glow: rgba(249, 115, 22, 0.7);
+        --c-red-soft: rgba(249, 115, 22, 0.15);
+
+        --c-gold: #fbbf24;
+        --c-gold-glow: rgba(251, 191, 36, 0.8);
+        --c-gold-soft: rgba(251, 191, 36, 0.18);
+
+        --c-cyan: #22d3ee;
+        --c-cyan-glow: rgba(34, 211, 238, 0.7);
+        --c-cyan-soft: rgba(34, 211, 238, 0.15);
+
+        --c-matrix: #4ade80;
+        --c-matrix-glow: rgba(74, 222, 128, 0.7);
+        --c-matrix-soft: rgba(74, 222, 128, 0.15);
+      }
+
+      html, body {
+        background: var(--c-bg);
+        color: #fff;
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100vh;
+      }
+
+      body { overflow-x: hidden; }
+
+      .lobby {
+        position: relative;
+        min-height: 100vh;
+        padding-bottom: 4rem;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(168, 85, 247, 0.18) 0%, transparent 60%),
+          radial-gradient(ellipse at 50% 80%, rgba(34, 211, 238, 0.1) 0%, transparent 50%),
+          linear-gradient(180deg, #0a0820 0%, #050214 60%, #000 100%);
+      }
+
+      /* ============================================ */
+      /* AMBIENT — dust motes & side washes            */
+      /* ============================================ */
+      .ambient {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      .dust {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        box-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+        animation: dust-drift 18s linear infinite;
+      }
+
+      .d1  { left:  6%; top: 100%; animation-delay:  0s;   }
+      .d2  { left: 14%; top: 100%; animation-delay:  3s;   }
+      .d3  { left: 22%; top: 100%; animation-delay:  6s;   }
+      .d4  { left: 31%; top: 100%; animation-delay:  9s;   }
+      .d5  { left: 42%; top: 100%; animation-delay: 12s;   }
+      .d6  { left: 53%; top: 100%; animation-delay: 15s;   }
+      .d7  { left: 64%; top: 100%; animation-delay:  1.5s; }
+      .d8  { left: 73%; top: 100%; animation-delay:  4.5s; }
+      .d9  { left: 82%; top: 100%; animation-delay:  7.5s; }
+      .d10 { left: 91%; top: 100%; animation-delay: 10.5s; }
+      .d11 { left: 38%; top: 100%; animation-delay: 13.5s; }
+      .d12 { left: 67%; top: 100%; animation-delay: 16.5s; }
+
+      @keyframes dust-drift {
+        0%   { transform: translateY(0) translateX(0); opacity: 0; }
+        10%  { opacity: 0.6; }
+        90%  { opacity: 0.6; }
+        100% { transform: translateY(-110vh) translateX(20px); opacity: 0; }
+      }
+
+      /* Side ambient washes for ultra-wide screens */
+      .side-wash {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 35vw;
+        max-width: 800px;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(168, 85, 247, 0.08) 0%,
+          transparent 70%
+        );
+        opacity: 0;
+        transition: opacity 0.6s;
+      }
+
+      .side-wash-l { left: 0; }
+      .side-wash-r { right: 0; }
+
+      @media (min-width: 1500px) {
+        .side-wash { opacity: 1; }
+        .side-wash-r {
+          background: radial-gradient(
+            ellipse at center,
+            rgba(34, 211, 238, 0.08) 0%,
+            transparent 70%
+          );
+        }
+      }
+
+      /* ============================================ */
+      /* EXIT SIGN                                     */
+      /* ============================================ */
+      .exit-sign {
+        position: fixed;
+        top: 1.25rem;
+        left: 1.25rem;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.65rem 1.1rem;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid #22c55e;
+        border-radius: 4px;
+        color: #4ade80;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.25em;
+        text-decoration: none;
+        text-shadow:
+          0 0 6px rgba(74, 222, 128, 0.9),
+          0 0 14px rgba(74, 222, 128, 0.5);
+        box-shadow:
+          0 0 0 1px rgba(74, 222, 128, 0.2),
+          0 0 18px rgba(74, 222, 128, 0.45),
+          inset 0 0 12px rgba(74, 222, 128, 0.18);
+        transition: transform 0.2s, box-shadow 0.2s;
+        animation: exit-flicker 6s steps(60) infinite;
+      }
+
+      .exit-arrow {
+        font-size: 1rem;
+        font-weight: 800;
+      }
+
+      .exit-sign:hover,
+      .exit-sign:focus-visible {
+        transform: translateY(-2px);
+        box-shadow:
+          0 0 0 1px rgba(74, 222, 128, 0.4),
+          0 0 30px rgba(74, 222, 128, 0.7),
+          inset 0 0 16px rgba(74, 222, 128, 0.3);
+        outline: none;
+      }
+
+      @keyframes exit-flicker {
+        0%, 100%       { opacity: 1; }
+        96%, 96.5%     { opacity: 0.4; }
+        97%, 97.4%     { opacity: 1; }
+        97.5%, 97.8%   { opacity: 0.5; }
+        98%            { opacity: 1; }
+      }
+
+      /* ============================================ */
+      /* PORTAL RETURN — quiet bottom-right link       */
+      /* ============================================ */
+      .portal-return {
+        position: fixed;
+        bottom: 1.25rem;
+        right: 1.25rem;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.95rem;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 999px;
+        color: rgba(196, 181, 253, 0.85);
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-decoration: none;
+        text-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+        transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+        opacity: 0;
+        animation: marquee-on 1s ease-out 1.4s forwards;
+      }
+
+      .portal-return-icon {
+        font-size: 0.85rem;
+        display: inline-block;
+        animation: portal-return-spin 6s linear infinite;
+      }
+
+      @keyframes portal-return-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      .portal-return:hover,
+      .portal-return:focus-visible {
+        color: #fff;
+        border-color: rgba(168, 85, 247, 0.8);
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        transform: translateY(-2px);
+        outline: none;
+      }
+
+      /* ============================================ */
+      /* CEILING MARQUEE                               */
+      /* ============================================ */
+      .marquee {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        padding: 5rem 1.5rem 3rem;
+        max-width: 1100px;
+        margin: 0 auto;
+        opacity: 0;
+        animation: marquee-on 1s ease-out 0.2s forwards;
+      }
+
+      @keyframes marquee-on {
+        from { opacity: 0; transform: translateY(-12px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .marquee-eyebrow {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.45em;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 1rem;
+      }
+
+      .marquee-title {
+        font-family: 'Monoton', 'Orbitron', system-ui, sans-serif;
+        font-size: clamp(3rem, 11vw, 7.5rem);
+        font-weight: 400;
+        line-height: 1;
+        letter-spacing: 0.04em;
+        color: #fde68a;
+        text-shadow:
+          0 0 6px rgba(251, 191, 36, 1),
+          0 0 14px rgba(251, 191, 36, 0.9),
+          0 0 28px rgba(251, 191, 36, 0.7),
+          0 0 56px rgba(251, 113, 133, 0.6),
+          0 0 90px rgba(251, 113, 133, 0.4);
+        animation: marquee-flicker 8s steps(80) infinite;
+      }
+
+      @keyframes marquee-flicker {
+        0%, 100%       { opacity: 1; }
+        45%, 45.4%     { opacity: 0.6; }
+        45.6%, 46%     { opacity: 1; }
+        78%, 78.3%     { opacity: 0.45; }
+        78.6%, 79%     { opacity: 1; }
+        79.3%, 79.6%   { opacity: 0.7; }
+        79.9%          { opacity: 1; }
+      }
+
+      .marquee-bulbs {
+        display: flex;
+        justify-content: center;
+        gap: 0.65rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .marquee-bulbs span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #fbbf24;
+        box-shadow:
+          0 0 6px #fbbf24,
+          0 0 12px rgba(251, 191, 36, 0.7);
+        animation: bulb-blink 1.6s ease-in-out infinite;
+      }
+
+      .marquee-bulbs span:nth-child(2n)  { animation-delay: 0.2s; }
+      .marquee-bulbs span:nth-child(3n)  { animation-delay: 0.4s; }
+      .marquee-bulbs span:nth-child(5n)  { animation-delay: 0.6s; }
+      .marquee-bulbs span:nth-child(7n)  { animation-delay: 0.8s; }
+      .marquee-bulbs span:nth-child(11n) { animation-delay: 1s; }
+
+      @keyframes bulb-blink {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%      { opacity: 0.4; transform: scale(0.85); }
+      }
+
+      /* ============================================ */
+      /* THE HALL                                      */
+      /* ============================================ */
+      .hall {
+        position: relative;
+        z-index: 2;
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 3rem;
+      }
+
+      .hall-floor {
+        position: absolute;
+        bottom: -3rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(95%, 1700px);
+        height: 35vh;
+        max-height: 380px;
+        background:
+          linear-gradient(180deg,
+            transparent 0%,
+            rgba(168, 85, 247, 0.04) 30%,
+            rgba(168, 85, 247, 0.08) 60%,
+            rgba(168, 85, 247, 0.05) 100%);
+        border-top: 1px solid rgba(168, 85, 247, 0.15);
+        pointer-events: none;
+      }
+
+      .doorways {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1.5rem;
+        align-items: end;
+      }
+
+      /* ============================================ */
+      /* DOORWAY (each room)                           */
+      /* ============================================ */
+      .doorway {
+        position: relative;
+        display: block;
+        text-decoration: none;
+        color: #fff;
+        opacity: 0;
+        animation: doorway-on 0.8s ease-out var(--reveal-delay, 0.6s) forwards;
+        transition: transform 0.3s;
+      }
+
+      @keyframes doorway-on {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .doorway:hover,
+      .doorway:focus-visible {
+        transform: translateY(-6px);
+        outline: none;
+      }
+
+      /* Color palette via the room's color */
+      .doorway--blue   { --rc: var(--c-blue);   --rc-glow: var(--c-blue-glow);   --rc-soft: var(--c-blue-soft); }
+      .doorway--red    { --rc: var(--c-red);    --rc-glow: var(--c-red-glow);    --rc-soft: var(--c-red-soft); }
+      .doorway--gold   { --rc: var(--c-gold);   --rc-glow: var(--c-gold-glow);   --rc-soft: var(--c-gold-soft); }
+      .doorway--cyan   { --rc: var(--c-cyan);   --rc-glow: var(--c-cyan-glow);   --rc-soft: var(--c-cyan-soft); }
+      .doorway--matrix { --rc: var(--c-matrix); --rc-glow: var(--c-matrix-glow); --rc-soft: var(--c-matrix-soft); }
+
+      /* The frame around the doorway */
+      .doorway-frame {
+        position: absolute;
+        inset: 0;
+        border: 2px solid var(--rc);
+        border-bottom: 0;
+        border-radius: 12px 12px 0 0;
+        box-shadow:
+          0 0 14px var(--rc-glow),
+          inset 0 0 14px var(--rc-soft);
+        pointer-events: none;
+      }
+
+      .doorway-frame-top {
+        position: absolute;
+        top: -7px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 14px;
+        height: 14px;
+        background: var(--rc);
+        border-radius: 50%;
+        box-shadow:
+          0 0 10px var(--rc-glow),
+          0 0 20px var(--rc-glow);
+      }
+
+      .doorway-glow {
+        position: absolute;
+        inset: -20%;
+        background: radial-gradient(ellipse at 50% 70%, var(--rc-soft) 0%, transparent 60%);
+        pointer-events: none;
+        opacity: 0.6;
+        transition: opacity 0.3s, transform 0.3s;
+      }
+
+      .doorway:hover .doorway-glow,
+      .doorway:focus-visible .doorway-glow {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+
+      /* The "interior" gives a sense of depth into the room */
+      .doorway-interior {
+        display: block;
+        height: clamp(180px, 28vh, 260px);
+        background:
+          linear-gradient(180deg,
+            color-mix(in srgb, var(--rc) 25%, #000) 0%,
+            color-mix(in srgb, var(--rc) 5%, #000) 60%,
+            #000 100%);
+        border-radius: 10px 10px 0 0;
+        margin: 8px 8px 0 8px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .doorway-light {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 100%, var(--rc-soft) 0%, transparent 70%);
+      }
+
+      /* The neon sign attached above each doorway */
+      .doorway-sign {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 1rem 0.75rem 1.25rem;
+        text-align: center;
+        background:
+          linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.85) 100%);
+        border-top: 2px solid var(--rc);
+        border-left: 2px solid var(--rc);
+        border-right: 2px solid var(--rc);
+        border-radius: 0 0 12px 12px;
+        box-shadow:
+          0 0 18px var(--rc-glow),
+          inset 0 0 12px var(--rc-soft);
+        z-index: 2;
+      }
+
+      .doorway-icon {
+        width: 36px;
+        height: 36px;
+        color: var(--rc);
+        filter: drop-shadow(0 0 6px var(--rc-glow));
+      }
+
+      .doorway-icon svg { width: 100%; height: 100%; }
+
+      .doorway-name {
+        font-family: 'Monoton', 'Orbitron', system-ui, sans-serif;
+        font-weight: 400;
+        font-size: clamp(0.95rem, 1.4vw, 1.4rem);
+        letter-spacing: 0.06em;
+        color: var(--rc);
+        text-shadow:
+          0 0 6px var(--rc-glow),
+          0 0 14px var(--rc-glow);
+        white-space: nowrap;
+      }
+
+      .doorway-tagline {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-weight: 600;
+        font-size: clamp(0.55rem, 0.7vw, 0.7rem);
+        letter-spacing: 0.18em;
+        color: rgba(255, 255, 255, 0.6);
+        text-transform: uppercase;
+      }
+
+      .doorway-floor-glow {
+        position: absolute;
+        bottom: -2.5rem;
+        left: 10%;
+        right: 10%;
+        height: 60px;
+        background: radial-gradient(ellipse at center top, var(--rc-glow) 0%, transparent 70%);
+        opacity: 0.5;
+        pointer-events: none;
+        filter: blur(8px);
+      }
+
+      /* The featured (Trophies) doorway is taller and centered */
+      .doorway--featured {
+        transform: translateY(-20px);
+      }
+
+      .doorway--featured .doorway-interior {
+        height: clamp(220px, 34vh, 320px);
+      }
+
+      .doorway--featured .doorway-name {
+        font-size: clamp(1.1rem, 1.6vw, 1.6rem);
+      }
+
+      .doorway--featured:hover,
+      .doorway--featured:focus-visible {
+        transform: translateY(-26px);
+      }
+
+      /* ============================================ */
+      /* MARQUEE TICKER FOOTER                         */
+      /* ============================================ */
+      .ticker {
+        position: relative;
+        z-index: 2;
+        margin-top: 4rem;
+        padding: 0.75rem 0;
+        border-top: 1px solid rgba(251, 191, 36, 0.25);
+        border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+        background: rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        opacity: 0;
+        animation: marquee-on 1s ease-out 1.6s forwards;
+      }
+
+      .ticker-track {
+        display: flex;
+        gap: 3rem;
+        white-space: nowrap;
+        animation: ticker-scroll 40s linear infinite;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        letter-spacing: 0.25em;
+        color: #fbbf24;
+        text-shadow: 0 0 8px rgba(251, 191, 36, 0.7);
+      }
+
+      .ticker-item {
+        flex-shrink: 0;
+      }
+
+      @keyframes ticker-scroll {
+        from { transform: translateX(0); }
+        to   { transform: translateX(-50%); }
+      }
+
+      /* ============================================ */
+      /* RESPONSIVE — Mobile first stacked             */
+      /* ============================================ */
+      @media (max-width: 900px) {
+        .doorways {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.25rem;
+        }
+        .doorway--featured {
+          grid-column: span 2;
+          transform: translateY(0);
+        }
+        .doorway--featured:hover,
+        .doorway--featured:focus-visible {
+          transform: translateY(-6px);
+        }
+      }
+
+      @media (max-width: 600px) {
+        .marquee { padding: 4rem 1rem 2rem; }
+        .marquee-bulbs { gap: 0.4rem; }
+        .marquee-bulbs span { width: 8px; height: 8px; }
+
+        .hall { padding: 1rem 1rem 2rem; }
+        .doorways {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+        .doorway--featured {
+          grid-column: span 1;
+        }
+
+        .doorway-interior {
+          height: 110px;
+        }
+        .doorway--featured .doorway-interior {
+          height: 130px;
+        }
+        .doorway-icon {
+          width: 28px;
+          height: 28px;
+        }
+        .doorway-sign {
+          padding: 0.75rem 0.5rem 0.9rem;
+        }
+        .doorway-name { font-size: 1rem; }
+        .doorway-tagline { font-size: 0.55rem; }
+
+        .exit-sign {
+          top: 0.75rem;
+          left: 0.75rem;
+          padding: 0.5rem 0.85rem;
+          font-size: 0.7rem;
+        }
+
+        .portal-return {
+          bottom: 0.75rem;
+          right: 0.75rem;
+          padding: 0.45rem 0.75rem;
+          font-size: 0.6rem;
+          letter-spacing: 0.18em;
+        }
+
+        .ticker-track {
+          font-size: 0.7rem;
+          gap: 2rem;
+        }
+      }
+
+      /* ============================================ */
+      /* WIDE / ULTRAWIDE                              */
+      /* ============================================ */
+      @media (min-width: 1400px) {
+        .hall { max-width: 1700px; padding: 3rem 2rem 4rem; }
+        .doorways { gap: 2rem; }
+        .doorway-interior { height: clamp(220px, 32vh, 320px); }
+        .doorway--featured .doorway-interior { height: clamp(280px, 40vh, 380px); }
+      }
+
+      @media (min-width: 1900px) {
+        .hall { max-width: 1800px; }
+        .marquee { max-width: 1300px; padding-top: 6rem; }
+      }
+
+      /* ============================================ */
+      /* REDUCED MOTION                                */
+      /* ============================================ */
+      @media (prefers-reduced-motion: reduce) {
+        .marquee-title,
+        .exit-sign,
+        .marquee-bulbs span,
+        .dust,
+        .ticker-track,
+        .portal-return-icon {
+          animation: none !important;
+        }
+        .marquee, .doorway, .ticker, .portal-return {
+          opacity: 1;
+          animation: none;
+          transform: none;
+        }
+      }
+    </style>
+  </body>
+</html>

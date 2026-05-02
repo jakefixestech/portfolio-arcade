@@ -27,18 +27,18 @@
     <link
       rel="preload"
       as="style"
-      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=optional"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Monoton&display=optional"
     />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=optional"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Monoton&display=optional"
       media="print"
       onload="this.media='all'"
     />
     <noscript>
       <link
         rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Monoton&display=swap"
       />
     </noscript>
   </head>
@@ -46,12 +46,17 @@
   <body>
     <main class="page">
 
-      <button id="exit-btn" type="button" class="exit-btn" aria-label="Exit to arcade">
+      <button id="exit-btn" type="button" class="exit-btn" aria-label="Back to Repair Bay">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M 9 6 L 4 12 L 9 18 M 4 12 L 19 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-        <span class="exit-btn-label">EXIT</span>
+        <span class="exit-btn-label">REPAIR BAY</span>
       </button>
+
+      <a href="/" class="portal-return" aria-label="Return to the portal">
+        <span class="portal-return-icon" aria-hidden="true">↻</span>
+        <span class="portal-return-label">PORTAL</span>
+      </a>
 
       <div class="sparkles" aria-hidden="true">
         {Array.from({ length: 18 }).map((_, i) => (
@@ -60,164 +65,233 @@
       </div>
 
       <section class="game-section">
-        <div class="game-wrap">
-          <div class="game-header" aria-hidden="true">
-            <div class="game-dots">
-              <span class="dot dot-red"></span>
-              <span class="dot dot-yellow"></span>
-              <span class="dot dot-green"></span>
+
+        <!-- ARCADE CABINET WRAPPER (desktop only via CSS) -->
+        <div class="cabinet-shell">
+
+          <!-- Cabinet marquee (top sign) -->
+          <div class="shell-marquee" aria-hidden="true">
+            <div class="shell-marquee-bulbs">
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span>
             </div>
-            <div class="game-title">jake@arcade: ~/component-match</div>
+            <p class="shell-marquee-title">COMPONENT MATCH</p>
           </div>
 
-          <div class="game-body">
+          <!-- Cabinet body wraps the screen + controls + coin -->
+          <div class="cabinet-body">
 
-            <!-- INTRO -->
-            <div id="state-intro" class="state state--active">
-              <div class="intro-icon" aria-hidden="true">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="8" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
-                  <rect x="44" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
-                  <rect x="14" y="22" width="16" height="22" rx="1" fill="#1e40af" />
-                  <rect x="50" y="22" width="16" height="22" rx="1" fill="#1e40af" />
-                  <rect x="17" y="26" width="10" height="3" fill="#fbbf24" />
-                  <rect x="17" y="32" width="10" height="3" fill="#fbbf24" />
-                  <rect x="17" y="38" width="6" height="3" fill="#fbbf24" />
-                  <rect x="53" y="26" width="10" height="3" fill="#fbbf24" />
-                  <rect x="53" y="32" width="10" height="3" fill="#fbbf24" />
-                  <rect x="53" y="38" width="6" height="3" fill="#fbbf24" />
-                  <line x1="36" y1="58" x2="44" y2="58" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
-                  <line x1="36" y1="64" x2="44" y2="64" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
-                </svg>
+            <!-- Side art panels -->
+            <div class="shell-side shell-side-l" aria-hidden="true">
+              <div class="shell-side-art">
+                <span class="side-decor side-d1"></span>
+                <span class="side-decor side-d2"></span>
+                <span class="side-decor side-d3"></span>
               </div>
-
-              <h1 class="intro-title">Component Match</h1>
-              <p class="intro-text">
-                Match all 6 pairs of <strong class="green-strong">motherboard parts</strong>.
-              </p>
-              <p class="intro-hint">
-                <strong>90 seconds.</strong> Faster finish = higher score. Mismatches don't cost points, just time.
-              </p>
-
-              <button id="start-btn" class="primary-btn" type="button">
-                <span>PLAY</span>
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M 7 5 L 7 19 L 19 12 Z" fill="currentColor" />
-                </svg>
-              </button>
             </div>
-
-            <!-- PLAYING -->
-            <div id="state-playing" class="state">
-              <div class="hud">
-                <div class="hud-item">
-                  <span class="hud-label">TIME</span>
-                  <span class="hud-value" id="time-display">90.0s</span>
-                </div>
-                <div class="hud-item">
-                  <span class="hud-label">MATCHED</span>
-                  <span class="hud-value" id="matched-display">0/6</span>
-                </div>
-                <div class="hud-item">
-                  <span class="hud-label">FLIPS</span>
-                  <span class="hud-value" id="flips-display">0</span>
-                </div>
-              </div>
-
-              <div id="card-grid" class="card-grid" role="grid" aria-label="Memory matching grid"></div>
-            </div>
-
-            <!-- RESULT -->
-            <div id="state-result" class="state">
-              <div class="result-icon" id="result-icon" aria-hidden="true">
-                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="40" cy="40" r="36" fill="#10b981" />
-                  <path d="M 22 40 L 36 54 L 58 28" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </div>
-
-              <h2 class="result-title" id="result-title">All matched!</h2>
-              <p class="result-text">
-                Time: <strong id="result-time">0.0</strong>s<br>
-                Flips: <strong id="result-flips">0</strong><br>
-                Final score: <strong id="result-score">0</strong>
-              </p>
-
-              <div class="initials-section">
-                <p class="initials-label">ENTER YOUR INITIALS</p>
-                <div class="initials-inputs" role="group" aria-label="Three letter initials">
-                  <input type="text" class="initial-box" id="init-1" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="First letter" />
-                  <input type="text" class="initial-box" id="init-2" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Second letter" />
-                  <input type="text" class="initial-box" id="init-3" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Third letter" />
-                </div>
-
-                <p class="initials-error" id="initials-error" aria-live="polite"></p>
-
-                <button id="submit-btn" class="primary-btn" type="button" disabled>
-                  <span id="submit-btn-text">SUBMIT SCORE</span>
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M 5 12 L 19 12 M 13 6 L 19 12 L 13 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </button>
-
-                <button id="skip-btn" class="ghost-btn" type="button">Skip — don't save my score</button>
+            <div class="shell-side shell-side-r" aria-hidden="true">
+              <div class="shell-side-art">
+                <span class="side-decor side-d1"></span>
+                <span class="side-decor side-d2"></span>
+                <span class="side-decor side-d3"></span>
               </div>
             </div>
 
-            <!-- LEADERBOARD -->
-            <div id="state-leaderboard" class="state">
-              <div id="rank-reveal" class="rank-reveal">
-                <p class="rank-eyebrow" id="rank-eyebrow">YOU RANKED</p>
-                <p class="rank-number" id="rank-number">#1</p>
-                <p class="rank-detail" id="rank-detail">on the leaderboard</p>
-              </div>
+            <!-- Screen bezel — wraps the existing game-wrap exactly -->
+            <div class="shell-bezel">
 
-              <div class="leaderboard-wrap">
-                <p class="leaderboard-title">TOP 10 — COMPONENT MATCH</p>
-                <ol id="leaderboard-list" class="leaderboard"></ol>
-              </div>
-
-              <div class="share-section">
-                <p class="share-eyebrow">SHARE YOUR SCORE</p>
-                <div class="share-buttons">
-                  <a id="share-fb" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to Facebook">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <path d="M 12 2 C 6.477 2 2 6.477 2 12 C 2 17 5.66 21.13 10.44 21.88 L 10.44 14.89 L 7.9 14.89 L 7.9 12 L 10.44 12 L 10.44 9.8 C 10.44 7.29 11.93 5.91 14.22 5.91 C 15.31 5.91 16.45 6.1 16.45 6.1 L 16.45 8.56 L 15.19 8.56 C 13.95 8.56 13.56 9.33 13.56 10.12 L 13.56 12 L 16.34 12 L 15.89 14.89 L 13.56 14.89 L 13.56 21.88 C 18.34 21.13 22 17 22 12 C 22 6.477 17.523 2 12 2 Z" fill="currentColor" />
-                    </svg>
-                  </a>
-                  <a id="share-x" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to X">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <path d="M 18.244 2.25 L 21.552 2.25 L 14.325 10.51 L 22.827 21.75 L 16.17 21.75 L 10.956 14.933 L 4.99 21.75 L 1.68 21.75 L 9.41 12.915 L 1.254 2.25 L 8.08 2.25 L 12.793 8.481 L 18.244 2.25 Z M 17.083 19.77 L 18.916 19.77 L 7.084 4.126 L 5.117 4.126 L 17.083 19.77 Z" fill="currentColor" />
-                    </svg>
-                  </a>
-                  <button id="share-native" type="button" class="share-btn" aria-label="Share via system share menu" style="display:none">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <path d="M 12 3 L 12 16 M 7 8 L 12 3 L 17 8 M 4 14 L 4 20 a 1 1 0 0 0 1 1 L 19 21 a 1 1 0 0 0 1 -1 L 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </button>
-                  <button id="share-copy" type="button" class="share-btn" aria-label="Copy link to clipboard">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <rect x="8" y="8" width="13" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2" />
-                      <path d="M 5 15 L 4 15 a 1 1 0 0 1 -1 -1 L 3 4 a 1 1 0 0 1 1 -1 L 14 3 a 1 1 0 0 1 1 1 L 15 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                    </svg>
-                  </button>
+              <!-- ============================== -->
+              <!-- ORIGINAL GAME — UNTOUCHED       -->
+              <!-- ============================== -->
+              <div class="game-wrap">
+                <div class="game-header" aria-hidden="true">
+                  <div class="game-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                  </div>
+                  <div class="game-title">jake@arcade: ~/component-match</div>
                 </div>
-                <p class="copy-toast" id="copy-toast" aria-live="polite">Link copied!</p>
-              </div>
 
-              <div class="action-buttons">
-                <button id="play-again-btn" type="button" class="primary-btn">
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M 4 12 a 8 8 0 1 1 2.5 5.7 M 4 12 V 6 M 4 12 H 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  <span>PLAY AGAIN</span>
-                </button>
-                <a href="/" class="ghost-btn ghost-btn--link">← Back to Arcade</a>
+                <div class="game-body">
+
+                  <div id="state-intro" class="state state--active">
+                    <div class="intro-icon" aria-hidden="true">
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="8" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
+                        <rect x="44" y="14" width="28" height="38" rx="3" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2" />
+                        <rect x="14" y="22" width="16" height="22" rx="1" fill="#1e40af" />
+                        <rect x="50" y="22" width="16" height="22" rx="1" fill="#1e40af" />
+                        <rect x="17" y="26" width="10" height="3" fill="#fbbf24" />
+                        <rect x="17" y="32" width="10" height="3" fill="#fbbf24" />
+                        <rect x="17" y="38" width="6" height="3" fill="#fbbf24" />
+                        <rect x="53" y="26" width="10" height="3" fill="#fbbf24" />
+                        <rect x="53" y="32" width="10" height="3" fill="#fbbf24" />
+                        <rect x="53" y="38" width="6" height="3" fill="#fbbf24" />
+                        <line x1="36" y1="58" x2="44" y2="58" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
+                        <line x1="36" y1="64" x2="44" y2="64" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
+                      </svg>
+                    </div>
+
+                    <h1 class="intro-title">Component Match</h1>
+                    <p class="intro-text">
+                      Match all 6 pairs of <strong class="green-strong">motherboard parts</strong>.
+                    </p>
+                    <p class="intro-hint">
+                      <strong>90 seconds.</strong> Faster finish = higher score. Mismatches don't cost points, just time.
+                    </p>
+
+                    <button id="start-btn" class="primary-btn" type="button">
+                      <span>PLAY</span>
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M 7 5 L 7 19 L 19 12 Z" fill="currentColor" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div id="state-playing" class="state">
+                    <div class="hud">
+                      <div class="hud-item">
+                        <span class="hud-label">TIME</span>
+                        <span class="hud-value" id="time-display">90.0s</span>
+                      </div>
+                      <div class="hud-item">
+                        <span class="hud-label">MATCHED</span>
+                        <span class="hud-value" id="matched-display">0/6</span>
+                      </div>
+                      <div class="hud-item">
+                        <span class="hud-label">FLIPS</span>
+                        <span class="hud-value" id="flips-display">0</span>
+                      </div>
+                    </div>
+
+                    <div id="card-grid" class="card-grid" role="grid" aria-label="Memory matching grid"></div>
+                  </div>
+
+                  <div id="state-result" class="state">
+                    <div class="result-icon" id="result-icon" aria-hidden="true">
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="40" cy="40" r="36" fill="#10b981" />
+                        <path d="M 22 40 L 36 54 L 58 28" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </div>
+
+                    <h2 class="result-title" id="result-title">All matched!</h2>
+                    <p class="result-text">
+                      Time: <strong id="result-time">0.0</strong>s<br>
+                      Flips: <strong id="result-flips">0</strong><br>
+                      Final score: <strong id="result-score">0</strong>
+                    </p>
+
+                    <div class="initials-section">
+                      <p class="initials-label">ENTER YOUR INITIALS</p>
+                      <div class="initials-inputs" role="group" aria-label="Three letter initials">
+                        <input type="text" class="initial-box" id="init-1" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="First letter" />
+                        <input type="text" class="initial-box" id="init-2" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Second letter" />
+                        <input type="text" class="initial-box" id="init-3" maxlength="1" autocomplete="off" inputmode="text" pattern="[A-Za-z]" aria-label="Third letter" />
+                      </div>
+
+                      <p class="initials-error" id="initials-error" aria-live="polite"></p>
+
+                      <button id="submit-btn" class="primary-btn" type="button" disabled>
+                        <span id="submit-btn-text">SUBMIT SCORE</span>
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M 5 12 L 19 12 M 13 6 L 19 12 L 13 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                      </button>
+
+                      <button id="skip-btn" class="ghost-btn" type="button">Skip — don't save my score</button>
+                    </div>
+                  </div>
+
+                  <div id="state-leaderboard" class="state">
+                    <div id="rank-reveal" class="rank-reveal">
+                      <p class="rank-eyebrow" id="rank-eyebrow">YOU RANKED</p>
+                      <p class="rank-number" id="rank-number">#1</p>
+                      <p class="rank-detail" id="rank-detail">on the leaderboard</p>
+                    </div>
+
+                    <div class="leaderboard-wrap">
+                      <p class="leaderboard-title">TOP 10 — COMPONENT MATCH</p>
+                      <ol id="leaderboard-list" class="leaderboard"></ol>
+                    </div>
+
+                    <div class="share-section">
+                      <p class="share-eyebrow">SHARE YOUR SCORE</p>
+                      <div class="share-buttons">
+                        <a id="share-fb" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to Facebook">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M 12 2 C 6.477 2 2 6.477 2 12 C 2 17 5.66 21.13 10.44 21.88 L 10.44 14.89 L 7.9 14.89 L 7.9 12 L 10.44 12 L 10.44 9.8 C 10.44 7.29 11.93 5.91 14.22 5.91 C 15.31 5.91 16.45 6.1 16.45 6.1 L 16.45 8.56 L 15.19 8.56 C 13.95 8.56 13.56 9.33 13.56 10.12 L 13.56 12 L 16.34 12 L 15.89 14.89 L 13.56 14.89 L 13.56 21.88 C 18.34 21.13 22 17 22 12 C 22 6.477 17.523 2 12 2 Z" fill="currentColor" />
+                          </svg>
+                        </a>
+                        <a id="share-x" href="#" target="_blank" rel="noopener" class="share-btn" aria-label="Share to X">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M 18.244 2.25 L 21.552 2.25 L 14.325 10.51 L 22.827 21.75 L 16.17 21.75 L 10.956 14.933 L 4.99 21.75 L 1.68 21.75 L 9.41 12.915 L 1.254 2.25 L 8.08 2.25 L 12.793 8.481 L 18.244 2.25 Z M 17.083 19.77 L 18.916 19.77 L 7.084 4.126 L 5.117 4.126 L 17.083 19.77 Z" fill="currentColor" />
+                          </svg>
+                        </a>
+                        <button id="share-native" type="button" class="share-btn" aria-label="Share via system share menu" style="display:none">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M 12 3 L 12 16 M 7 8 L 12 3 L 17 8 M 4 14 L 4 20 a 1 1 0 0 0 1 1 L 19 21 a 1 1 0 0 0 1 -1 L 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                          </svg>
+                        </button>
+                        <button id="share-copy" type="button" class="share-btn" aria-label="Copy link to clipboard">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect x="8" y="8" width="13" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2" />
+                            <path d="M 5 15 L 4 15 a 1 1 0 0 1 -1 -1 L 3 4 a 1 1 0 0 1 1 -1 L 14 3 a 1 1 0 0 1 1 1 L 15 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                          </svg>
+                        </button>
+                      </div>
+                      <p class="copy-toast" id="copy-toast" aria-live="polite">Link copied!</p>
+                    </div>
+
+                    <div class="action-buttons">
+                      <button id="play-again-btn" type="button" class="primary-btn">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M 4 12 a 8 8 0 1 1 2.5 5.7 M 4 12 V 6 M 4 12 H 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span>PLAY AGAIN</span>
+                      </button>
+                      <a href="/repair-bay" class="ghost-btn ghost-btn--link">← Back to Repair Bay</a>
+                    </div>
+                  </div>
+
+                </div>
               </div>
+              <!-- ============================== -->
+              <!-- END ORIGINAL GAME               -->
+              <!-- ============================== -->
+
+            </div>
+
+            <!-- Cabinet control panel (decorative, below screen on desktop) -->
+            <div class="shell-controls" aria-hidden="true">
+              <span class="shell-joystick">
+                <span class="shell-joystick-base"></span>
+                <span class="shell-joystick-stick"></span>
+                <span class="shell-joystick-ball"></span>
+              </span>
+              <span class="shell-buttons">
+                <span class="shell-btn shell-btn-red"></span>
+                <span class="shell-btn shell-btn-yellow"></span>
+                <span class="shell-btn shell-btn-green"></span>
+                <span class="shell-btn shell-btn-blue"></span>
+              </span>
+            </div>
+
+            <!-- Coin slot base -->
+            <div class="shell-coin" aria-hidden="true">
+              <span class="shell-coin-slot"></span>
+              <span class="shell-coin-label">25¢ INSERT COIN</span>
             </div>
 
           </div>
+
+          <!-- Cabinet floor shadow -->
+          <span class="shell-floor-shadow" aria-hidden="true"></span>
+
         </div>
+
       </section>
 
       <div id="exit-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="exit-dialog-title" hidden>
@@ -237,13 +311,13 @@
       // @ts-nocheck
 
       // === Config ===
-      const TIME_LIMIT_MS = 90000; // 90 seconds
+      const TIME_LIMIT_MS = 90000;
       const PAIRS = 6;
-      const FLIP_BACK_DELAY = 800; // ms cards stay revealed on mismatch
+      const FLIP_BACK_DELAY = 800;
       const GAME_SLUG = 'component-match';
       const GAME_NAME = 'Component Match';
+      const EXIT_TO = '/repair-bay';
 
-      // The 6 component types. Each has a key (used for matching) and SVG markup.
       const COMPONENTS = [
         {
           key: 'cpu',
@@ -366,7 +440,6 @@
         },
       ];
 
-      // === DOM refs ===
       const stateIntro = document.getElementById('state-intro');
       const statePlaying = document.getElementById('state-playing');
       const stateResult = document.getElementById('state-result');
@@ -405,9 +478,8 @@
       const shareCopy = document.getElementById('share-copy');
       const copyToast = document.getElementById('copy-toast');
 
-      // === Game state ===
-      let cards = [];                  // [{key, el, matched, flipped}]
-      let firstPick = null;            // index of first flipped card in current attempt
+      let cards = [];
+      let firstPick = null;
       let secondPick = null;
       let acceptingInput = false;
       let matchedPairs = 0;
@@ -441,8 +513,6 @@
       function buildBoard() {
         cardGrid.innerHTML = '';
         cards = [];
-
-        // 6 components × 2 = 12 cards
         const deck = shuffle([...COMPONENTS, ...COMPONENTS]);
 
         deck.forEach((comp, i) => {
@@ -482,12 +552,10 @@
           return;
         }
 
-        // Second pick
         secondPick = idx;
         acceptingInput = false;
 
         if (cards[firstPick].key === cards[secondPick].key) {
-          // Match!
           cards[firstPick].matched = true;
           cards[secondPick].matched = true;
           cards[firstPick].el.classList.add('card--matched');
@@ -498,11 +566,8 @@
           secondPick = null;
           acceptingInput = true;
 
-          if (matchedPairs >= PAIRS) {
-            endGame(true);
-          }
+          if (matchedPairs >= PAIRS) endGame(true);
         } else {
-          // No match - flip back after delay
           setTimeout(() => {
             flipCard(firstPick, false);
             flipCard(secondPick, false);
@@ -515,11 +580,8 @@
 
       function flipCard(idx, faceUp) {
         cards[idx].flipped = faceUp;
-        if (faceUp) {
-          cards[idx].el.classList.add('card--flipped');
-        } else {
-          cards[idx].el.classList.remove('card--flipped');
-        }
+        if (faceUp) cards[idx].el.classList.add('card--flipped');
+        else cards[idx].el.classList.remove('card--flipped');
       }
 
       function startGame() {
@@ -546,9 +608,7 @@
         elapsedMs = performance.now() - startTime;
         const remaining = Math.max(0, TIME_LIMIT_MS - elapsedMs);
         timeDisplay.textContent = (remaining / 1000).toFixed(1) + 's';
-        if (remaining <= 0) {
-          endGame(false);
-        }
+        if (remaining <= 0) endGame(false);
       }
 
       function endGame(won) {
@@ -558,15 +618,9 @@
         acceptingInput = false;
         clearInterval(timerHandle);
 
-        if (won) {
-          // Score = remaining time in ms (faster = higher)
-          finalScore = Math.max(0, Math.round(TIME_LIMIT_MS - elapsedMs));
-        } else {
-          // Timed out
-          finalScore = 0;
-        }
+        if (won) finalScore = Math.max(0, Math.round(TIME_LIMIT_MS - elapsedMs));
+        else finalScore = 0;
 
-        // Update result screen
         if (won) {
           resultIcon.innerHTML = `
             <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
@@ -588,7 +642,6 @@
         resultFlips.textContent = String(flipCount);
         resultScore.textContent = String(finalScore);
 
-        // Reset initials inputs
         initBoxes.forEach(b => { b.value = ''; b.classList.remove('initial-box--filled'); });
         submitBtn.disabled = true;
         submitBtnText.textContent = 'SUBMIT SCORE';
@@ -598,7 +651,6 @@
         setTimeout(() => initBoxes[0].focus(), 100);
       }
 
-      // === Initials input handling ===
       initBoxes.forEach((box, idx) => {
         box.addEventListener('input', (e) => {
           let val = box.value.toUpperCase();
@@ -607,15 +659,11 @@
 
           if (val.length === 1) {
             box.classList.add('initial-box--filled');
-            if (idx < initBoxes.length - 1) {
-              initBoxes[idx + 1].focus();
-            } else {
-              box.blur();
-            }
+            if (idx < initBoxes.length - 1) initBoxes[idx + 1].focus();
+            else box.blur();
           } else {
             box.classList.remove('initial-box--filled');
           }
-
           updateSubmitState();
         });
 
@@ -626,19 +674,13 @@
             initBoxes[idx - 1].classList.remove('initial-box--filled');
             updateSubmitState();
           }
-          if (e.key === 'Enter' && !submitBtn.disabled) {
-            submitScore();
-          }
+          if (e.key === 'Enter' && !submitBtn.disabled) submitScore();
         });
 
-        box.addEventListener('focus', () => {
-          box.select();
-        });
+        box.addEventListener('focus', () => box.select());
       });
 
-      function getInitials() {
-        return initBoxes.map(b => b.value).join('').toUpperCase();
-      }
+      function getInitials() { return initBoxes.map(b => b.value).join('').toUpperCase(); }
 
       function updateSubmitState() {
         const initials = getInitials();
@@ -733,7 +775,6 @@
         }
 
         configureShare();
-
         showState('leaderboard');
       }
 
@@ -760,9 +801,7 @@
         if (navigator.share) {
           shareNative.style.display = '';
           shareNative.onclick = async () => {
-            try {
-              await navigator.share({ title: GAME_NAME + " — Jake's Arcade", text, url });
-            } catch (e) { }
+            try { await navigator.share({ title: GAME_NAME + " — Jake's Arcade", text, url }); } catch (e) { }
           };
         }
 
@@ -784,38 +823,28 @@
         };
       }
 
-      playAgainBtn.addEventListener('click', () => {
-        startGame();
-      });
+      playAgainBtn.addEventListener('click', () => startGame());
 
       function showExitDialog() {
         exitDialog.hidden = false;
         setTimeout(() => exitCancel.focus(), 50);
       }
-
-      function hideExitDialog() {
-        exitDialog.hidden = true;
-      }
+      function hideExitDialog() { exitDialog.hidden = true; }
 
       exitBtn.addEventListener('click', () => {
-        if (gameRunning) {
-          showExitDialog();
-        } else {
-          window.location.href = '/';
-        }
+        if (gameRunning) showExitDialog();
+        else window.location.href = EXIT_TO;
       });
 
       exitCancel.addEventListener('click', hideExitDialog);
       exitConfirm.addEventListener('click', () => {
         gameRunning = false;
         clearInterval(timerHandle);
-        window.location.href = '/';
+        window.location.href = EXIT_TO;
       });
 
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !exitDialog.hidden) {
-          hideExitDialog();
-        }
+        if (e.key === 'Escape' && !exitDialog.hidden) hideExitDialog();
       });
 
       startBtn.addEventListener('click', startGame);
@@ -838,37 +867,83 @@
 
       .page { position: relative; min-height: 100vh; }
 
+      /* ============================================ */
+      /* NAVIGATION (top-left REPAIR BAY, btm-right PORTAL) */
+      /* ============================================ */
       .exit-btn {
         position: fixed;
         top: 1rem;
-        right: 1rem;
+        left: 1rem;
         z-index: 100;
         display: inline-flex;
         align-items: center;
-        gap: 0.4rem;
-        padding: 0.6rem 1rem;
-        background: rgba(15, 23, 42, 0.7);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(96, 165, 250, 0.4);
-        border-radius: 0.5rem;
-        color: #e2e8f0;
+        gap: 0.5rem;
+        padding: 0.65rem 1.1rem;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1.5px solid rgba(96, 165, 250, 0.5);
+        border-radius: 4px;
+        color: #60a5fa;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.75rem;
         font-weight: 700;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.18em;
         cursor: pointer;
+        text-shadow: 0 0 6px rgba(96, 165, 250, 0.7);
+        box-shadow: 0 0 14px rgba(59, 130, 246, 0.3);
         transition: all 0.2s ease;
       }
 
       .exit-btn:hover, .exit-btn:focus-visible {
-        background: rgba(15, 23, 42, 0.9);
-        border-color: rgba(251, 191, 36, 0.6);
-        color: #fbbf24;
+        transform: translateY(-2px);
+        border-color: #60a5fa;
+        box-shadow: 0 0 24px rgba(59, 130, 246, 0.6);
+        color: #93c5fd;
         outline: none;
       }
 
       .exit-btn svg { width: 1rem; height: 1rem; }
+
+      .portal-return {
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        z-index: 100;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.95rem;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 999px;
+        color: rgba(196, 181, 253, 0.85);
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-decoration: none;
+        text-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+        transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      }
+
+      .portal-return-icon {
+        font-size: 0.85rem;
+        animation: portal-return-spin 6s linear infinite;
+        display: inline-block;
+      }
+
+      @keyframes portal-return-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      .portal-return:hover, .portal-return:focus-visible {
+        color: #fff;
+        border-color: rgba(168, 85, 247, 0.8);
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        transform: translateY(-2px);
+        outline: none;
+      }
 
       .sparkles {
         position: fixed;
@@ -922,9 +997,303 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 5rem 1.5rem 3rem;
+        padding: 5rem 1.5rem 5rem;
       }
 
+      /* ============================================ */
+      /* CABINET SHELL — DESKTOP ONLY (>= 900px)      */
+      /* ============================================ */
+      .cabinet-shell {
+        position: relative;
+        width: 100%;
+        max-width: 42rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .shell-marquee,
+      .shell-side,
+      .shell-controls,
+      .shell-coin,
+      .shell-floor-shadow {
+        display: none;
+      }
+
+      .cabinet-body {
+        position: relative;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .shell-bezel {
+        width: 100%;
+      }
+
+      @media (min-width: 900px) {
+        .cabinet-shell {
+          max-width: 48rem;
+          padding-bottom: 30px;
+        }
+
+        .shell-marquee {
+          display: block;
+          width: 88%;
+          padding: 1.1rem 1.5rem 0.95rem;
+          background: linear-gradient(180deg, #1e3a8a 0%, #1e293b 100%);
+          border: 3px solid #1e3a8a;
+          border-bottom: none;
+          border-radius: 12px 12px 0 0;
+          text-align: center;
+          box-shadow:
+            inset 0 0 18px rgba(59, 130, 246, 0.4),
+            0 0 24px rgba(59, 130, 246, 0.45);
+        }
+
+        .shell-marquee-bulbs {
+          display: flex;
+          justify-content: center;
+          gap: 0.45rem;
+          margin-bottom: 0.55rem;
+        }
+
+        .shell-marquee-bulbs span {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #fbbf24;
+          box-shadow: 0 0 5px #fbbf24, 0 0 10px rgba(251, 191, 36, 0.7);
+          animation: shell-bulb-blink 1.6s ease-in-out infinite;
+        }
+        .shell-marquee-bulbs span:nth-child(2n) { animation-delay: 0.3s; }
+        .shell-marquee-bulbs span:nth-child(3n) { animation-delay: 0.6s; }
+
+        @keyframes shell-bulb-blink {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%      { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .shell-marquee-title {
+          font-family: 'Monoton', 'Inter Tight', sans-serif;
+          font-weight: 400;
+          font-size: 1.6rem;
+          letter-spacing: 0.12em;
+          color: #fde68a;
+          text-shadow:
+            0 0 6px rgba(251, 191, 36, 0.95),
+            0 0 14px rgba(251, 191, 36, 0.7),
+            0 0 28px rgba(251, 191, 36, 0.4);
+        }
+
+        .cabinet-body {
+          position: relative;
+          width: 100%;
+          padding: 0 6%;
+        }
+
+        /* Side panels */
+        .shell-side {
+          display: block;
+          position: absolute;
+          top: 0;
+          bottom: 100px;
+          width: 5%;
+          background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+          border: 2px solid #0a0e1a;
+          z-index: 1;
+        }
+
+        .shell-side-l {
+          left: 0;
+          border-radius: 6px 0 0 0;
+          border-right: none;
+          box-shadow: inset -3px 0 6px rgba(0, 0, 0, 0.6);
+        }
+
+        .shell-side-r {
+          right: 0;
+          border-radius: 0 6px 0 0;
+          border-left: none;
+          box-shadow: inset 3px 0 6px rgba(0, 0, 0, 0.6);
+        }
+
+        .shell-side-art {
+          position: relative;
+          height: 100%;
+          padding: 2rem 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-evenly;
+          align-items: center;
+        }
+
+        .side-decor {
+          width: 60%;
+          height: 30px;
+          background: rgba(59, 130, 246, 0.3);
+          border: 1px solid rgba(59, 130, 246, 0.5);
+          border-radius: 4px;
+          box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .side-d1 { transform: rotate(-3deg); }
+        .side-d2 { transform: rotate(2deg); height: 20px; }
+        .side-d3 { transform: rotate(-2deg); height: 40px; background: rgba(251, 191, 36, 0.2); border-color: rgba(251, 191, 36, 0.4); box-shadow: 0 0 12px rgba(251, 191, 36, 0.3); }
+
+        /* Bezel around the screen (the existing game-wrap) */
+        .shell-bezel {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          padding: 1.25rem;
+          background: linear-gradient(180deg, #0f172a 0%, #050214 100%);
+          border-left: 3px solid #0a0e1a;
+          border-right: 3px solid #0a0e1a;
+          box-shadow:
+            inset 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Decorative control panel beneath the screen */
+        .shell-controls {
+          display: flex;
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          padding: 1rem 2rem;
+          background: linear-gradient(180deg, #475569 0%, #334155 100%);
+          border: 3px solid #1e293b;
+          border-top: none;
+          border-bottom: none;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .shell-joystick {
+          position: relative;
+          width: 40px;
+          height: 40px;
+          flex-shrink: 0;
+        }
+
+        .shell-joystick-base {
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 30px;
+          height: 10px;
+          background: #0f172a;
+          border-radius: 50%;
+        }
+
+        .shell-joystick-stick {
+          position: absolute;
+          bottom: 5px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 5px;
+          height: 24px;
+          background: linear-gradient(90deg, #1e293b, #475569, #1e293b);
+          border-radius: 2px;
+        }
+
+        .shell-joystick-ball {
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 16px;
+          height: 16px;
+          background: radial-gradient(circle at 30% 30%, #ef4444, #7f1d1d);
+          border-radius: 50%;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .shell-buttons {
+          display: flex;
+          gap: 0.55rem;
+          align-items: center;
+        }
+
+        .shell-btn {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          border: 2px solid #0f172a;
+          box-shadow:
+            inset 0 -2px 3px rgba(0, 0, 0, 0.4),
+            inset 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .shell-btn-red    { background: radial-gradient(circle at 30% 30%, #ef4444, #b91c1c); }
+        .shell-btn-yellow { background: radial-gradient(circle at 30% 30%, #fbbf24, #b45309); }
+        .shell-btn-green  { background: radial-gradient(circle at 30% 30%, #22c55e, #15803d); }
+        .shell-btn-blue   { background: radial-gradient(circle at 30% 30%, #3b82f6, #1e40af); }
+
+        /* Coin slot base */
+        .shell-coin {
+          display: block;
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          padding: 1rem 1rem 1.25rem;
+          background: linear-gradient(180deg, #1e293b 0%, #0a0e1a 100%);
+          border: 3px solid #0a0e1a;
+          border-top: none;
+          border-radius: 0 0 8px 8px;
+          text-align: center;
+          box-shadow:
+            inset 0 0 18px rgba(0, 0, 0, 0.7),
+            0 8px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .shell-coin-slot {
+          display: block;
+          width: 60px;
+          height: 5px;
+          margin: 0 auto 0.6rem;
+          background: #050214;
+          border-radius: 1px;
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
+        }
+
+        .shell-coin-label {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.65rem;
+          font-weight: 700;
+          letter-spacing: 0.2em;
+          color: #94a3b8;
+        }
+
+        /* Floor shadow */
+        .shell-floor-shadow {
+          display: block;
+          position: absolute;
+          bottom: 0;
+          left: 5%;
+          right: 5%;
+          height: 22px;
+          background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.7) 0%, transparent 70%);
+          filter: blur(8px);
+          z-index: 0;
+        }
+
+        /* Game-wrap inside the bezel needs to drop its own border-radius/shadow since bezel handles the framing */
+        .shell-bezel .game-wrap {
+          max-width: none;
+          border: 1px solid rgba(96, 165, 250, 0.3);
+          border-radius: 6px;
+          box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.2);
+        }
+      }
+
+      /* ============================================ */
+      /* ORIGINAL GAME-WRAP (unchanged)                */
+      /* ============================================ */
       .game-wrap {
         width: 100%;
         max-width: 42rem;
@@ -1131,7 +1500,6 @@
         outline: none;
       }
 
-      /* HUD - 3 columns: ROUND / LAST / AVG */
       .hud {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -1169,7 +1537,6 @@
         font-variant-numeric: tabular-nums;
       }
 
-      /* CARD GRID */
       .card-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -1248,9 +1615,7 @@
         animation: matched-pulse 0.5s ease-out;
       }
 
-      .card--matched {
-        cursor: default;
-      }
+      .card--matched { cursor: default; }
 
       @keyframes matched-pulse {
         0%   { transform: rotateY(0deg) scale(1); }
@@ -1264,15 +1629,12 @@
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
       }
 
-      .card:focus-visible {
-        outline: none;
-      }
+      .card:focus-visible { outline: none; }
       .card:focus-visible .card-back,
       .card:focus-visible .card-front {
         box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.7);
       }
 
-      /* RESULT */
       .result-icon {
         width: 96px;
         height: 96px;
@@ -1367,7 +1729,6 @@
 
       #skip-btn { margin-top: 1rem; width: 100%; }
 
-      /* RANK */
       .rank-reveal {
         text-align: center;
         margin-bottom: 2rem;
@@ -1418,7 +1779,6 @@
         color: #d1d5db;
       }
 
-      /* LEADERBOARD */
       .leaderboard-wrap { width: 100%; margin-bottom: 2rem; }
 
       .leaderboard-title {
@@ -1489,7 +1849,6 @@
         font-size: 0.85rem;
       }
 
-      /* SHARE */
       .share-section {
         text-align: center;
         margin-bottom: 2rem;
@@ -1560,7 +1919,6 @@
         width: 100%;
       }
 
-      /* DIALOG */
       .dialog {
         position: fixed;
         inset: 0;
@@ -1616,7 +1974,7 @@
       }
 
       @media (max-width: 600px) {
-        .game-section { padding: 4rem 0.75rem 2rem; }
+        .game-section { padding: 4rem 0.75rem 4rem; }
         .game-wrap { border-radius: 0.625rem; }
         .game-body { padding: 1.5rem 1rem; min-height: 28rem; }
         .game-title { font-size: 0.7rem; }
@@ -1643,7 +2001,8 @@
       }
 
       @media (min-width: 1600px) {
-        .game-wrap { max-width: 48rem; }
+        .cabinet-shell { max-width: 54rem; }
+        .game-wrap { max-width: none; }
         .game-body { padding: 3rem 2.5rem; }
       }
 
@@ -1651,7 +2010,6 @@
         .spark { animation: none; opacity: 0; }
         .intro-icon { animation: none; }
         .primary-btn { animation: none; }
-        /* Replace 3D flip with simple opacity swap for reduced-motion users */
         .card { perspective: none; transform-style: flat; }
         .card-back, .card-front {
           transition: opacity 0.15s ease;
@@ -1666,6 +2024,8 @@
         .rank-reveal { animation: none; }
         .rank-number { animation: none; background-position: 0% 50%; }
         .leaderboard-row--me { animation: none; }
+        .shell-marquee-bulbs span { animation: none !important; }
+        .portal-return-icon { animation: none !important; }
       }
     </style>
   </body>

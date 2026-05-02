@@ -1,0 +1,916 @@
+---
+const CABINETS = [
+  {
+    name: 'System Response',
+    slug: 'system-response',
+    tagline: 'Test your reflexes — green means go',
+    iconKey: 'response',
+  },
+  {
+    name: 'Error Override',
+    slug: 'error-override',
+    tagline: 'Catch errors before they cascade',
+    iconKey: 'override',
+  },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Speed Lab — Jake's Arcade</title>
+    <meta name="description" content="The Speed Lab. Reaction-test arcade games at Jake's Arcade." />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Monoton&family=JetBrains+Mono:wght@400;600;700&family=Inter+Tight:wght@400;600;700;900&display=swap"
+    />
+  </head>
+
+  <body>
+    <main class="bay">
+
+      <!-- Fluorescent ceiling panels (top edge cyan glow) -->
+      <div class="ceiling-light" aria-hidden="true"></div>
+
+      <!-- Oscilloscope wall texture (CSS animated SVG sine waves) -->
+      <div class="oscilloscope-wall" aria-hidden="true">
+        <svg viewBox="0 0 1200 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <path class="osc-line osc-1" d="M 0 100 Q 100 70 200 100 T 400 100 T 600 100 T 800 100 T 1000 100 T 1200 100" fill="none" stroke="rgba(34, 211, 238, 0.18)" stroke-width="1.5"/>
+          <path class="osc-line osc-2" d="M 0 100 Q 60 130 120 100 T 240 100 T 360 100 T 480 100 T 600 100 T 720 100 T 840 100 T 960 100 T 1080 100 T 1200 100" fill="none" stroke="rgba(34, 211, 238, 0.12)" stroke-width="1"/>
+          <path class="osc-line osc-3" d="M 0 100 Q 150 50 300 100 T 600 100 T 900 100 T 1200 100" fill="none" stroke="rgba(96, 165, 250, 0.1)" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <!-- Tile floor pattern -->
+      <div class="tile-floor" aria-hidden="true"></div>
+
+      <!-- Drifting cyan data motes -->
+      <div class="ambient" aria-hidden="true">
+        <span class="mote mt1"></span><span class="mote mt2"></span>
+        <span class="mote mt3"></span><span class="mote mt4"></span>
+        <span class="mote mt5"></span><span class="mote mt6"></span>
+        <span class="mote mt7"></span><span class="mote mt8"></span>
+      </div>
+
+      <!-- Calibration readout panel (desktop only) -->
+      <div class="readout-panel" aria-hidden="true">
+        <p class="readout-label">CAL</p>
+        <p class="readout-line">FREQ <span>120Hz</span></p>
+        <p class="readout-line">PING <span class="ping-blink">12ms</span></p>
+        <p class="readout-line">CPU <span>0.3%</span></p>
+        <p class="readout-line">SYNC <span class="sync-ok">OK</span></p>
+      </div>
+
+      <!-- Navigation -->
+      <a href="https://jakefixestech.com" class="exit-sign" aria-label="Exit the arcade and return to Jake Fixes Tech">
+        <span class="exit-arrow" aria-hidden="true">←</span>
+        <span class="exit-label">EXIT</span>
+      </a>
+
+      <a href="/lobby" class="back-to-lobby" aria-label="Back to the lobby">
+        <span class="back-arrow" aria-hidden="true">←</span>
+        <span class="back-label">LOBBY</span>
+      </a>
+
+      <a href="/" class="portal-return" aria-label="Return to the portal">
+        <span class="portal-return-icon" aria-hidden="true">↻</span>
+        <span class="portal-return-label">PORTAL</span>
+      </a>
+
+      <!-- Wall sign -->
+      <header class="bay-marquee">
+        <p class="marquee-eyebrow">YOU HAVE ENTERED</p>
+        <h1 class="marquee-title">SPEED LAB</h1>
+        <p class="marquee-tagline">Calibrated for reaction. Don't blink.</p>
+      </header>
+
+      <!-- The lab floor with cabinets -->
+      <section class="workshop" aria-label="Arcade cabinets">
+        <div class="floor" aria-hidden="true"></div>
+
+        <div class="cabinets">
+          {CABINETS.map((cab, idx) => (
+            <a
+              href={`/${cab.slug}`}
+              class="cabinet"
+              style={`--cab-delay: ${0.5 + idx * 0.25}s;`}
+              aria-label={`Play ${cab.name}: ${cab.tagline}`}
+            >
+              <span class="cabinet-spotlight" aria-hidden="true"></span>
+
+              <div class="cab-marquee" aria-hidden="true">
+                <div class="cab-marquee-bulbs">
+                  <span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span>
+                </div>
+                <p class="cab-marquee-title">{cab.name}</p>
+              </div>
+
+              <div class="cab-screen" aria-hidden="true">
+                <div class="cab-screen-glow"></div>
+                <div class="cab-screen-content">
+                  <span class="cab-screen-icon">
+                    {cab.iconKey === 'response' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Stopwatch dial -->
+                        <circle cx="40" cy="44" r="26" fill="#0e1b29" stroke="#22d3ee" stroke-width="2.5"/>
+                        <circle cx="40" cy="44" r="22" fill="none" stroke="rgba(34, 211, 238, 0.3)" stroke-width="1"/>
+                        <!-- Tick marks -->
+                        <line x1="40" y1="20" x2="40" y2="24" stroke="#22d3ee" stroke-width="2"/>
+                        <line x1="40" y1="64" x2="40" y2="68" stroke="#22d3ee" stroke-width="2"/>
+                        <line x1="16" y1="44" x2="20" y2="44" stroke="#22d3ee" stroke-width="2"/>
+                        <line x1="60" y1="44" x2="64" y2="44" stroke="#22d3ee" stroke-width="2"/>
+                        <!-- Hand -->
+                        <line x1="40" y1="44" x2="56" y2="32" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
+                        <circle cx="40" cy="44" r="3" fill="#4ade80"/>
+                        <!-- Crown on top -->
+                        <rect x="36" y="12" width="8" height="6" rx="1" fill="#22d3ee"/>
+                        <line x1="40" y1="8" x2="40" y2="12" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- "GO" indicator below -->
+                        <text x="40" y="58" text-anchor="middle" font-family="Orbitron, monospace" font-weight="900" font-size="6" fill="#4ade80" letter-spacing="1">GO</text>
+                      </svg>
+                    )}
+                    {cab.iconKey === 'override' && (
+                      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Terminal box -->
+                        <rect x="10" y="14" width="60" height="44" rx="3" fill="#0e1b29" stroke="#22d3ee" stroke-width="2"/>
+                        <rect x="10" y="14" width="60" height="8" fill="#1e293b" stroke="#22d3ee" stroke-width="2"/>
+                        <!-- Window dots -->
+                        <circle cx="16" cy="18" r="1.5" fill="#ef4444"/>
+                        <circle cx="22" cy="18" r="1.5" fill="#fbbf24"/>
+                        <circle cx="28" cy="18" r="1.5" fill="#4ade80"/>
+                        <!-- Error code lines -->
+                        <text x="16" y="32" font-family="JetBrains Mono, monospace" font-weight="700" font-size="6" fill="#ef4444">ERR 0x</text>
+                        <text x="16" y="40" font-family="JetBrains Mono, monospace" font-weight="700" font-size="6" fill="#fbbf24">WARN!</text>
+                        <text x="16" y="48" font-family="JetBrains Mono, monospace" font-weight="700" font-size="6" fill="#4ade80">FIX OK</text>
+                        <!-- Override stamp -->
+                        <rect x="44" y="32" width="20" height="14" rx="1" fill="rgba(34, 211, 238, 0.2)" stroke="#22d3ee" stroke-width="1.5"/>
+                        <text x="54" y="42" text-anchor="middle" font-family="Orbitron, monospace" font-weight="900" font-size="5" fill="#22d3ee" letter-spacing="0.5">OVR</text>
+                        <!-- Power button -->
+                        <circle cx="40" cy="68" r="6" fill="#0e1b29" stroke="#22d3ee" stroke-width="1.5"/>
+                        <line x1="40" y1="64" x2="40" y2="69" stroke="#4ade80" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M 36 68 A 4 4 0 1 0 44 68" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+                      </svg>
+                    )}
+                  </span>
+                  <span class="cab-screen-tagline">{cab.tagline}</span>
+                  <span class="cab-screen-press">▸ PRESS START</span>
+                </div>
+              </div>
+
+              <div class="cab-controls" aria-hidden="true">
+                <span class="cab-joystick">
+                  <span class="cab-joystick-base"></span>
+                  <span class="cab-joystick-stick"></span>
+                  <span class="cab-joystick-ball"></span>
+                </span>
+                <span class="cab-buttons">
+                  <span class="cab-btn cab-btn-cyan"></span>
+                  <span class="cab-btn cab-btn-green"></span>
+                  <span class="cab-btn cab-btn-yellow"></span>
+                </span>
+              </div>
+
+              <div class="cab-coin" aria-hidden="true">
+                <span class="cab-coin-slot"></span>
+                <span class="cab-coin-label">25¢ INSERT COIN</span>
+              </div>
+
+              <span class="cab-shadow" aria-hidden="true"></span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+    </main>
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --c-bg: #050d18;
+        --c-cyan: #22d3ee;
+        --c-cyan-light: #67e8f9;
+        --c-cyan-glow: rgba(34, 211, 238, 0.7);
+        --c-cyan-soft: rgba(34, 211, 238, 0.2);
+      }
+
+      html, body {
+        background: var(--c-bg);
+        color: #fff;
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100vh;
+      }
+
+      body { overflow-x: hidden; }
+
+      .bay {
+        position: relative;
+        min-height: 100vh;
+        padding: 0 1.5rem 5rem;
+        background:
+          radial-gradient(ellipse at 50% 0%, rgba(34, 211, 238, 0.18) 0%, transparent 50%),
+          radial-gradient(ellipse at 15% 75%, rgba(34, 211, 238, 0.07) 0%, transparent 55%),
+          radial-gradient(ellipse at 85% 75%, rgba(96, 165, 250, 0.07) 0%, transparent 55%),
+          linear-gradient(180deg, #0a1828 0%, #050d18 50%, #020610 100%);
+      }
+
+      /* ============================================ */
+      /* CEILING FLUORESCENT GLOW                      */
+      /* ============================================ */
+      .ceiling-light {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 80px;
+        background: linear-gradient(180deg, rgba(34, 211, 238, 0.22) 0%, transparent 100%);
+        pointer-events: none;
+        z-index: 0;
+        animation: fluorescent-flicker 8s steps(40) infinite;
+      }
+
+      @keyframes fluorescent-flicker {
+        0%, 100% { opacity: 1; }
+        92%, 92.3% { opacity: 0.5; }
+        92.5%, 92.8% { opacity: 1; }
+        93%, 93.2% { opacity: 0.7; }
+        93.3% { opacity: 1; }
+      }
+
+      /* ============================================ */
+      /* OSCILLOSCOPE WALL                             */
+      /* ============================================ */
+      .oscilloscope-wall {
+        position: fixed;
+        top: 80px;
+        left: 0;
+        right: 0;
+        height: 140px;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.7;
+      }
+
+      .oscilloscope-wall svg { width: 100%; height: 100%; display: block; }
+
+      .osc-line {
+        animation: osc-drift 12s linear infinite;
+      }
+
+      .osc-1 { animation-duration: 10s; }
+      .osc-2 { animation-duration: 14s; animation-direction: reverse; }
+      .osc-3 { animation-duration: 18s; }
+
+      @keyframes osc-drift {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(-100px); }
+      }
+
+      /* ============================================ */
+      /* TILE FLOOR                                    */
+      /* ============================================ */
+      .tile-floor {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image:
+          linear-gradient(rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(34, 211, 238, 0.04) 1px, transparent 1px);
+        background-size: 80px 80px;
+        background-position: center bottom;
+        opacity: 0.8;
+        mask-image: linear-gradient(180deg, transparent 50%, rgba(0,0,0,1) 100%);
+        -webkit-mask-image: linear-gradient(180deg, transparent 50%, rgba(0,0,0,1) 100%);
+      }
+
+      /* ============================================ */
+      /* DATA MOTES                                    */
+      /* ============================================ */
+      .ambient {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+        overflow: hidden;
+      }
+
+      .mote {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: #67e8f9;
+        border-radius: 50%;
+        box-shadow: 0 0 6px #22d3ee, 0 0 12px rgba(34, 211, 238, 0.6);
+        opacity: 0;
+      }
+
+      .mt1 { left: 12%; bottom: 5%; animation: mote-rise 9s ease-in-out 0.5s infinite; }
+      .mt2 { left: 28%; bottom: 5%; animation: mote-rise 11s ease-in-out 2.5s infinite; }
+      .mt3 { left: 42%; bottom: 5%; animation: mote-rise 8s ease-in-out 4s   infinite; }
+      .mt4 { left: 58%; bottom: 5%; animation: mote-rise 12s ease-in-out 1s  infinite; }
+      .mt5 { left: 72%; bottom: 5%; animation: mote-rise 9s ease-in-out 5s   infinite; }
+      .mt6 { left: 88%; bottom: 5%; animation: mote-rise 10s ease-in-out 3s  infinite; }
+      .mt7 { left: 22%; bottom: 5%; animation: mote-rise 13s ease-in-out 7s  infinite; }
+      .mt8 { left: 78%; bottom: 5%; animation: mote-rise 13s ease-in-out 6s  infinite; }
+
+      @keyframes mote-rise {
+        0%   { transform: translateY(0) translateX(0); opacity: 0; }
+        15%  { opacity: 1; }
+        50%  { transform: translateY(-50vh) translateX(20px); opacity: 0.9; }
+        100% { transform: translateY(-100vh) translateX(-15px); opacity: 0; }
+      }
+
+      /* ============================================ */
+      /* READOUT PANEL                                 */
+      /* ============================================ */
+      .readout-panel {
+        position: fixed;
+        top: 110px;
+        left: 1.75rem;
+        z-index: 1;
+        padding: 0.65rem 0.85rem;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(34, 211, 238, 0.4);
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #67e8f9;
+        letter-spacing: 0.08em;
+        line-height: 1.6;
+        box-shadow: 0 0 14px rgba(34, 211, 238, 0.2), inset 0 0 8px rgba(34, 211, 238, 0.05);
+        pointer-events: none;
+      }
+
+      .readout-label {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.55rem;
+        font-weight: 800;
+        color: #22d3ee;
+        letter-spacing: 0.3em;
+        margin-bottom: 0.35rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 1px dashed rgba(34, 211, 238, 0.3);
+      }
+
+      .readout-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 1.5rem;
+        color: rgba(186, 230, 253, 0.7);
+      }
+
+      .readout-line span {
+        color: #67e8f9;
+        font-weight: 700;
+      }
+
+      .ping-blink {
+        animation: ping-blink 2.5s steps(2) infinite;
+      }
+
+      @keyframes ping-blink {
+        0%, 50%   { opacity: 1; }
+        51%, 100% { opacity: 0.5; }
+      }
+
+      .sync-ok {
+        color: #4ade80 !important;
+      }
+
+      @media (max-width: 1100px) {
+        .readout-panel { display: none; }
+      }
+
+      /* ============================================ */
+      /* NAVIGATION                                    */
+      /* ============================================ */
+      .exit-sign {
+        position: fixed;
+        top: 1.25rem;
+        left: 1.25rem;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.65rem 1.1rem;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid #22c55e;
+        border-radius: 4px;
+        color: #4ade80;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.25em;
+        text-decoration: none;
+        text-shadow: 0 0 6px rgba(74, 222, 128, 0.9), 0 0 14px rgba(74, 222, 128, 0.5);
+        box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.2), 0 0 18px rgba(74, 222, 128, 0.45), inset 0 0 12px rgba(74, 222, 128, 0.18);
+        transition: transform 0.2s, box-shadow 0.2s;
+        animation: exit-flicker 6s steps(60) infinite;
+      }
+
+      .exit-arrow { font-size: 1rem; font-weight: 800; }
+
+      .exit-sign:hover, .exit-sign:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.4), 0 0 30px rgba(74, 222, 128, 0.7), inset 0 0 16px rgba(74, 222, 128, 0.3);
+        outline: none;
+      }
+
+      @keyframes exit-flicker {
+        0%, 100% { opacity: 1; }
+        96%, 96.5% { opacity: 0.4; }
+        97%, 97.4% { opacity: 1; }
+        97.5%, 97.8% { opacity: 0.5; }
+        98% { opacity: 1; }
+      }
+
+      .back-to-lobby {
+        position: fixed;
+        top: 1.25rem;
+        right: 1.25rem;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1rem;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1.5px solid rgba(34, 211, 238, 0.5);
+        border-radius: 4px;
+        color: var(--c-cyan-light);
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-decoration: none;
+        text-shadow: 0 0 6px var(--c-cyan-glow);
+        box-shadow: 0 0 14px rgba(34, 211, 238, 0.3);
+        transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      }
+
+      .back-to-lobby:hover, .back-to-lobby:focus-visible {
+        transform: translateY(-2px);
+        border-color: var(--c-cyan-light);
+        box-shadow: 0 0 24px rgba(34, 211, 238, 0.6);
+        outline: none;
+      }
+
+      .portal-return {
+        position: fixed;
+        bottom: 1.25rem;
+        right: 1.25rem;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.95rem;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 999px;
+        color: rgba(196, 181, 253, 0.85);
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-decoration: none;
+        text-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+        transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      }
+
+      .portal-return-icon {
+        font-size: 0.85rem;
+        animation: portal-return-spin 6s linear infinite;
+        display: inline-block;
+      }
+
+      @keyframes portal-return-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      .portal-return:hover, .portal-return:focus-visible {
+        color: #fff;
+        border-color: rgba(168, 85, 247, 0.8);
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        transform: translateY(-2px);
+        outline: none;
+      }
+
+      /* ============================================ */
+      /* WALL MARQUEE                                  */
+      /* ============================================ */
+      .bay-marquee {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        padding: 5rem 1rem 2.5rem;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      .marquee-eyebrow {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.45em;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 1rem;
+      }
+
+      .marquee-title {
+        font-family: 'Monoton', 'Orbitron', system-ui, sans-serif;
+        font-size: clamp(2.5rem, 9vw, 6rem);
+        font-weight: 400;
+        line-height: 1;
+        letter-spacing: 0.06em;
+        color: #cffafe;
+        text-shadow:
+          0 0 6px rgba(34, 211, 238, 1),
+          0 0 14px rgba(34, 211, 238, 0.9),
+          0 0 28px rgba(34, 211, 238, 0.7),
+          0 0 56px rgba(34, 211, 238, 0.4);
+        animation: marquee-flicker 8s steps(80) infinite;
+      }
+
+      @keyframes marquee-flicker {
+        0%, 100% { opacity: 1; }
+        45%, 45.4% { opacity: 0.6; }
+        45.6%, 46% { opacity: 1; }
+        78%, 78.3% { opacity: 0.45; }
+        78.6%, 79% { opacity: 1; }
+      }
+
+      .marquee-tagline {
+        margin-top: 1.5rem;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        color: rgba(255, 255, 255, 0.6);
+        text-transform: uppercase;
+      }
+
+      /* ============================================ */
+      /* WORKSHOP & CABINETS                           */
+      /* ============================================ */
+      .workshop {
+        position: relative;
+        z-index: 2;
+        max-width: 1400px;
+        margin: 2rem auto 0;
+      }
+
+      .floor {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 35%;
+        background:
+          linear-gradient(180deg, transparent 0%, rgba(34, 211, 238, 0.06) 40%, rgba(34, 211, 238, 0.10) 100%),
+          repeating-linear-gradient(90deg, transparent 0, transparent 60px, rgba(34, 211, 238, 0.04) 60px, rgba(34, 211, 238, 0.04) 61px);
+        border-top: 1px solid rgba(34, 211, 238, 0.2);
+        pointer-events: none;
+      }
+
+      .cabinets {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3rem;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 2rem 1rem 4rem;
+        align-items: end;
+      }
+
+      .cabinet {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: #fff;
+        max-width: 360px;
+        width: 100%;
+        margin: 0 auto;
+        opacity: 0;
+        animation: cabinet-arrive 0.8s ease-out var(--cab-delay, 0.5s) forwards;
+        transition: transform 0.3s;
+      }
+
+      @keyframes cabinet-arrive {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .cabinet:hover, .cabinet:focus-visible {
+        transform: translateY(-8px);
+        outline: none;
+      }
+
+      .cabinet-spotlight {
+        position: absolute;
+        top: -8%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 140%;
+        height: 110%;
+        background: radial-gradient(ellipse at 50% 0%, rgba(34, 211, 238, 0.22) 0%, transparent 55%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .cab-marquee {
+        position: relative;
+        z-index: 2;
+        width: 92%;
+        padding: 0.85rem 1rem 0.7rem;
+        background: linear-gradient(180deg, #155e75 0%, #0e1b29 100%);
+        border: 2px solid #155e75;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        text-align: center;
+        box-shadow:
+          inset 0 0 14px rgba(34, 211, 238, 0.45),
+          0 0 18px rgba(34, 211, 238, 0.45);
+      }
+
+      .cab-marquee-bulbs {
+        display: flex;
+        justify-content: center;
+        gap: 0.35rem;
+        margin-bottom: 0.4rem;
+      }
+
+      .cab-marquee-bulbs span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #fbbf24;
+        box-shadow: 0 0 4px #fbbf24, 0 0 8px rgba(251, 191, 36, 0.7);
+        animation: bulb-blink 1.6s ease-in-out infinite;
+      }
+
+      .cab-marquee-bulbs span:nth-child(2n) { animation-delay: 0.3s; }
+      .cab-marquee-bulbs span:nth-child(3n) { animation-delay: 0.6s; }
+
+      @keyframes bulb-blink {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%      { opacity: 0.4; transform: scale(0.85); }
+      }
+
+      .cab-marquee-title {
+        font-family: 'Monoton', 'Orbitron', system-ui, sans-serif;
+        font-weight: 400;
+        font-size: clamp(0.9rem, 1.4vw, 1.2rem);
+        letter-spacing: 0.08em;
+        color: #cffafe;
+        text-shadow:
+          0 0 4px rgba(34, 211, 238, 0.95),
+          0 0 10px rgba(34, 211, 238, 0.6);
+      }
+
+      .cab-screen {
+        position: relative;
+        z-index: 2;
+        width: 92%;
+        aspect-ratio: 1.05;
+        background: #050d18;
+        border: 8px solid #1e293b;
+        border-top: none;
+        overflow: hidden;
+        box-shadow:
+          inset 0 0 0 2px #020610,
+          inset 0 0 30px rgba(34, 211, 238, 0.3),
+          0 0 24px rgba(34, 211, 238, 0.45);
+      }
+
+      .cab-screen-glow {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.22) 0%, transparent 60%);
+        pointer-events: none;
+      }
+
+      .cab-screen-content {
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.85rem;
+        padding: 1.25rem;
+        background:
+          repeating-linear-gradient(0deg, transparent 0, transparent 3px, rgba(0, 0, 0, 0.18) 3px, rgba(0, 0, 0, 0.18) 4px);
+      }
+
+      .cab-screen-icon {
+        width: clamp(60px, 14vw, 96px);
+        height: clamp(60px, 14vw, 96px);
+        filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.7));
+      }
+
+      .cab-screen-icon svg { width: 100%; height: 100%; }
+
+      .cab-screen-tagline {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: clamp(0.7rem, 1vw, 0.85rem);
+        color: #67e8f9;
+        text-align: center;
+        line-height: 1.4;
+        max-width: 220px;
+        opacity: 0.9;
+      }
+
+      .cab-screen-press {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: clamp(0.75rem, 1vw, 0.95rem);
+        letter-spacing: 0.2em;
+        color: #fbbf24;
+        text-shadow: 0 0 6px rgba(251, 191, 36, 0.8);
+        animation: press-blink 1.4s steps(2) infinite;
+      }
+
+      @keyframes press-blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0.35; }
+      }
+
+      .cab-controls {
+        position: relative;
+        z-index: 2;
+        width: 92%;
+        padding: 0.85rem 1.25rem;
+        background: linear-gradient(180deg, #475569 0%, #334155 100%);
+        border: 2px solid #1e293b;
+        border-top: none;
+        border-bottom: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      .cab-joystick {
+        position: relative;
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+      }
+
+      .cab-joystick-base {
+        position: absolute;
+        bottom: 0; left: 50%;
+        transform: translateX(-50%);
+        width: 22px;
+        height: 8px;
+        background: #0f172a;
+        border-radius: 50%;
+      }
+
+      .cab-joystick-stick {
+        position: absolute;
+        bottom: 4px; left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 18px;
+        background: linear-gradient(90deg, #1e293b, #475569, #1e293b);
+        border-radius: 2px;
+      }
+
+      .cab-joystick-ball {
+        position: absolute;
+        top: 0; left: 50%;
+        transform: translateX(-50%);
+        width: 12px;
+        height: 12px;
+        background: radial-gradient(circle at 30% 30%, #22d3ee, #155e75);
+        border-radius: 50%;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      .cab-buttons {
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+      }
+
+      .cab-btn {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 1.5px solid #0f172a;
+        box-shadow:
+          inset 0 -2px 3px rgba(0, 0, 0, 0.4),
+          inset 0 1px 1px rgba(255, 255, 255, 0.3);
+      }
+
+      .cab-btn-cyan   { background: radial-gradient(circle at 30% 30%, #22d3ee, #155e75); }
+      .cab-btn-green  { background: radial-gradient(circle at 30% 30%, #22c55e, #15803d); }
+      .cab-btn-yellow { background: radial-gradient(circle at 30% 30%, #fbbf24, #b45309); }
+
+      .cab-coin {
+        position: relative;
+        z-index: 2;
+        width: 92%;
+        padding: 1rem 1rem 1.25rem;
+        background: linear-gradient(180deg, #1e293b 0%, #050d18 100%);
+        border: 2px solid #020610;
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        text-align: center;
+        box-shadow:
+          inset 0 0 14px rgba(0, 0, 0, 0.6),
+          0 6px 20px rgba(0, 0, 0, 0.5);
+      }
+
+      .cab-coin-slot {
+        display: block;
+        width: 50px;
+        height: 4px;
+        margin: 0 auto 0.5rem;
+        background: #020610;
+        border-radius: 1px;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
+      }
+
+      .cab-coin-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        color: #94a3b8;
+      }
+
+      .cab-shadow {
+        position: absolute;
+        bottom: -12px;
+        left: 8%; right: 8%;
+        height: 18px;
+        background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.7) 0%, transparent 70%);
+        filter: blur(6px);
+        z-index: 0;
+      }
+
+      /* ============================================ */
+      /* RESPONSIVE                                    */
+      /* ============================================ */
+      @media (max-width: 768px) {
+        .cabinets { grid-template-columns: 1fr; gap: 3rem; }
+        .cabinet { max-width: 320px; }
+      }
+
+      @media (max-width: 600px) {
+        .bay { padding: 0 1rem 4rem; }
+        .bay-marquee { padding: 4rem 0.5rem 1.5rem; }
+
+        .exit-sign, .back-to-lobby {
+          padding: 0.5rem 0.75rem;
+          font-size: 0.65rem;
+          letter-spacing: 0.18em;
+        }
+        .exit-sign { top: 0.75rem; left: 0.75rem; }
+        .back-to-lobby { top: 0.75rem; right: 0.75rem; }
+        .portal-return {
+          bottom: 0.75rem;
+          right: 0.75rem;
+          padding: 0.45rem 0.75rem;
+          font-size: 0.6rem;
+        }
+
+        .cabinets { padding: 1rem 0 3rem; }
+        .cabinet { max-width: 280px; }
+      }
+
+      @media (min-width: 1500px) {
+        .cabinets { gap: 5rem; max-width: 1300px; }
+        .cabinet { max-width: 400px; }
+      }
+
+      /* ============================================ */
+      /* REDUCED MOTION                                */
+      /* ============================================ */
+      @media (prefers-reduced-motion: reduce) {
+        .marquee-title, .exit-sign, .mote, .cab-marquee-bulbs span,
+        .cab-screen-press, .portal-return-icon, .cabinet,
+        .ceiling-light, .osc-line, .ping-blink {
+          animation: none !important;
+        }
+        .cabinet { opacity: 1; }
+      }
+    </style>
+  </body>
+</html>
