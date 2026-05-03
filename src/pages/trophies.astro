@@ -192,7 +192,7 @@ const recordHolders = GAMES.map((game, idx) => {
 
             <div class="throne-info">
               <p class="throne-label">REIGNING CHAMPION</p>
-              <p class="throne-initials">{champion.initials}</p>
+              <span class="throne-initials">{champion.initials}</span>
               <p class="throne-stats">
                 <strong>{champion.points}</strong> rank points · <strong>{champion.gamesPlayed}</strong> games
               </p>
@@ -214,7 +214,7 @@ const recordHolders = GAMES.map((game, idx) => {
 
             <div class="throne-info">
               <p class="throne-label">THE THRONE IS OPEN</p>
-              <p class="throne-empty-title">Could be <span class="gold-text">YOU</span></p>
+              <span class="throne-empty-title">Could be <span class="gold-text">YOU</span></span>
               <p class="throne-stats">Land in any game's top 10 to start scoring rank points.</p>
             </div>
           </div>
@@ -347,13 +347,13 @@ const recordHolders = GAMES.map((game, idx) => {
                 <p class="record-game-name">{game.name}</p>
                 {holder ? (
                   <>
-                    <p class="record-holder-initials">{holder.initials}</p>
-                    <p class="record-holder-score">{holder.score.toLocaleString()}</p>
+                    <span class="record-holder-initials">{holder.initials}</span>
+                    <span class="record-holder-score">{holder.score.toLocaleString()}</span>
                   </>
                 ) : (
                   <>
-                    <p class="record-holder-initials record-holder-initials--empty">—</p>
-                    <p class="record-holder-score record-holder-score--empty">UNCLAIMED</p>
+                    <span class="record-holder-initials record-holder-initials--empty">—</span>
+                    <span class="record-holder-score record-holder-score--empty">UNCLAIMED</span>
                   </>
                 )}
               </div>
@@ -843,6 +843,7 @@ const recordHolders = GAMES.map((game, idx) => {
       }
 
       .throne-initials {
+        display: block;
         font-family: 'Monoton', 'JetBrains Mono', monospace;
         font-size: clamp(3rem, 8vw, 5rem);
         font-weight: 400;
@@ -856,6 +857,7 @@ const recordHolders = GAMES.map((game, idx) => {
       }
 
       .throne-empty-title {
+        display: block;
         font-family: 'Monoton', 'Orbitron', system-ui, sans-serif;
         font-size: clamp(1.75rem, 5vw, 3rem);
         font-weight: 400;
@@ -952,6 +954,7 @@ const recordHolders = GAMES.map((game, idx) => {
       }
 
       .record-holder-initials {
+        display: block;
         font-family: 'JetBrains Mono', monospace;
         font-size: 1.6rem;
         font-weight: 700;
@@ -968,6 +971,7 @@ const recordHolders = GAMES.map((game, idx) => {
       }
 
       .record-holder-score {
+        display: block;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.95rem;
         font-weight: 600;
@@ -976,7 +980,7 @@ const recordHolders = GAMES.map((game, idx) => {
       }
 
       .record-holder-score--empty {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         font-weight: 700;
         letter-spacing: 0.2em;
         color: #475569;
@@ -1073,7 +1077,7 @@ const recordHolders = GAMES.map((game, idx) => {
 
       .honor-pts-label {
         font-family: 'Orbitron', system-ui, sans-serif;
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         font-weight: 700;
         color: rgba(255, 255, 255, 0.4);
         letter-spacing: 0.18em;
@@ -1210,7 +1214,7 @@ const recordHolders = GAMES.map((game, idx) => {
 
       .board-empty {
         font-family: 'Orbitron', system-ui, sans-serif;
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         font-weight: 600;
         letter-spacing: 0.18em;
         color: #475569;
@@ -1239,7 +1243,7 @@ const recordHolders = GAMES.map((game, idx) => {
 
         .exit-sign, .back-to-lobby {
           padding: 0.5rem 0.75rem;
-          font-size: 0.65rem;
+          font-size: 0.7rem;
           letter-spacing: 0.18em;
         }
         .exit-sign { top: 0.75rem; left: 0.75rem; }
@@ -1248,7 +1252,7 @@ const recordHolders = GAMES.map((game, idx) => {
           bottom: 0.75rem;
           right: 0.75rem;
           padding: 0.45rem 0.75rem;
-          font-size: 0.6rem;
+          font-size: 0.7rem;
         }
 
         .throne { padding: 1.5rem 1.25rem; }
