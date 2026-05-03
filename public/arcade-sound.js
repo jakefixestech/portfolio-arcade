@@ -886,8 +886,8 @@
     btn.innerHTML = state.muted ? ICON_MUTED : ICON_UNMUTED;
     btn.style.cssText = [
       'position:fixed',
-      'top:1rem',
-      'right:1rem',
+      'bottom:1rem',
+      'left:1rem',
       'z-index:100',
       'width:2.5rem',
       'height:2.5rem',
