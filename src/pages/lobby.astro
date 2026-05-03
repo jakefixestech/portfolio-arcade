@@ -726,10 +726,13 @@ const ROOMS = [
       .doorway-tagline {
         font-family: 'Orbitron', system-ui, sans-serif;
         font-weight: 600;
-        font-size: clamp(0.55rem, 0.7vw, 0.7rem);
-        letter-spacing: 0.18em;
-        color: rgba(255, 255, 255, 0.6);
+        font-size: clamp(0.7rem, 0.85vw, 0.82rem);
+        line-height: 1.45;
+        letter-spacing: 0.16em;
+        color: rgba(255, 255, 255, 0.65);
         text-transform: uppercase;
+        max-width: 100%;
+        word-spacing: 0.05em;
       }
 
       .doorway-floor-glow {
@@ -846,7 +849,7 @@ const ROOMS = [
           padding: 0.75rem 0.5rem 0.9rem;
         }
         .doorway-name { font-size: 1rem; }
-        .doorway-tagline { font-size: 0.55rem; }
+        .doorway-tagline { font-size: 0.7rem; line-height: 1.4; }
 
         .exit-sign {
           top: 0.75rem;
