@@ -45,8 +45,30 @@ const ROOMS = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>The Lobby — Jake's Arcade</title>
-    <meta name="description" content="Welcome to Jake's Arcade. Pick a room and play." />
+    <meta name="description" content="Welcome to Jake's Arcade. Twelve games across five rooms — pick your poison." />
+    <meta name="author" content="Jake Charland" />
+    <meta name="theme-color" content="#0a0820" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://arcade.jakefixestech.com/lobby" />
     <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Jake's Arcade" />
+    <meta property="og:title" content="The Lobby — Jake's Arcade" />
+    <meta property="og:description" content="Welcome to Jake's Arcade. Twelve games across five rooms — pick your poison." />
+    <meta property="og:url" content="https://arcade.jakefixestech.com/lobby" />
+    <meta property="og:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Jake's Arcade — twelve hand-built browser games" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="The Lobby — Jake's Arcade" />
+    <meta name="twitter:description" content="Welcome to Jake's Arcade. Twelve games across five rooms — pick your poison." />
+    <meta name="twitter:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
+
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -733,6 +755,12 @@ const ROOMS = [
         text-transform: uppercase;
         max-width: 100%;
         word-spacing: 0.05em;
+        /* Reserve space for up to 2 lines so layout stays stable through
+           font swap (system-ui fallback ↔ Orbitron). Prevents CLS. */
+        min-height: calc(0.82rem * 1.45 * 2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .doorway-floor-glow {
