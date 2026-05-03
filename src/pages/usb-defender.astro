@@ -8,8 +8,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>USB Defender — Jake's Arcade</title>
-    <meta name="description" content="Bounce bugs back with a USB paddle. 3 lives, infinite bugs at Jake's Arcade." />
+    <meta name="description" content="Breakout-style paddle game. Deflect malicious packets with your USB drive." />
+    <meta name="author" content="Jake Charland" />
+    <meta name="theme-color" content="#0a0e1a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://arcade.jakefixestech.com/usb-defender" />
     <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Jake's Arcade" />
+    <meta property="og:title" content="USB Defender — Jake's Arcade" />
+    <meta property="og:description" content="Breakout-style paddle game. Deflect malicious packets with your USB drive." />
+    <meta property="og:url" content="https://arcade.jakefixestech.com/usb-defender" />
+    <meta property="og:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Jake's Arcade — twelve hand-built browser games" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="USB Defender — Jake's Arcade" />
+    <meta name="twitter:description" content="Breakout-style paddle game. Deflect malicious packets with your USB drive." />
+    <meta name="twitter:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
+
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content="USB Defender — Jake's Arcade" />
@@ -917,7 +939,11 @@
       @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
       body {
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        background:
+          radial-gradient(ellipse at 50% 5%, rgba(251, 191, 36, 0.08) 0%, transparent 40%),
+          radial-gradient(ellipse at 20% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+          linear-gradient(180deg, #0e1626 0%, #0a0e1a 50%, #050214 100%);
         color: #ffffff;
         font-family: 'Inter Tight', system-ui, -apple-system, sans-serif;
         min-height: 100vh;

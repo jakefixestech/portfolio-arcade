@@ -876,6 +876,46 @@
   const ICON_MUTED = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 9 L7 9 L12 5 L12 19 L7 15 L3 15 Z" fill="currentColor"/><line x1="16" y1="9" x2="22" y2="15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><line x1="22" y1="9" x2="16" y2="15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
   const ICON_UNMUTED = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 9 L7 9 L12 5 L12 19 L7 15 L3 15 Z" fill="currentColor"/><path d="M16 8 Q19 12 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M19 5 Q23 12 19 19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
 
+  // ---------------------------------------------------------------
+  // Global scrollbar styling — applied once to every page that loads
+  // arcade-sound.js. Keeps the scrollbar consistent with the dark
+  // arcade aesthetic across browsers.
+  // ---------------------------------------------------------------
+  function injectScrollbarStyle() {
+    if (document.getElementById('arcade-scrollbar-style')) return;
+    const style = document.createElement('style');
+    style.id = 'arcade-scrollbar-style';
+    style.textContent = `
+      /* Firefox */
+      html { scrollbar-width: thin; scrollbar-color: rgba(168, 85, 247, 0.5) rgba(5, 2, 20, 0.6); }
+
+      /* WebKit (Chrome, Safari, Edge) */
+      ::-webkit-scrollbar { width: 10px; height: 10px; }
+      ::-webkit-scrollbar-track {
+        background: rgba(5, 2, 20, 0.6);
+        border-left: 1px solid rgba(168, 85, 247, 0.15);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, rgba(168, 85, 247, 0.45), rgba(103, 232, 249, 0.45));
+        border-radius: 6px;
+        border: 2px solid rgba(5, 2, 20, 0.6);
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, rgba(168, 85, 247, 0.75), rgba(103, 232, 249, 0.75));
+      }
+      ::-webkit-scrollbar-corner { background: rgba(5, 2, 20, 0.6); }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Inject scrollbar styles immediately (before DOMContentLoaded so they
+  // apply on first paint and don't cause a visible scrollbar swap).
+  if (document.head) {
+    injectScrollbarStyle();
+  } else {
+    document.addEventListener('DOMContentLoaded', injectScrollbarStyle, { once: true });
+  }
+
   function injectToggleButton(opts) {
     opts = opts || {};
     if (document.getElementById('arcade-sound-toggle')) return; // already injected
