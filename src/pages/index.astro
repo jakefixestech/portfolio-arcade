@@ -7,7 +7,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Enter The Arcade — Jake Fixes Tech</title>
-    <meta name="description" content="Step through the portal. Eight hand-built browser games await inside Jake's Arcade." />
+    <meta name="description" content="Step through the portal. Twelve hand-built browser games await inside Jake's Arcade." />
     <link rel="icon" type="image/png" href="/favicon.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -100,9 +100,12 @@
       <!-- ============================================ -->
       <!-- STAGE 2: PRESENTATION SEQUENCE               -->
       <!-- ============================================ -->
-      <section class="present-stage" id="present-stage" aria-hidden="true">
+      <!-- aria-hidden + hidden until JS unhides it. This keeps the         -->
+      <!-- presentation text out of the accessibility tree AND out of the  -->
+      <!-- contrast computation while it's offscreen / opacity 0.           -->
+      <section class="present-stage" id="present-stage" aria-hidden="true" hidden>
         <div class="present-text-wrap">
-          <p class="present-line present-jake" id="line-jake">JAKE PRESENTS</p>
+          <span class="present-line present-jake" id="line-jake">JAKE PRESENTS</span>
           <h1 class="present-line present-arcade" id="line-arcade">THE ARCADE</h1>
         </div>
 
@@ -569,6 +572,13 @@
         cursor: pointer;
       }
 
+      /* When [hidden] attribute is present, fully remove from layout +
+         a11y tree + contrast computation. Browsers treat <element hidden>
+         as display:none, but be explicit since some tooling overrides it. */
+      .present-stage[hidden] {
+        display: none;
+      }
+
       .present-stage.active {
         opacity: 1;
         pointer-events: auto;
@@ -593,6 +603,7 @@
         color: #fff;
         opacity: 0;
         line-height: 1;
+        display: block;
       }
 
       .present-jake {
@@ -646,7 +657,7 @@
         font-size: 0.7rem;
         font-weight: 600;
         letter-spacing: 0.3em;
-        color: rgba(255, 255, 255, 0.4);
+        color: rgba(255, 255, 255, 0.7); /* bumped from 0.4 to 0.7 for AA contrast */
         text-transform: uppercase;
         opacity: 0;
         animation: skip-fade-in 0.6s ease-out 0.8s forwards;
@@ -736,8 +747,11 @@
           // After we've zoomed all the way in, swap to presentation stage
           setTimeout(() => {
             portalStage.classList.add('fading');
-            presentStage.classList.add('active');
+
+            // Reveal present stage to the DOM, a11y tree, and contrast scanners
+            presentStage.hidden = false;
             presentStage.setAttribute('aria-hidden', 'false');
+            presentStage.classList.add('active');
 
             // "JAKE PRESENTS" appears
             setTimeout(() => {
