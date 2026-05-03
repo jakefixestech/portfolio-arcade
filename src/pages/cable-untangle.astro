@@ -49,11 +49,6 @@
         }
         .noscript-warning a { color: #67e8f9; }
       </style>
-    </noscript>
-  </head>
-
-  <body>
-    <noscript>
       <div class="noscript-warning" role="alert">
         <div>
           <h1 style="font-family: 'Monoton', sans-serif; font-size: 2rem; color: #fde68a; margin-bottom: 1rem;">JavaScript Required</h1>
@@ -62,6 +57,9 @@
         </div>
       </div>
     </noscript>
+  </head>
+
+  <body>
     <script src="/arcade-sound.js" is:inline></script>
     <script is:inline>
       // Arcade sound — universal hooks (toggle button, ambient hum, common events)
@@ -217,7 +215,7 @@
                       </div>
                       <div id="level-banner" class="level-banner" aria-hidden="true">
                         <p class="level-banner-eyebrow">SERVER ROOM</p>
-                        <p class="level-banner-title" id="level-banner-title">LEVEL 1</p>
+                        <span class="level-banner-title" id="level-banner-title">LEVEL 1</span>
                       </div>
                     </div>
 
@@ -2019,6 +2017,7 @@
       }
 
       .level-banner-title {
+        display: block;
         font-family: 'Monoton', 'Inter Tight', sans-serif;
         font-weight: 400;
         font-size: clamp(2rem, 6vw, 3.5rem);
@@ -2033,7 +2032,7 @@
       .game-hint {
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.7rem;
-        color: #64748b;
+        color: #94a3b8;
         margin-top: 0.85rem;
         text-align: center;
         max-width: 32rem;
