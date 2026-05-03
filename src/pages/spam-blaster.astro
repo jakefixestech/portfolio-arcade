@@ -1161,6 +1161,14 @@
     </script>
 
     <style>
+      :root {
+        --scrollbar-thumb-from: rgba(249, 115, 22, 0.5);
+        --scrollbar-thumb-to: rgba(239, 68, 68, 0.5);
+        --scrollbar-thumb-from-hover: rgba(249, 115, 22, 0.9);
+        --scrollbar-thumb-to-hover: rgba(239, 68, 68, 0.9);
+        --scrollbar-border: rgba(249, 115, 22, 0.2);
+      }
+
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; tap-highlight-color: transparent; }
       html { scroll-behavior: smooth; }
       @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

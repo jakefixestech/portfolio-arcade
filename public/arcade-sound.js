@@ -886,24 +886,34 @@
     const style = document.createElement('style');
     style.id = 'arcade-scrollbar-style';
     style.textContent = `
-      /* Firefox */
-      html { scrollbar-width: thin; scrollbar-color: rgba(168, 85, 247, 0.5) rgba(5, 2, 20, 0.6); }
+      /* Page-themable scrollbar — each page sets these vars on :root */
+      :root {
+        --sb-track:      var(--scrollbar-track,      rgba(5, 2, 20, 0.6));
+        --sb-thumb-from: var(--scrollbar-thumb-from, rgba(168, 85, 247, 0.45));
+        --sb-thumb-to:   var(--scrollbar-thumb-to,   rgba(103, 232, 249, 0.45));
+        --sb-thumb-from-hover: var(--scrollbar-thumb-from-hover, rgba(168, 85, 247, 0.75));
+        --sb-thumb-to-hover:   var(--scrollbar-thumb-to-hover,   rgba(103, 232, 249, 0.75));
+        --sb-border:     var(--scrollbar-border,     rgba(168, 85, 247, 0.15));
+      }
+
+      /* Firefox — uses a single accent color, pick the lead one */
+      html { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb-from, rgba(168, 85, 247, 0.5)) var(--sb-track); }
 
       /* WebKit (Chrome, Safari, Edge) */
       ::-webkit-scrollbar { width: 10px; height: 10px; }
       ::-webkit-scrollbar-track {
-        background: rgba(5, 2, 20, 0.6);
-        border-left: 1px solid rgba(168, 85, 247, 0.15);
+        background: var(--sb-track);
+        border-left: 1px solid var(--sb-border);
       }
       ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, rgba(168, 85, 247, 0.45), rgba(103, 232, 249, 0.45));
+        background: linear-gradient(180deg, var(--sb-thumb-from), var(--sb-thumb-to));
         border-radius: 6px;
-        border: 2px solid rgba(5, 2, 20, 0.6);
+        border: 2px solid var(--sb-track);
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, rgba(168, 85, 247, 0.75), rgba(103, 232, 249, 0.75));
+        background: linear-gradient(180deg, var(--sb-thumb-from-hover), var(--sb-thumb-to-hover));
       }
-      ::-webkit-scrollbar-corner { background: rgba(5, 2, 20, 0.6); }
+      ::-webkit-scrollbar-corner { background: var(--sb-track); }
     `;
     document.head.appendChild(style);
   }
