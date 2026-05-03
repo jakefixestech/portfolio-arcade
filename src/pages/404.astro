@@ -1,0 +1,589 @@
+---
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GAME OVER — Jake's Arcade</title>
+    <meta name="description" content="That page doesn't exist. Insert another coin and try again." />
+    <meta name="author" content="Jake Charland" />
+    <meta name="theme-color" content="#0a0820" />
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href="https://arcade.jakefixestech.com/404" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Monoton&family=JetBrains+Mono:wght@400;600;700&family=Inter+Tight:wght@400;600;700;900&display=swap"
+    />
+
+    <noscript>
+      <style>
+        .countdown-num { animation: none !important; }
+      </style>
+    </noscript>
+  </head>
+
+  <body>
+    <script src="/arcade-sound.js" is:inline></script>
+    <script is:inline>
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.ArcadeSound) return;
+        window.ArcadeSound.injectToggleButton();
+
+        // Play game-over sound after a brief moment so people see the screen first
+        let soundPlayed = false;
+        function playOnce() {
+          if (soundPlayed) return;
+          soundPlayed = true;
+          setTimeout(() => {
+            try { window.ArcadeSound.play('game_over'); } catch (e) {}
+          }, 400);
+        }
+        document.addEventListener('click', playOnce, { once: true, capture: true });
+        document.addEventListener('keydown', playOnce, { once: true, capture: true });
+        document.addEventListener('touchstart', playOnce, { once: true, capture: true });
+        document.addEventListener('mousemove', playOnce, { once: true, capture: true });
+
+        // Glitchy countdown that resets when it hits 1 (the cabinet is broken)
+        const countdownEl = document.getElementById('countdown-num');
+        if (countdownEl) {
+          let n = 9;
+          let glitching = false;
+          function tick() {
+            if (glitching) {
+              countdownEl.textContent = String(Math.floor(Math.random() * 10));
+              return;
+            }
+            countdownEl.textContent = String(n);
+
+            // Sometimes glitch for a fraction of a second
+            if (Math.random() < 0.3) {
+              glitching = true;
+              const glitchDuration = 80 + Math.random() * 200;
+              const glitchInterval = setInterval(() => {
+                countdownEl.textContent = String(Math.floor(Math.random() * 10));
+              }, 40);
+              setTimeout(() => {
+                clearInterval(glitchInterval);
+                glitching = false;
+                countdownEl.textContent = String(n);
+              }, glitchDuration);
+            }
+
+            n--;
+            // Reset before reaching zero — the system is broken, you're stuck
+            if (n < 1) {
+              n = 9;
+              countdownEl.classList.add('countdown-num--reset');
+              setTimeout(() => countdownEl.classList.remove('countdown-num--reset'), 300);
+            }
+          }
+          setInterval(tick, 1000);
+          tick();
+        }
+
+        // Hover sounds on the buttons
+        document.querySelectorAll('.over-btn').forEach((b) => {
+          b.addEventListener('mouseenter', () => {
+            try { window.ArcadeSound.play('button_hover'); } catch (e) {}
+          });
+          b.addEventListener('click', () => {
+            try { window.ArcadeSound.play('coin'); } catch (e) {}
+          });
+        });
+      });
+    </script>
+
+    <main class="over-stage" role="main">
+
+      <!-- Scanline + CRT overlay -->
+      <div class="scanlines" aria-hidden="true"></div>
+      <div class="crt-glow" aria-hidden="true"></div>
+
+      <!-- Random pixel-fall decoration -->
+      <div class="ambient" aria-hidden="true">
+        <span class="pix p1"></span><span class="pix p2"></span>
+        <span class="pix p3"></span><span class="pix p4"></span>
+        <span class="pix p5"></span><span class="pix p6"></span>
+        <span class="pix p7"></span><span class="pix p8"></span>
+      </div>
+
+      <div class="over-frame">
+
+        <p class="over-eyebrow" aria-hidden="true">▌STAGE 404 NOT FOUND</p>
+
+        <h1 class="over-title">
+          <span class="over-title-text">GAME OVER</span>
+        </h1>
+
+        <div class="continue-block" aria-live="polite">
+          <p class="continue-prompt">CONTINUE?</p>
+          <div class="countdown-wrap">
+            <span class="countdown-num" id="countdown-num" aria-label="Countdown timer">9</span>
+          </div>
+        </div>
+
+        <div class="error-log" aria-hidden="true">
+          <p class="log-line"><span class="log-prefix">&gt;</span> ERROR: ROUTE_NOT_FOUND</p>
+          <p class="log-line"><span class="log-prefix">&gt;</span> attempted_path: <span class="log-path" id="log-path">/...</span></p>
+          <p class="log-line"><span class="log-prefix">&gt;</span> stack_trace: <span class="log-fail">CABINET DOES NOT KNOW THIS GAME</span></p>
+          <p class="log-line"><span class="log-prefix">&gt;</span> recommendation: <span class="log-rec">try inserting another coin</span><span class="cursor">_</span></p>
+        </div>
+
+        <div class="over-actions">
+          <a href="/lobby" class="over-btn over-btn--coin">
+            <span class="over-btn-icon" aria-hidden="true">¢</span>
+            <span class="over-btn-label">INSERT COIN</span>
+            <span class="over-btn-sub">Back to lobby</span>
+          </a>
+          <a href="https://jakefixestech.com" class="over-btn over-btn--bail">
+            <span class="over-btn-icon" aria-hidden="true">←</span>
+            <span class="over-btn-label">BAIL OUT</span>
+            <span class="over-btn-sub">Exit the arcade</span>
+          </a>
+        </div>
+
+        <p class="over-tip">
+          <span class="tip-icon" aria-hidden="true">★</span>
+          If you hit a real bug, ping Jake at
+          <a href="https://jakefixestech.com">jakefixestech.com</a>
+        </p>
+
+      </div>
+    </main>
+
+    <script is:inline>
+      // Show the path the user actually tried to visit
+      const logPath = document.getElementById('log-path');
+      if (logPath) {
+        const path = window.location.pathname || '/';
+        // Truncate ridiculously long paths
+        logPath.textContent = path.length > 40 ? path.slice(0, 38) + '…' : path;
+      }
+    </script>
+
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      html, body {
+        width: 100%;
+        min-height: 100vh;
+        background: #050214;
+        color: #fff;
+        font-family: 'Inter Tight', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+      }
+
+      .over-stage {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem;
+        background:
+          radial-gradient(ellipse at 50% 30%, rgba(239, 68, 68, 0.12) 0%, transparent 60%),
+          radial-gradient(ellipse at 50% 90%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+          linear-gradient(180deg, #0a0820 0%, #050214 60%, #000 100%);
+        overflow: hidden;
+      }
+
+      /* CRT scanlines overlay */
+      .scanlines {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 5;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0) 0px,
+          rgba(0, 0, 0, 0) 2px,
+          rgba(0, 0, 0, 0.18) 2px,
+          rgba(0, 0, 0, 0.18) 3px
+        );
+        mix-blend-mode: multiply;
+      }
+
+      .crt-glow {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 4;
+        background: radial-gradient(
+          ellipse at center,
+          transparent 30%,
+          rgba(0, 0, 0, 0.4) 100%
+        );
+      }
+
+      /* Ambient pixel rain */
+      .ambient {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+        overflow: hidden;
+      }
+
+      .pix {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: #ef4444;
+        box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+        animation: pix-fall 6s linear infinite;
+        opacity: 0.5;
+      }
+
+      .p1 { left:  8%; animation-delay: 0s;   }
+      .p2 { left: 19%; animation-delay: 1.4s; background: #fbbf24; box-shadow: 0 0 6px rgba(251, 191, 36, 0.7); }
+      .p3 { left: 33%; animation-delay: 2.8s; }
+      .p4 { left: 47%; animation-delay: 0.7s; background: #a78bfa; box-shadow: 0 0 6px rgba(167, 139, 250, 0.7); }
+      .p5 { left: 61%; animation-delay: 3.5s; }
+      .p6 { left: 73%; animation-delay: 1.9s; background: #67e8f9; box-shadow: 0 0 6px rgba(103, 232, 249, 0.7); }
+      .p7 { left: 84%; animation-delay: 4.2s; }
+      .p8 { left: 92%; animation-delay: 2.3s; background: #4ade80; box-shadow: 0 0 6px rgba(74, 222, 128, 0.7); }
+
+      @keyframes pix-fall {
+        0%   { transform: translateY(-10vh); opacity: 0; }
+        15%  { opacity: 0.6; }
+        90%  { opacity: 0.6; }
+        100% { transform: translateY(110vh); opacity: 0; }
+      }
+
+      /* The frame — like a busted cabinet screen */
+      .over-frame {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        max-width: 640px;
+        text-align: center;
+        padding: 2.5rem 2rem 2.5rem;
+        background: rgba(0, 0, 0, 0.55);
+        border: 2px solid rgba(239, 68, 68, 0.5);
+        border-radius: 12px;
+        box-shadow:
+          0 0 0 1px rgba(239, 68, 68, 0.25),
+          0 0 36px rgba(239, 68, 68, 0.4),
+          inset 0 0 24px rgba(239, 68, 68, 0.12);
+        animation: frame-flicker 4s steps(50) infinite;
+      }
+
+      @keyframes frame-flicker {
+        0%, 100%       { box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25), 0 0 36px rgba(239, 68, 68, 0.4), inset 0 0 24px rgba(239, 68, 68, 0.12); }
+        92%, 92.4%     { box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.4),  0 0 50px rgba(239, 68, 68, 0.6), inset 0 0 32px rgba(239, 68, 68, 0.2); }
+        92.6%, 93%     { box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25), 0 0 36px rgba(239, 68, 68, 0.4), inset 0 0 24px rgba(239, 68, 68, 0.12); }
+      }
+
+      .over-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.25em;
+        color: #ef4444;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+      }
+
+      .over-title {
+        font-family: 'Monoton', 'Inter Tight', sans-serif;
+        font-size: clamp(3.5rem, 14vw, 6.5rem);
+        font-weight: 400;
+        line-height: 1;
+        letter-spacing: 0.05em;
+        margin-bottom: 1.5rem;
+        color: #fca5a5;
+        text-shadow:
+          0 0 6px rgba(239, 68, 68, 1),
+          0 0 18px rgba(239, 68, 68, 0.8),
+          0 0 36px rgba(239, 68, 68, 0.6),
+          2px 0 0 rgba(168, 85, 247, 0.6),
+         -2px 0 0 rgba(34, 211, 238, 0.4);
+        animation: title-glitch 5s steps(60) infinite;
+      }
+
+      @keyframes title-glitch {
+        0%, 100% {
+          transform: translate(0);
+          text-shadow:
+            0 0 6px rgba(239, 68, 68, 1),
+            0 0 18px rgba(239, 68, 68, 0.8),
+            0 0 36px rgba(239, 68, 68, 0.6),
+            2px 0 0 rgba(168, 85, 247, 0.6),
+           -2px 0 0 rgba(34, 211, 238, 0.4);
+        }
+        45%, 45.4% {
+          transform: translate(2px, -1px);
+          text-shadow:
+            0 0 6px rgba(239, 68, 68, 1),
+            0 0 18px rgba(239, 68, 68, 0.8),
+            4px 0 0 rgba(168, 85, 247, 0.8),
+           -3px 0 0 rgba(34, 211, 238, 0.6);
+        }
+        45.6%, 46% {
+          transform: translate(-1px, 1px);
+        }
+        78%, 78.5% {
+          transform: translate(1px, 0);
+          text-shadow:
+            0 0 6px rgba(239, 68, 68, 1),
+            6px 0 0 rgba(34, 211, 238, 0.6),
+           -4px 0 0 rgba(168, 85, 247, 0.7);
+        }
+        79%, 79.5% {
+          transform: translate(0);
+        }
+      }
+
+      /* CONTINUE? + countdown block */
+      .continue-block {
+        margin-bottom: 2rem;
+      }
+
+      .continue-prompt {
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-size: clamp(1.1rem, 2.8vw, 1.5rem);
+        font-weight: 800;
+        letter-spacing: 0.4em;
+        color: #fde68a;
+        margin-bottom: 0.75rem;
+        text-shadow: 0 0 8px rgba(251, 191, 36, 0.7);
+        animation: prompt-blink 1s steps(2) infinite;
+      }
+
+      @keyframes prompt-blink {
+        0%, 50%  { opacity: 1; }
+        50.01%, 100% { opacity: 0.45; }
+      }
+
+      .countdown-wrap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: clamp(4.5rem, 10vw, 6rem);
+        height: clamp(4.5rem, 10vw, 6rem);
+        background: rgba(239, 68, 68, 0.12);
+        border: 2px solid #ef4444;
+        border-radius: 12px;
+        box-shadow:
+          0 0 18px rgba(239, 68, 68, 0.5),
+          inset 0 0 16px rgba(239, 68, 68, 0.2);
+      }
+
+      .countdown-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: clamp(2.5rem, 7vw, 4rem);
+        font-weight: 700;
+        line-height: 1;
+        color: #fca5a5;
+        text-shadow:
+          0 0 8px rgba(239, 68, 68, 1),
+          0 0 18px rgba(239, 68, 68, 0.7);
+        font-variant-numeric: tabular-nums;
+        transition: color 0.1s, text-shadow 0.1s;
+      }
+
+      .countdown-num--reset {
+        color: #fff;
+        text-shadow:
+          0 0 12px rgba(255, 255, 255, 1),
+          0 0 24px rgba(239, 68, 68, 0.9);
+      }
+
+      /* Terminal-style error log */
+      .error-log {
+        text-align: left;
+        max-width: 100%;
+        margin: 0 auto 2rem;
+        padding: 1rem 1.25rem;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(74, 222, 128, 0.3);
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        line-height: 1.7;
+        color: #94a3b8;
+      }
+
+      .log-line {
+        display: block;
+        word-break: break-all;
+      }
+
+      .log-prefix {
+        color: #4ade80;
+        margin-right: 0.5rem;
+        font-weight: 700;
+      }
+
+      .log-path {
+        color: #fbbf24;
+      }
+
+      .log-fail {
+        color: #f87171;
+      }
+
+      .log-rec {
+        color: #67e8f9;
+      }
+
+      .cursor {
+        display: inline-block;
+        color: #4ade80;
+        animation: cursor-blink 1s steps(2) infinite;
+      }
+
+      @keyframes cursor-blink {
+        0%, 50%      { opacity: 1; }
+        50.01%, 100% { opacity: 0; }
+      }
+
+      /* Action buttons */
+      .over-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+      }
+
+      .over-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 1rem 0.85rem;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 8px;
+        text-decoration: none;
+        font-family: 'Orbitron', system-ui, sans-serif;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      }
+
+      .over-btn-icon {
+        font-size: 1.5rem;
+        font-weight: 900;
+      }
+
+      .over-btn-label {
+        font-size: 0.95rem;
+      }
+
+      .over-btn-sub {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 400;
+        letter-spacing: 0.05em;
+        opacity: 0.7;
+      }
+
+      .over-btn--coin {
+        color: #fde68a;
+        border: 2px solid #fbbf24;
+        text-shadow: 0 0 6px rgba(251, 191, 36, 0.7);
+        box-shadow:
+          0 0 0 1px rgba(251, 191, 36, 0.25),
+          0 0 18px rgba(251, 191, 36, 0.4),
+          inset 0 0 12px rgba(251, 191, 36, 0.15);
+      }
+
+      .over-btn--coin:hover,
+      .over-btn--coin:focus-visible {
+        transform: translateY(-2px);
+        background: rgba(251, 191, 36, 0.1);
+        box-shadow:
+          0 0 0 1px rgba(251, 191, 36, 0.4),
+          0 0 30px rgba(251, 191, 36, 0.7),
+          inset 0 0 16px rgba(251, 191, 36, 0.25);
+        outline: none;
+      }
+
+      .over-btn--bail {
+        color: #4ade80;
+        border: 2px solid #22c55e;
+        text-shadow: 0 0 6px rgba(74, 222, 128, 0.7);
+        box-shadow:
+          0 0 0 1px rgba(74, 222, 128, 0.25),
+          0 0 18px rgba(74, 222, 128, 0.4),
+          inset 0 0 12px rgba(74, 222, 128, 0.15);
+      }
+
+      .over-btn--bail:hover,
+      .over-btn--bail:focus-visible {
+        transform: translateY(-2px);
+        background: rgba(74, 222, 128, 0.1);
+        box-shadow:
+          0 0 0 1px rgba(74, 222, 128, 0.4),
+          0 0 30px rgba(74, 222, 128, 0.7),
+          inset 0 0 16px rgba(74, 222, 128, 0.25);
+        outline: none;
+      }
+
+      .over-tip {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        line-height: 1.5;
+      }
+
+      .over-tip a {
+        color: #67e8f9;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .over-tip a:hover {
+        color: #fff;
+      }
+
+      .tip-icon {
+        color: #fbbf24;
+      }
+
+      /* Mobile */
+      @media (max-width: 600px) {
+        .over-frame {
+          padding: 2rem 1.25rem;
+        }
+        .over-eyebrow {
+          font-size: 0.7rem;
+          letter-spacing: 0.2em;
+        }
+        .over-actions {
+          grid-template-columns: 1fr;
+        }
+        .error-log {
+          font-size: 0.72rem;
+          padding: 0.85rem 0.95rem;
+        }
+      }
+
+      /* Reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        .over-title,
+        .over-frame,
+        .pix,
+        .continue-prompt,
+        .cursor,
+        .countdown-num {
+          animation: none !important;
+        }
+        .over-title { transform: translate(0); }
+      }
+    </style>
+  </body>
+</html>
