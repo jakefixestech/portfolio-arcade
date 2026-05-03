@@ -8,8 +8,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Error Override — Jake's Arcade</title>
-    <meta name="description" content="Type fake error messages at speed. 60 seconds of code-flavored chaos at Jake's Arcade." />
+    <meta name="description" content="Speed-typing game with code-style error messages. How fast can you fix the system?" />
+    <meta name="author" content="Jake Charland" />
+    <meta name="theme-color" content="#062028" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://arcade.jakefixestech.com/error-override" />
     <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Jake's Arcade" />
+    <meta property="og:title" content="Error Override — Jake's Arcade" />
+    <meta property="og:description" content="Speed-typing game with code-style error messages. How fast can you fix the system?" />
+    <meta property="og:url" content="https://arcade.jakefixestech.com/error-override" />
+    <meta property="og:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Jake's Arcade — twelve hand-built browser games" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Error Override — Jake's Arcade" />
+    <meta name="twitter:description" content="Speed-typing game with code-style error messages. How fast can you fix the system?" />
+    <meta name="twitter:image" content="https://arcade.jakefixestech.com/og-arcade.webp" />
+
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Error Override — Jake's Arcade" />
@@ -201,7 +223,7 @@
 
                     <div class="error-stage" aria-live="polite">
                       <p class="error-prefix">[ERR]</p>
-                      <p id="error-target" class="error-target" aria-label="Type this error message"></p>
+                      <span id="error-target" class="error-target" aria-label="Type this error message"></span>
                     </div>
 
                     <input
@@ -1458,6 +1480,7 @@
       }
 
       .error-target {
+        display: block;
         font-family: 'JetBrains Mono', monospace;
         font-size: clamp(1rem, 3.5vw, 1.5rem);
         font-weight: 700;
@@ -1519,7 +1542,7 @@
       .error-hint {
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.72rem;
-        color: #64748b;
+        color: #94a3b8;
         margin-top: 0.6rem;
         text-align: center;
       }
