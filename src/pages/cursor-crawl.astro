@@ -40,10 +40,28 @@
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Monoton&display=swap"
       />
+      <style>
+        .noscript-warning {
+          position: fixed; inset: 0; z-index: 9999;
+          display: flex; align-items: center; justify-content: center;
+          padding: 2rem; background: #050214; color: #fff;
+          font-family: 'Inter Tight', system-ui, sans-serif; text-align: center;
+        }
+        .noscript-warning a { color: #67e8f9; }
+      </style>
     </noscript>
   </head>
 
   <body>
+    <noscript>
+      <div class="noscript-warning" role="alert">
+        <div>
+          <h1 style="font-family: 'Monoton', sans-serif; font-size: 2rem; color: #fde68a; margin-bottom: 1rem;">JavaScript Required</h1>
+          <p>This game needs JavaScript to run. Please enable it and refresh the page.</p>
+          <p style="margin-top: 1rem;"><a href="https://jakefixestech.com">Return to Jake Fixes Tech</a></p>
+        </div>
+      </div>
+    </noscript>
     <script src="/arcade-sound.js" is:inline></script>
     <script is:inline>
       // Arcade sound — universal hooks (toggle button, ambient hum, common events)
@@ -99,7 +117,7 @@
               <span></span><span></span><span></span><span></span>
               <span></span><span></span><span></span>
             </div>
-            <p class="shell-marquee-title">CURSOR CRAWL</p>
+            <span class="shell-marquee-title">CURSOR CRAWL</span>
           </div>
 
           <div class="cabinet-body">
@@ -234,12 +252,12 @@
                   <div id="state-leaderboard" class="state">
                     <div id="rank-reveal" class="rank-reveal">
                       <p class="rank-eyebrow" id="rank-eyebrow">YOU RANKED</p>
-                      <p class="rank-number" id="rank-number">#1</p>
+                      <span class="rank-number" id="rank-number">#1</span>
                       <p class="rank-detail" id="rank-detail">on the leaderboard</p>
                     </div>
 
                     <div class="leaderboard-wrap">
-                      <p class="leaderboard-title">TOP 10 — CURSOR CRAWL</p>
+                      <span class="leaderboard-title">TOP 10 — CURSOR CRAWL</span>
                       <ol id="leaderboard-list" class="leaderboard"></ol>
                     </div>
 
@@ -1097,6 +1115,7 @@
         }
 
         .shell-marquee-title {
+          display: block;
           font-family: 'Monoton', 'Inter Tight', sans-serif;
           font-weight: 400;
           font-size: 1.6rem;
@@ -1275,7 +1294,7 @@
 
         .shell-coin-label {
           font-family: 'JetBrains Mono', monospace;
-          font-size: 0.65rem;
+          font-size: 0.7rem;
           font-weight: 700;
           letter-spacing: 0.2em;
           color: #94a3b8;
@@ -1528,7 +1547,7 @@
 
       .hud-label {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         font-weight: 600;
         color: #64748b;
         letter-spacing: 0.15em;
@@ -1723,6 +1742,7 @@
       }
 
       .rank-number {
+        display: block;
         font-family: 'JetBrains Mono', monospace;
         font-size: clamp(3rem, 9vw, 4.5rem);
         font-weight: 700;
@@ -1949,10 +1969,10 @@
 
         .hud { padding: 0.5rem 0.75rem; gap: 0.5rem; }
         .hud-value { font-size: 1.05rem; }
-        .hud-label { font-size: 0.55rem; }
+        .hud-label { font-size: 0.7rem; }
 
         .board-wrap { max-width: 100%; }
-        .game-hint { font-size: 0.65rem; }
+        .game-hint { font-size: 0.7rem; }
 
         .intro-title { font-size: 1.5rem; }
         .intro-text { font-size: 0.95rem; }
